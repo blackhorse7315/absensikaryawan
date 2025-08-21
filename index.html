@@ -3,605 +3,449 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ECrew - Absensi Karyawan</title>
-    
-    <!-- Tailwind CSS -->
+    <title>Aplikasi Absensi Karyawan - PT. Transwisata Prima Aviation</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- LeafletJS for Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    
-    <!-- Custom Styles -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Custom class to hide elements */
+        .form-input, .form-select {
+            @apply w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200;
+        }
+        .btn {
+            @apply w-full px-4 py-3 text-white font-semibold rounded-lg shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2;
+        }
+        .btn-primary {
+            @apply bg-blue-600 hover:bg-blue-700 focus:ring-blue-500;
+        }
+        .btn-secondary {
+            @apply bg-green-600 hover:bg-green-700 focus:ring-green-500;
+        }
+        .btn-danger {
+            @apply bg-red-600 hover:bg-red-700 focus:ring-red-500;
+        }
+        .btn-disabled {
+            @apply bg-gray-400 cursor-not-allowed;
+        }
+        .card {
+            @apply bg-white p-6 sm:p-8 rounded-xl shadow-lg;
+        }
         .hidden {
             display: none;
         }
-        /* Styling for the map container */
-        #map {
-            height: 250px;
-            width: 100%;
-            border-radius: 0.5rem;
-            z-index: 10;
-        }
-        /* Custom modal styles */
-        #modal-backdrop {
-            transition: opacity 0.3s ease;
-        }
-        #modal-content {
-            transition: transform 0.3s ease;
-        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
-
-    <!-- Main Container -->
-    <div id="app-container" class="max-w-md mx-auto min-h-screen bg-white shadow-lg">
-
-        <!-- ===== Loading Screen ===== -->
-        <div id="loading-screen" class="flex flex-col items-center justify-center min-h-screen p-6 text-center">
-            <svg class="animate-spin h-10 w-10 text-sky-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <h1 class="text-2xl font-bold text-sky-700">ECrew</h1>
-            <p class="text-gray-500 mt-1">Memuat Aplikasi...</p>
-        </div>
-
-        <!-- ===== Login Page ===== -->
-        <div id="login-page" class="hidden p-6 min-h-screen flex flex-col justify-center">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl mx-auto">
+        <div class="card">
             <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-sky-700">ECrew</h1>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Absensi Karyawan</h1>
                 <p class="text-gray-500">PT. Transwisata Prima Aviation</p>
             </div>
-            <div class="space-y-4">
+
+            <!-- Form Data Diri -->
+            <div id="form-data-diri" class="space-y-4">
+                <h2 class="text-xl font-semibold text-gray-700 border-b pb-2">1. Data Diri & Pekerjaan</h2>
                 <div>
-                    <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="login-email" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500" placeholder="nama@email.com">
+                    <label for="name" class="block text-sm font-medium text-gray-600 mb-1">Nama Lengkap</label>
+                    <input type="text" id="name" name="name" class="form-input" placeholder="Masukkan nama Anda">
                 </div>
                 <div>
-                    <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" id="login-password" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500" placeholder="********">
+                    <label for="email" class="block text-sm font-medium text-gray-600 mb-1">Email Valid</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="contoh@email.com">
                 </div>
-            </div>
-            <button id="login-button" class="mt-8 w-full bg-sky-600 text-white py-3 rounded-md font-semibold hover:bg-sky-700 transition duration-300 shadow-md">Login</button>
-            <p class="text-center mt-4 text-sm">
-                Belum punya akun? <a href="#" id="go-to-signup" class="font-medium text-sky-600 hover:text-sky-500">Daftar di sini</a>
-            </p>
-        </div>
-
-        <!-- ===== Sign Up Page ===== -->
-        <div id="signup-page" class="hidden p-6 min-h-screen flex flex-col justify-center">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-sky-700">Buat Akun ECrew</h1>
-            </div>
-            <div class="space-y-4">
-                <input type="text" id="signup-name" placeholder="Nama Lengkap" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
-                <input type="text" id="signup-position" placeholder="Jabatan (e.g., Captain, Engineer)" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
-                <input type="text" id="signup-division" placeholder="Divisi (e.g., Flight Operations)" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
-                <input type="email" id="signup-email" placeholder="Email" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
-                <input type="password" id="signup-password" placeholder="Password" class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
-            </div>
-            <button id="signup-button" class="mt-8 w-full bg-sky-600 text-white py-3 rounded-md font-semibold hover:bg-sky-700 transition duration-300 shadow-md">Daftar</button>
-            <p class="text-center mt-4 text-sm">
-                Sudah punya akun? <a href="#" id="go-to-login" class="font-medium text-sky-600 hover:text-sky-500">Login di sini</a>
-            </p>
-        </div>
-
-        <!-- ===== Main App Page (Attendance) ===== -->
-        <div id="main-app-page" class="hidden p-6 pb-24">
-            <header class="flex justify-between items-center mb-6">
                 <div>
-                    <h1 class="text-2xl font-bold text-sky-700">Absensi Masuk</h1>
-                    <p id="welcome-message" class="text-gray-500">Selamat datang!</p>
+                    <label for="division" class="block text-sm font-medium text-gray-600 mb-1">Divisi</label>
+                    <input type="text" id="division" name="division" class="form-input" placeholder="e.g., Operasional">
                 </div>
-                <button id="logout-button" class="text-sm text-red-500 font-medium hover:text-red-700">Logout</button>
-            </header>
-
-            <form id="attendance-form" class="space-y-6">
-                <!-- User Info -->
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h3 class="font-semibold mb-2 text-gray-700">Informasi Karyawan</h3>
-                    <div class="text-sm space-y-1">
-                        <p><strong>Nama:</strong> <span id="user-name"><span class="italic text-gray-400">Memuat...</span></span></p>
-                        <p><strong>Jabatan:</strong> <span id="user-position"><span class="italic text-gray-400">Memuat...</span></span></p>
-                        <p><strong>Divisi:</strong> <span id="user-division"><span class="italic text-gray-400">Memuat...</span></span></p>
-                    </div>
-                </div>
-
-                <!-- Duty Details -->
                 <div>
-                    <label for="duty-as" class="block text-sm font-medium text-gray-700">Duty As</label>
-                    <select id="duty-as" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
-                        <option>Pilot in Command (PIC)</option>
-                        <option>First Officer (FO)</option>
-                        <option>Flight Attendant</option>
-                        <option>Engineer on Duty</option>
-                        <option>Ground Staff</option>
+                    <label for="position" class="block text-sm font-medium text-gray-600 mb-1">Jabatan</label>
+                    <input type="text" id="position" name="position" class="form-input" placeholder="e.g., Staff">
+                </div>
+                 <div>
+                    <label for="duty_as" class="block text-sm font-medium text-gray-600 mb-1">Duty As</label>
+                    <input type="text" id="duty_as" name="duty_as" class="form-input" placeholder="e.g., Pilot">
+                </div>
+                <div>
+                    <label for="work_type" class="block text-sm font-medium text-gray-600 mb-1">Tipe Pekerjaan</label>
+                    <select id="work_type" name="work_type" class="form-select">
+                        <option>Work From Office (WFO)</option>
+                        <option>Work From Home (WFH)</option>
+                        <option>Hybrid</option>
                     </select>
                 </div>
-
-                <div>
-                    <label for="work-type" class="block text-sm font-medium text-gray-700">Type of Work</label>
-                    <select id="work-type" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
-                        <option>Penerbangan (Flight)</option>
-                        <option>Kantor (Office)</option>
-                        <option>Siaga (Standby)</option>
-                        <option>Training</option>
-                        <option>Lainnya</option>
-                    </select>
-                </div>
-
-                <!-- Photo Capture -->
-                <div>
-                    <h3 class="block text-sm font-medium text-gray-700 mb-2">Foto Masuk</h3>
-                    <div class="bg-black rounded-lg overflow-hidden relative">
-                        <video id="camera-stream" class="w-full h-auto" autoplay playsinline></video>
-                        <canvas id="photo-canvas" class="hidden"></canvas>
-                        <img id="captured-photo" class="hidden w-full h-auto" alt="Captured Photo">
-                        <button type="button" id="capture-button" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white p-4 rounded-full shadow-lg focus:outline-none">
-                            <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        </button>
-                         <button type="button" id="retake-button" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 py-2 text-sm font-semibold rounded-full shadow-lg">Ambil Ulang</button>
-                    </div>
-                </div>
-
-                <!-- Location Map -->
-                <div>
-                    <h3 class="block text-sm font-medium text-gray-700 mb-2">Lokasi Masuk</h3>
-                    <div id="location-status" class="text-center py-8 bg-gray-100 rounded-lg">
-                        <p>Mendeteksi lokasi Anda...</p>
-                    </div>
-                    <div id="map-container" class="hidden">
-                        <div id="map"></div>
-                    </div>
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit" id="submit-attendance" class="w-full bg-green-600 text-white py-3 rounded-md font-semibold hover:bg-green-700 transition duration-300 shadow-md flex items-center justify-center disabled:bg-gray-400">
-                    <span id="submit-text">Kirim Absensi</span>
-                    <svg id="submit-spinner" class="animate-spin h-5 w-5 text-white hidden ml-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </button>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Custom Modal for Messages -->
-    <div id="modal-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4" onclick="closeModal()">
-        <div id="modal-content" class="bg-white rounded-lg shadow-xl w-full max-w-sm p-6 transform scale-95" onclick="event.stopPropagation()">
-            <h3 id="modal-title" class="text-lg font-bold text-gray-900">Pemberitahuan</h3>
-            <p id="modal-message" class="mt-2 text-sm text-gray-600">Ini adalah isi pesan.</p>
-            <div class="mt-6 text-right">
-                <button id="modal-close-button" class="px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-md hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500" onclick="closeModal()">Tutup</button>
             </div>
-        </div>
-    </div>
 
-
-    <!-- Firebase SDKs -->
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut, 
-            onAuthStateChanged,
-            signInAnonymously,
-            signInWithCustomToken
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            setDoc, 
-            getDoc, 
-            addDoc, 
-            collection, 
-            serverTimestamp,
-            GeoPoint
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // --- Firebase Configuration ---
-        // These variables are placeholders and will be provided by the environment.
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-          apiKey: "AIzaSyAoUgIGL2IVeyXaSMh17g9XpjzXCau2thA",
-          authDomain: "ecrew-absensi-karyawan.firebaseapp.com",
-          projectId: "ecrew-absensi-karyawan",
-          storageBucket: "ecrew-absensi-karyawan.appspot.com",
-          messagingSenderId: "511799277557",
-          appId: "1:511799277557:web:7ed1222ae0d6a2c54512bc",
-          measurementId: "G-EDRGMM0396"
-        };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // --- Initialize Firebase ---
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // --- DOM Element References ---
-        const loadingScreen = document.getElementById('loading-screen');
-        const loginPage = document.getElementById('login-page');
-        const signupPage = document.getElementById('signup-page');
-        const mainAppPage = document.getElementById('main-app-page');
-        
-        // --- State Variables ---
-        let currentUser = null;
-        let userLocation = null;
-        let map = null;
-        let cameraStream = null;
-
-        // --- Page Navigation ---
-        const goToSignup = document.getElementById('go-to-signup');
-        const goToLogin = document.getElementById('go-to-login');
-
-        goToSignup.addEventListener('click', (e) => {
-            e.preventDefault();
-            loginPage.classList.add('hidden');
-            signupPage.classList.remove('hidden');
-        });
-
-        goToLogin.addEventListener('click', (e) => {
-            e.preventDefault();
-            signupPage.classList.add('hidden');
-            loginPage.classList.remove('hidden');
-        });
-
-        // --- Modal Functions ---
-        const modalBackdrop = document.getElementById('modal-backdrop');
-        const modalContent = document.getElementById('modal-content');
-        const modalTitle = document.getElementById('modal-title');
-        const modalMessage = document.getElementById('modal-message');
-
-        function showModal(title, message) {
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            modalBackdrop.classList.remove('hidden');
-            modalBackdrop.classList.add('flex');
-            // Animate in
-            setTimeout(() => {
-                modalBackdrop.style.opacity = '1';
-                modalContent.style.transform = 'scale(1)';
-            }, 10);
-        }
-
-        window.closeModal = function() {
-            // Animate out
-            modalBackdrop.style.opacity = '0';
-            modalContent.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                modalBackdrop.classList.add('hidden');
-                modalBackdrop.classList.remove('flex');
-            }, 300);
-        }
-
-        // --- Authentication Logic ---
-        const signupButton = document.getElementById('signup-button');
-        signupButton.addEventListener('click', async () => {
-            const name = document.getElementById('signup-name').value.trim();
-            const position = document.getElementById('signup-position').value.trim();
-            const division = document.getElementById('signup-division').value.trim();
-            const email = document.getElementById('signup-email').value.trim();
-            const password = document.getElementById('signup-password').value;
-
-            if (!name || !position || !division || !email || !password) {
-                showModal('Error Pendaftaran', 'Mohon isi semua kolom yang tersedia.');
-                return;
-            }
-
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
+            <!-- Absen Masuk -->
+            <div id="form-absen-masuk" class="mt-8 space-y-4">
+                <h2 class="text-xl font-semibold text-gray-700 border-b pb-2">2. Absensi Masuk</h2>
                 
-                // Store user profile in the correct private path
-                const userDocRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile`, 'info');
-                await setDoc(userDocRef, {
-                    name,
-                    position,
-                    division,
-                    email
-                });
+                <!-- Kamera -->
+                <div class="p-4 border rounded-lg bg-gray-50">
+                    <h3 class="font-semibold text-gray-600 mb-2">Ambil Foto Wajah</h3>
+                    <video id="video" class="w-full h-auto rounded-lg bg-black" autoplay playsinline></video>
+                    <canvas id="canvas" class="hidden w-full h-auto rounded-lg"></canvas>
+                    <button id="capture-btn" class="btn btn-primary mt-3">Ambil Foto</button>
+                </div>
 
-                showModal('Sukses', 'Akun berhasil dibuat. Anda akan dialihkan ke halaman absensi.');
-                // onAuthStateChanged will handle the page switch
-            } catch (error) {
-                console.error("Signup error:", error);
-                showModal('Error Pendaftaran', `Gagal membuat akun: ${error.message}`);
-            }
-        });
+                <button id="absen-masuk-btn" class="btn btn-secondary !mt-6 btn-disabled" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+                    Absen Masuk
+                </button>
 
-        const loginButton = document.getElementById('login-button');
-        loginButton.addEventListener('click', async () => {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged will handle UI changes
-            } catch (error) {
-                console.error("Login error:", error);
-                showModal('Error Login', 'Email atau password salah. Silakan coba lagi.');
-            }
-        });
+                <div id="status-masuk-container" class="hidden p-4 border-l-4 rounded-r-lg">
+                    <p id="status-masuk-text" class="font-semibold"></p>
+                    <div id="alasan-terlambat-container" class="hidden mt-3">
+                        <label for="alasan_terlambat" class="block text-sm font-medium text-gray-600 mb-1">Alasan Terlambat</label>
+                        <textarea id="alasan_terlambat" name="alasan_terlambat" rows="3" class="form-input" placeholder="Jelaskan alasan keterlambatan Anda"></textarea>
+                    </div>
+                </div>
+            </div>
 
-        const logoutButton = document.getElementById('logout-button');
-        logoutButton.addEventListener('click', async () => {
-            await stopCamera();
-            await signOut(auth);
-            // onAuthStateChanged will handle UI changes
-        });
+            <!-- Absen Pulang -->
+            <div id="form-absen-pulang" class="hidden mt-8 space-y-4">
+                <h2 class="text-xl font-semibold text-gray-700 border-b pb-2">3. Absensi Pulang</h2>
+                
+                <div>
+                    <label for="remark" class="block text-sm font-medium text-gray-600 mb-1">Remark Pekerjaan Hari Ini</label>
+                    <textarea id="remark" name="remark" rows="4" class="form-input" placeholder="Tuliskan ringkasan pekerjaan Anda hari ini"></textarea>
+                </div>
+                
+                <div>
+                    <label for="foto_pekerjaan" class="block text-sm font-medium text-gray-600 mb-1">Foto Pekerjaan Hari Ini (Opsional)</label>
+                    <input type="file" id="foto_pekerjaan" name="foto_pekerjaan" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                </div>
 
-        // --- Auth State Observer ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user && !user.isAnonymous) {
-                currentUser = user;
-                // FIXED: Show main page immediately for better perceived performance
-                showPage('main');
-                // Load user data in the background
-                await setupMainApp(user);
-            } else {
-                currentUser = null;
-                showPage('login');
-            }
-        });
+                <button id="absen-pulang-btn" class="btn btn-danger !mt-6">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                    Absen Pulang
+                </button>
 
-        // --- Main App Logic ---
-        async function setupMainApp(user) {
-            const userDocRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile`, 'info');
+                <div id="status-pulang-container" class="hidden p-4 border-l-4 rounded-r-lg">
+                    <p id="status-pulang-text" class="font-semibold"></p>
+                    <p id="total-worktime-text" class="mt-2 text-sm"></p>
+                    <p id="total-overtime-text" class="mt-1 text-sm font-semibold"></p>
+                </div>
+            </div>
+
+            <!-- Kirim Laporan -->
+            <div id="form-kirim" class="hidden mt-8">
+                 <button id="kirim-laporan-btn" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                    Kirim Laporan Absensi
+                 </button>
+            </div>
             
-            // More robust retry logic to handle Firestore write delays after signup.
-            let userDocSnap;
-            let attempts = 5;
-            while (attempts > 0) {
-                userDocSnap = await getDoc(userDocRef);
-                if (userDocSnap.exists()) {
-                    break; // Document found, exit the loop
-                }
-                attempts--;
-                if (attempts > 0) {
-                    // Wait for 1 second before the next attempt
-                    await new Promise(resolve => setTimeout(resolve, 1000)); 
-                }
-            }
+            <div id="loading-spinner" class="hidden text-center mt-4">
+                <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <p class="mt-2 text-gray-600">Mengirim data...</p>
+            </div>
+            <div id="success-message" class="hidden mt-6 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded-r-lg">
+                <p class="font-bold">Berhasil!</p>
+                <p>Laporan absensi Anda telah berhasil dikirim.</p>
+            </div>
+             <div id="error-message" class="hidden mt-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-r-lg">
+                <p class="font-bold">Gagal!</p>
+                <p>Terjadi kesalahan saat mengirim data. Pastikan URL Google Script valid dan coba lagi.</p>
+            </div>
+        </div>
+    </div>
 
-            if (userDocSnap && userDocSnap.exists()) {
-                const userData = userDocSnap.data();
-                document.getElementById('welcome-message').textContent = `Selamat datang, ${userData.name.split(' ')[0]}!`;
-                // FIXED: Update the content of the spans, removing the loading placeholder
-                document.getElementById('user-name').textContent = userData.name;
-                document.getElementById('user-position').textContent = userData.position;
-                document.getElementById('user-division').textContent = userData.division;
-            } else {
-                // If the document is still not found after retries, log the error and sign out.
-                console.error("User data not found in Firestore after multiple attempts!");
-                showModal('Error', 'Tidak dapat memuat data profil Anda. Silakan coba login kembali.');
-                await signOut(auth); // Log out user to prevent app errors
-                return; // Stop further execution
-            }
-            
-            resetAttendanceForm();
-            initCamera();
-            initMap();
-        }
-        
-        function resetAttendanceForm() {
-            document.getElementById('attendance-form').reset();
-            const photo = document.getElementById('captured-photo');
-            photo.setAttribute('src', '');
-            photo.classList.add('hidden');
-            document.getElementById('camera-stream').classList.remove('hidden');
-            document.getElementById('capture-button').classList.remove('hidden');
-            document.getElementById('retake-button').classList.add('hidden');
-            const submitButton = document.getElementById('submit-attendance');
-            submitButton.disabled = false;
-            document.getElementById('submit-text').textContent = 'Kirim Absensi';
-            document.getElementById('submit-spinner').classList.add('hidden');
-        }
+<script>
+// =================================================================================
+// PENTING: Ganti URL di bawah ini dengan URL Web App dari Google Apps Script Anda
+// =================================================================================
+const googleScriptURL = 'https://script.google.com/macros/s/AKfycbwgQzaadG3MyL9ZT58Mwy0sY2m7MA6PjDJ2xEPrBwN2M3FaZH5W2JSflt1qPMJlzSgl/exec'; // <-- PASTE URL ANDA DI SINI
 
-        // --- Camera Functions ---
-        const video = document.getElementById('camera-stream');
-        const canvas = document.getElementById('photo-canvas');
-        const capturedPhoto = document.getElementById('captured-photo');
-        const captureButton = document.getElementById('capture-button');
-        const retakeButton = document.getElementById('retake-button');
+// State aplikasi untuk menyimpan semua data
+const attendanceData = {
+    foto: null,
+    locationMasuk: null,
+    locationPulang: null,
+    dateMasuk: new Date().toLocaleDateString('id-ID'),
+    name: null,
+    email: null,
+    division: null,
+    position: null,
+    dutyAs: null,
+    workType: null,
+    statusAbsen: 'on working',
+    absenMasuk: null,
+    statusMasuk: null,
+    alasanTerlambat: '',
+    absenPulang: null,
+    statusPulang: null,
+    totalOvertime: '0 jam 0 menit',
+    totalWorktime: null,
+    remark: '',
+    fotoPekerjaan: null,
+};
 
-        async function initCamera() {
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                try {
-                    // Stop any existing stream before starting a new one
-                    if (cameraStream) {
-                       await stopCamera();
-                    }
-                    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-                    video.srcObject = cameraStream;
-                } catch (err) {
-                    console.error("Error accessing camera: ", err);
-                    showModal('Error Kamera', 'Tidak dapat mengakses kamera. Pastikan Anda memberikan izin.');
-                }
-            }
-        }
-        
-        async function stopCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
-            }
-        }
+// Elemen DOM
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const context = canvas.getContext('2d');
+const captureBtn = document.getElementById('capture-btn');
+const absenMasukBtn = document.getElementById('absen-masuk-btn');
+const absenPulangBtn = document.getElementById('absen-pulang-btn');
+const kirimLaporanBtn = document.getElementById('kirim-laporan-btn');
 
-        captureButton.addEventListener('click', () => {
+// Inisialisasi Kamera
+async function setupCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        video.srcObject = stream;
+        video.addEventListener('loadedmetadata', () => {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            const dataUrl = canvas.toDataURL('image/jpeg');
-            capturedPhoto.src = dataUrl;
-            
-            video.classList.add('hidden');
-            capturedPhoto.classList.remove('hidden');
-            captureButton.classList.add('hidden');
-            retakeButton.classList.remove('hidden');
         });
+    } catch (err) {
+        console.error("Error accessing camera: ", err);
+        alert("Tidak bisa mengakses kamera. Pastikan Anda memberikan izin.");
+    }
+}
 
-        retakeButton.addEventListener('click', () => {
-            video.classList.remove('hidden');
-            capturedPhoto.classList.add('hidden');
-            captureButton.classList.remove('hidden');
-            retakeButton.classList.add('hidden');
+// Mengambil Foto
+captureBtn.addEventListener('click', () => {
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    video.classList.add('hidden');
+    canvas.classList.remove('hidden');
+    attendanceData.foto = canvas.toDataURL('image/jpeg');
+    captureBtn.textContent = 'Foto Diambil!';
+    captureBtn.classList.remove('btn-primary');
+    captureBtn.classList.add('btn-disabled');
+    absenMasukBtn.disabled = false;
+    absenMasukBtn.classList.remove('btn-disabled');
+});
+
+// Mendapatkan Lokasi Geografis
+function getLocation() {
+    return new Promise((resolve, reject) => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                resolve(`${lat}, ${lon}`);
+            }, () => {
+                reject('Tidak bisa mendapatkan lokasi. Pastikan GPS aktif dan izin diberikan.');
+            });
+        } else {
+            reject('Geolocation tidak didukung oleh browser ini.');
+        }
+    });
+}
+
+// Fungsi untuk memformat durasi
+function formatDuration(ms) {
+    if (ms < 0) ms = 0;
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${hours} jam, ${minutes} menit, ${seconds} detik`;
+}
+
+
+// Event Listener untuk Tombol Absen Masuk
+absenMasukBtn.addEventListener('click', async () => {
+    // Validasi input data diri
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const division = document.getElementById('division').value;
+    const position = document.getElementById('position').value;
+    const dutyAs = document.getElementById('duty_as').value;
+    const workType = document.getElementById('work_type').value;
+
+    if (!name || !email || !division || !position || !dutyAs) {
+        alert('Harap lengkapi semua field di bagian Data Diri & Pekerjaan.');
+        return;
+    }
+    
+    // Simpan data diri
+    attendanceData.name = name;
+    attendanceData.email = email;
+    attendanceData.division = division;
+    attendanceData.position = position;
+    attendanceData.dutyAs = dutyAs;
+    attendanceData.workType = workType;
+
+    // Ambil lokasi dan waktu
+    try {
+        attendanceData.locationMasuk = await getLocation();
+    } catch (error) {
+        alert(error);
+        return;
+    }
+
+    const now = new Date();
+    attendanceData.absenMasuk = now;
+
+    // Cek status masuk
+    const jamMasuk = now.getHours();
+    const menitMasuk = now.getMinutes();
+    const statusMasukContainer = document.getElementById('status-masuk-container');
+    const statusMasukText = document.getElementById('status-masuk-text');
+    const alasanContainer = document.getElementById('alasan-terlambat-container');
+
+    if (jamMasuk < 9 || (jamMasuk === 9 && menitMasuk === 0)) {
+        attendanceData.statusMasuk = 'Terima Kasih Anda Telah Absen Tepat Waktu';
+        statusMasukText.textContent = attendanceData.statusMasuk;
+        statusMasukContainer.classList.add('border-green-500', 'bg-green-50');
+    } else {
+        attendanceData.statusMasuk = 'Anda Terlambat Absen';
+        statusMasukText.textContent = attendanceData.statusMasuk;
+        statusMasukContainer.classList.add('border-red-500', 'bg-red-50');
+        alasanContainer.classList.remove('hidden');
+    }
+
+    statusMasukContainer.classList.remove('hidden');
+    
+    // Update UI
+    absenMasukBtn.textContent = `Absen Masuk Tercatat: ${now.toLocaleTimeString('id-ID')}`;
+    absenMasukBtn.disabled = true;
+    absenMasukBtn.classList.add('btn-disabled');
+    document.getElementById('form-data-diri').querySelectorAll('input, select').forEach(el => el.disabled = true);
+    document.getElementById('form-absen-pulang').classList.remove('hidden');
+});
+
+
+// Event Listener untuk Tombol Absen Pulang
+absenPulangBtn.addEventListener('click', async () => {
+    // Ambil data dari form pulang
+    attendanceData.alasanTerlambat = document.getElementById('alasan_terlambat').value;
+    attendanceData.remark = document.getElementById('remark').value;
+    
+    // Ambil lokasi dan waktu pulang
+    try {
+        attendanceData.locationPulang = await getLocation();
+    } catch (error) {
+        alert(error);
+        return;
+    }
+
+    const now = new Date();
+    attendanceData.absenPulang = now;
+    attendanceData.statusAbsen = 'pulang';
+    
+    // Cek status pulang
+    const jamPulang = now.getHours();
+    const menitPulang = now.getMinutes();
+    const statusPulangContainer = document.getElementById('status-pulang-container');
+    const statusPulangText = document.getElementById('status-pulang-text');
+
+    if (jamPulang < 17) {
+        attendanceData.statusPulang = 'Anda Pulang Sebelum Waktunya';
+        statusPulangContainer.classList.add('border-yellow-500', 'bg-yellow-50');
+    } else if (jamPulang === 17 && menitPulang <= 30) {
+        attendanceData.statusPulang = 'Anda Pulang Tepat Waktu';
+        statusPulangContainer.classList.add('border-green-500', 'bg-green-50');
+    } else {
+        attendanceData.statusPulang = 'Waktu Kerja Melebihi';
+        statusPulangContainer.classList.add('border-blue-500', 'bg-blue-50');
+        
+        // Hitung overtime
+        const targetPulang = new Date(now);
+        targetPulang.setHours(17, 31, 0, 0);
+        if (now > targetPulang) {
+            const overtimeMs = now.getTime() - targetPulang.getTime();
+            attendanceData.totalOvertime = formatDuration(overtimeMs);
+        }
+    }
+    statusPulangText.textContent = `Status: ${attendanceData.statusPulang}`;
+
+    // Hitung total worktime
+    const worktimeMs = attendanceData.absenPulang.getTime() - attendanceData.absenMasuk.getTime();
+    attendanceData.totalWorktime = formatDuration(worktimeMs);
+    
+    // Tampilkan info
+    document.getElementById('total-worktime-text').textContent = `Total Waktu Kerja: ${attendanceData.totalWorktime}`;
+    document.getElementById('total-overtime-text').textContent = `Total Overtime: ${attendanceData.totalOvertime}`;
+    statusPulangContainer.classList.remove('hidden');
+
+    // Update UI
+    absenPulangBtn.textContent = `Absen Pulang Tercatat: ${now.toLocaleTimeString('id-ID')}`;
+    absenPulangBtn.disabled = true;
+    absenPulangBtn.classList.add('btn-disabled');
+    document.getElementById('form-absen-pulang').querySelectorAll('textarea, input').forEach(el => el.disabled = true);
+    document.getElementById('form-kirim').classList.remove('hidden');
+});
+
+// Fungsi untuk mengubah file foto pekerjaan ke Base64
+function getBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
+// Event Listener untuk Tombol Kirim Laporan
+kirimLaporanBtn.addEventListener('click', async () => {
+    if (!googleScriptURL) {
+        alert('URL Google Script belum diatur. Harap edit file HTML dan isi variabel googleScriptURL.');
+        return;
+    }
+    
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+    
+    loadingSpinner.classList.remove('hidden');
+    kirimLaporanBtn.disabled = true;
+    kirimLaporanBtn.classList.add('btn-disabled');
+    successMessage.classList.add('hidden');
+    errorMessage.classList.add('hidden');
+
+    // Handle foto pekerjaan
+    const fotoPekerjaanFile = document.getElementById('foto_pekerjaan').files[0];
+    if (fotoPekerjaanFile) {
+        try {
+            attendanceData.fotoPekerjaan = await getBase64(fotoPekerjaanFile);
+        } catch (error) {
+            console.error("Error converting work photo to Base64:", error);
+            alert("Gagal memproses foto pekerjaan.");
+            loadingSpinner.classList.add('hidden');
+            kirimLaporanBtn.disabled = false;
+            kirimLaporanBtn.classList.remove('btn-disabled');
+            return;
+        }
+    }
+
+    // Ubah format tanggal agar mudah dibaca di spreadsheet
+    const finalData = { ...attendanceData };
+    finalData.absenMasuk = finalData.absenMasuk.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'long' });
+    finalData.absenPulang = finalData.absenPulang.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'long' });
+
+    try {
+        const response = await fetch(googleScriptURL, {
+            method: 'POST',
+            mode: 'no-cors', // Penting untuk Google Script Web App
+            cache: 'no-cache',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({data: finalData})
         });
-
-        // --- Map & Location Functions ---
-        function initMap() {
-            const locationStatus = document.getElementById('location-status');
-            const mapContainer = document.getElementById('map-container');
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const { latitude, longitude } = position.coords;
-                        userLocation = { lat: latitude, lng: longitude };
-
-                        locationStatus.classList.add('hidden');
-                        mapContainer.classList.remove('hidden');
-
-                        if (map) {
-                            map.setView([latitude, longitude], 16);
-                        } else {
-                            map = L.map('map').setView([latitude, longitude], 16);
-                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                            }).addTo(map);
-                        }
-                        
-                        // Clear previous markers
-                        map.eachLayer((layer) => {
-                            if (layer instanceof L.Marker) {
-                                map.removeLayer(layer);
-                            }
-                        });
-
-                        L.marker([latitude, longitude]).addTo(map)
-                            .bindPopup('Lokasi Anda saat ini.')
-                            .openPopup();
-                    },
-                    (error) => {
-                        console.error("Geolocation error:", error);
-                        locationStatus.innerHTML = `<p class="text-red-500">Gagal mendapatkan lokasi. Pastikan GPS aktif dan izin lokasi diberikan.</p>`;
-                        showModal('Error Lokasi', 'Gagal mendapatkan lokasi. Pastikan GPS aktif dan Anda memberikan izin akses lokasi.');
-                    },
-                    { enableHighAccuracy: true }
-                );
-            } else {
-                locationStatus.innerHTML = `<p class="text-red-500">Geolocation tidak didukung oleh browser ini.</p>`;
-            }
-        }
         
-        // --- Form Submission ---
-        const attendanceForm = document.getElementById('attendance-form');
-        attendanceForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const submitButton = document.getElementById('submit-attendance');
-            const submitText = document.getElementById('submit-text');
-            const submitSpinner = document.getElementById('submit-spinner');
-            
-            // Validate form
-            if (!capturedPhoto.src || capturedPhoto.src.startsWith('http')) {
-                showModal('Validasi Gagal', 'Anda harus mengambil foto terlebih dahulu.');
-                return;
-            }
-            if (!userLocation) {
-                showModal('Validasi Gagal', 'Lokasi Anda belum terdeteksi. Mohon tunggu atau periksa pengaturan GPS.');
-                return;
-            }
+        // Karena mode 'no-cors', kita tidak bisa membaca response.
+        // Kita asumsikan berhasil jika tidak ada error network.
+        loadingSpinner.classList.add('hidden');
+        successMessage.classList.remove('hidden');
 
-            submitButton.disabled = true;
-            submitText.textContent = 'Mengirim...';
-            submitSpinner.classList.remove('hidden');
+    } catch (error) {
+        console.error('Error:', error);
+        loadingSpinner.classList.add('hidden');
+        errorMessage.classList.remove('hidden');
+        kirimLaporanBtn.disabled = false;
+        kirimLaporanBtn.classList.remove('btn-disabled');
+    }
+});
 
-            try {
-                const attendanceData = {
-                    userId: currentUser.uid,
-                    userName: document.getElementById('user-name').textContent,
-                    dutyAs: document.getElementById('duty-as').value,
-                    typeOfWork: document.getElementById('work-type').value,
-                    photoBase64: capturedPhoto.src,
-                    location: new GeoPoint(userLocation.lat, userLocation.lng),
-                    timestamp: serverTimestamp()
-                };
 
-                // Store in a user-specific private collection
-                const attendanceCollectionRef = collection(db, `artifacts/${appId}/users/${currentUser.uid}/attendance`);
-                await addDoc(attendanceCollectionRef, attendanceData);
-
-                showModal('Absensi Berhasil', 'Data absensi Anda telah berhasil direkam.');
-                resetAttendanceForm();
-                initMap(); // Re-fetch location for next potential clock-in
-            } catch (error) {
-                console.error("Error submitting attendance: ", error);
-                showModal('Error', `Terjadi kesalahan saat mengirim data: ${error.message}`);
-            } finally {
-                submitButton.disabled = false;
-                submitText.textContent = 'Kirim Absensi';
-                submitSpinner.classList.add('hidden');
-            }
-        });
-
-        // --- Utility Functions ---
-        function showPage(pageName) {
-            loadingScreen.classList.add('hidden');
-            loginPage.classList.add('hidden');
-            signupPage.classList.add('hidden');
-            mainAppPage.classList.add('hidden');
-
-            switch (pageName) {
-                case 'login':
-                    loginPage.classList.remove('hidden');
-                    break;
-                case 'signup':
-                    signupPage.classList.remove('hidden');
-                    break;
-                case 'main':
-                    mainAppPage.classList.remove('hidden');
-                    break;
-                default:
-                    loadingScreen.classList.remove('hidden');
-            }
-        }
-        
-        // --- Initial App Load ---
-        async function initialize() {
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    // Let onAuthStateChanged handle the initial state
-                    // It will show login page if no user is signed in.
-                }
-            } catch (error) {
-                console.error("Initial auth error:", error);
-                // If initial auth fails, just proceed. onAuthStateChanged will show the login page.
-                showPage('login');
-            }
-        }
-        
-        // The onAuthStateChanged listener will be triggered on initial load,
-        // so we can just call initialize() which attempts custom token sign-in if available.
-        initialize();
-
-    </script>
+// Jalankan setup kamera saat halaman dimuat
+window.addEventListener('load', setupCamera);
+</script>
 </body>
 </html>
