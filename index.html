@@ -19,6 +19,9 @@
             transform: scale(0.95);
             pointer-events: none;
             position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
         }
         .visible-form {
             opacity: 1;
@@ -32,6 +35,13 @@
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+        /* Custom Modal Styles */
+        .modal-backdrop {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
         }
     </style>
 </head>
@@ -164,16 +174,23 @@
 
             <!-- Hidden elements for photo capture -->
             <input type="file" id="photo-input" accept="image/*" class="hidden">
-            <video id="video" playsinline class="hidden"></video>
-            <canvas id="canvas" class="hidden"></canvas>
         </main>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div id="alert-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div id="alert-backdrop" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop"></div>
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center z-10 modal-content transform scale-95">
+            <p id="alert-message" class="text-gray-700"></p>
+            <button id="alert-close-btn" class="mt-6 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">OK</button>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- CONFIGURATION ---
             // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
-            const SCRIPT_URL = ""; 
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzA__hiWoi8-mbpY-LBMqVDEI9yFfr4ZOS21zLGHSIEfDWOXoIvvqHMr4_p9mTp2PJL/exec"; 
 
             // --- DOM ELEMENTS ---
             const checkinForm = document.getElementById('checkin-form');
@@ -210,6 +227,12 @@
             // Checkout Display
             const checkinTimeDisplay = document.getElementById('checkin-time-display');
             const checkinStatusDisplay = document.getElementById('checkin-status-display');
+            
+            // Modal Elements
+            const alertModal = document.getElementById('alert-modal');
+            const alertBackdrop = document.getElementById('alert-backdrop');
+            const alertMessage = document.getElementById('alert-message');
+            const alertCloseBtn = document.getElementById('alert-close-btn');
 
             // --- STATE MANAGEMENT ---
             let checkinData = null;
@@ -217,14 +240,12 @@
             // --- EVENT LISTENERS ---
             takeCheckinPhotoBtn.addEventListener('click', () => {
                 currentPhotoType = 'checkin';
-                // Add capture attribute to force camera usage for check-in
                 photoInput.setAttribute('capture', 'user');
                 photoInput.click();
             });
 
             takeCheckoutPhotoBtn.addEventListener('click', () => {
                 currentPhotoType = 'checkout';
-                // Remove capture attribute to allow gallery selection for work photo
                 photoInput.removeAttribute('capture');
                 photoInput.click();
             });
@@ -232,8 +253,29 @@
             photoInput.addEventListener('change', handlePhotoTaken);
             checkinBtn.addEventListener('click', handleCheckin);
             checkoutBtn.addEventListener('click', handleCheckout);
+            
+            alertCloseBtn.addEventListener('click', hideAlert);
+            alertBackdrop.addEventListener('click', hideAlert);
+
 
             // --- FUNCTIONS ---
+            
+            function showAlert(message) {
+                alertMessage.textContent = message;
+                alertModal.classList.remove('hidden');
+                setTimeout(() => {
+                    alertBackdrop.classList.remove('opacity-0');
+                    alertModal.querySelector('.modal-content').classList.remove('scale-95');
+                }, 10);
+            }
+
+            function hideAlert() {
+                alertBackdrop.classList.add('opacity-0');
+                alertModal.querySelector('.modal-content').classList.add('scale-95');
+                setTimeout(() => {
+                    alertModal.classList.add('hidden');
+                }, 300);
+            }
 
             function handlePhotoTaken(event) {
                 const file = event.target.files[0];
@@ -259,8 +301,6 @@
                     }
                 };
                 reader.readAsDataURL(file);
-                
-                // Reset the input value to allow taking the same picture again if needed
                 event.target.value = '';
             }
 
@@ -275,7 +315,8 @@
                             },
                             () => {
                                 reject('Tidak dapat mengambil lokasi. Pastikan izin lokasi telah diberikan.');
-                            }
+                            },
+                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                         );
                     }
                 });
@@ -292,31 +333,41 @@
                 loaderOverlay.classList.remove('flex');
             }
 
-            function showAlert(message, isError = false) {
-                alert(message); // Simple alert, can be replaced with a custom modal
-            }
-
             function validateCheckinForm() {
-                if (!nameInput.value || !emailInput.value || !divisionInput.value || !positionInput.value || !dutyInput.value || !workTypeInput.value) {
-                    showAlert('Semua kolom data diri harus diisi.', true);
-                    return false;
+                const fields = [
+                    { value: nameInput.value, name: "Nama Lengkap" },
+                    { value: emailInput.value, name: "Email" },
+                    { value: divisionInput.value, name: "Divisi" },
+                    { value: positionInput.value, name: "Jabatan" },
+                    { value: dutyInput.value, name: "Duty As" },
+                    { value: workTypeInput.value, name: "Tipe Pekerjaan" }
+                ];
+
+                for (const field of fields) {
+                    if (!field.value) {
+                        showAlert(`Kolom "${field.name}" harus diisi.`);
+                        return false;
+                    }
                 }
+                
                 if (!/^\S+@\S+\.\S+$/.test(emailInput.value)) {
-                    showAlert('Format email tidak valid.', true);
+                    showAlert('Format email tidak valid.');
                     return false;
                 }
                 if (!checkinPhotoData) {
-                    showAlert('Foto masuk wajib diambil.', true);
+                    showAlert('Foto masuk wajib diambil.');
                     return false;
                 }
                 return true;
             }
 
             async function handleCheckin() {
-                if (!validateCheckinForm()) return;
-                
                 if (SCRIPT_URL === "") {
-                    showAlert("Harap konfigurasikan URL Google Apps Script terlebih dahulu di dalam kode.", true);
+                    showAlert("Aplikasi belum terkonfigurasi. Harap hubungi administrator.");
+                    return;
+                }
+                
+                if (!validateCheckinForm()) {
                     return;
                 }
 
@@ -326,7 +377,7 @@
                     location = await getGeolocation();
                 } catch (error) {
                     hideLoader();
-                    showAlert(error, true);
+                    showAlert(error);
                     return;
                 }
 
@@ -346,7 +397,7 @@
                 if (isLate && !lateReasonInput.value) {
                     hideLoader();
                     lateReasonContainer.classList.remove('hidden');
-                    showAlert('Anda terlambat, mohon isi alasan keterlambatan.', true);
+                    showAlert('Anda terlambat, mohon isi alasan keterlambatan.');
                     return;
                 }
 
@@ -356,7 +407,7 @@
                     action: 'checkin',
                     checkinPhoto: checkinPhotoData.split(',')[1],
                     checkinLocation: location,
-                    date: now.toLocaleDateString('id-ID'),
+                    date: now.toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' }),
                     name: nameInput.value,
                     email: emailInput.value,
                     division: divisionInput.value,
@@ -369,28 +420,26 @@
                     lateReason: lateReasonInput.value || ''
                 };
                 
-                checkinData = data; // Store for checkout
+                checkinData = data;
 
                 try {
                     const response = await fetch(SCRIPT_URL, {
                         method: 'POST',
-                        mode: 'cors',
-                        cache: 'no-cache',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data),
-                        redirect: 'follow'
+                        body: JSON.stringify(data)
                     });
-
-                    const result = await response.json();
-
-                    if (result.status === 'success') {
-                        localStorage.setItem('ecrewCheckinData', JSON.stringify(checkinData));
-                        switchToCheckoutView();
-                    } else {
-                        throw new Error(result.message || 'Terjadi kesalahan saat mengirim data.');
+                    
+                    // Since Apps Script redirects, we can't easily read the JSON response.
+                    // We will assume success if there's no network error.
+                    if (!response.ok && response.type !== 'opaque') {
+                         throw new Error('Gagal mengirim data. Status: ' + response.statusText);
                     }
+
+                    localStorage.setItem('ecrewCheckinData', JSON.stringify(checkinData));
+                    switchToCheckoutView();
+
                 } catch (error) {
-                    showAlert(`Error: ${error.message}`, true);
+                    console.error("Fetch Error:", error);
+                    showAlert(`Terjadi kesalahan saat mengirim data. Silakan coba lagi. Error: ${error.message}`);
                 } finally {
                     hideLoader();
                 }
@@ -404,7 +453,7 @@
                 checkoutForm.classList.add('visible-form');
 
                 const checkinDate = new Date(checkinData.checkinDateTime);
-                checkinTimeDisplay.textContent = `Masuk pada: ${checkinDate.toLocaleTimeString('id-ID')}`;
+                checkinTimeDisplay.textContent = `Masuk pada: ${checkinDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
                 checkinStatusDisplay.textContent = checkinData.checkinStatus;
                 checkinStatusDisplay.className = checkinData.checkinStatus.includes('Terlambat') ? 'font-medium mt-1 text-red-500' : 'font-medium mt-1 text-green-500';
             }
@@ -412,7 +461,7 @@
             async function handleCheckout() {
                 const workRemark = document.getElementById('work-remark').value;
                 if (!workRemark || !checkoutPhotoData) {
-                    showAlert('Remark pekerjaan dan foto pekerjaan wajib diisi sebelum absen pulang.', true);
+                    showAlert('Remark pekerjaan dan foto pekerjaan wajib diisi sebelum absen pulang.');
                     return;
                 }
 
@@ -422,7 +471,7 @@
                     location = await getGeolocation();
                 } catch (error) {
                     hideLoader();
-                    showAlert(error, true);
+                    showAlert(error);
                     return;
                 }
 
@@ -476,39 +525,33 @@
                 try {
                     const response = await fetch(SCRIPT_URL, {
                         method: 'POST',
-                        mode: 'cors',
-                        cache: 'no-cache',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data),
-                        redirect: 'follow'
+                        body: JSON.stringify(data)
                     });
-
-                    const result = await response.json();
-
-                    if (result.status === 'success') {
-                        localStorage.removeItem('ecrewCheckinData');
-                        showAlert('Terima kasih, Anda telah berhasil absen pulang.');
-                        setTimeout(() => window.location.reload(), 2000);
-                    } else {
-                        throw new Error(result.message || 'Terjadi kesalahan saat update data.');
+                    
+                    if (!response.ok && response.type !== 'opaque') {
+                         throw new Error('Gagal mengirim data. Status: ' + response.statusText);
                     }
+
+                    localStorage.removeItem('ecrewCheckinData');
+                    showAlert('Terima kasih, Anda telah berhasil absen pulang.');
+                    setTimeout(() => window.location.reload(), 2000);
+
                 } catch (error) {
-                    showAlert(`Error: ${error.message}`, true);
+                    console.error("Fetch Error:", error);
+                    showAlert(`Terjadi kesalahan saat update data. Silakan coba lagi. Error: ${error.message}`);
                 } finally {
                     hideLoader();
                 }
             }
             
-            // Function to check for existing check-in data on page load
             function checkForExistingSession() {
                 const savedData = localStorage.getItem('ecrewCheckinData');
                 if (savedData) {
                     checkinData = JSON.parse(savedData);
-                    // Check if the saved data is from today
-                    const savedDate = new Date(checkinData.checkinDateTime).toLocaleDateString('id-ID');
-                    const todayDate = new Date().toLocaleDateString('id-ID');
-                    if (savedDate === todayDate) {
-                        // Populate form with saved data to maintain state
+                    const savedDateStr = new Date(checkinData.checkinDateTime).toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                    const todayDateStr = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                    
+                    if (savedDateStr === todayDateStr) {
                         nameInput.value = checkinData.name;
                         emailInput.value = checkinData.email;
                         divisionInput.value = checkinData.division;
@@ -516,12 +559,9 @@
                         dutyInput.value = checkinData.dutyAs;
                         workTypeInput.value = checkinData.workType;
                         
-                        // Disable inputs
                         [nameInput, emailInput, divisionInput, positionInput, dutyInput, workTypeInput].forEach(input => input.disabled = true);
-
                         switchToCheckoutView();
                     } else {
-                        // Clear old data from yesterday
                         localStorage.removeItem('ecrewCheckinData');
                     }
                 }
