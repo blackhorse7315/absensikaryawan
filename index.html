@@ -177,8 +177,8 @@
             "sskkyy020@gmail.com": { name: "Sukyono", division: "Operation", position: "Flight Support", role: "USER" }
         };
         let mockNewsData = JSON.parse(localStorage.getItem('ecrew_news')) || [
-            { title: 'Jadwal Libur Nasional Terbaru', description: 'Pemerintah telah menetapkan jadwal libur nasional...', image: 'https://placehold.co/600x400/3498db/ffffff?text=Info+Libur', date: '24 Agu 2025' },
-            { title: 'Program Karyawan Terbaik Bulan Ini', description: 'Selamat kepada Budi Santoso dari Divisi Marketing...', image: 'https://placehold.co/600x400/2ecc71/ffffff?text=Selamat!', date: '22 Agu 2025' }
+            { id: 1, title: 'Jadwal Libur Nasional Terbaru', description: 'Pemerintah telah menetapkan jadwal libur nasional...', image: 'https://placehold.co/600x400/3498db/ffffff?text=Info+Libur', date: '24 Agu 2025' },
+            { id: 2, title: 'Program Karyawan Terbaik Bulan Ini', description: 'Selamat kepada Budi Santoso dari Divisi Marketing...', image: 'https://placehold.co/600x400/2ecc71/ffffff?text=Selamat!', date: '22 Agu 2025' }
         ];
         const workTypes = ["Office Hour", "Standby Flight", "Standby on Call", "Pos One Gate", "Day Off", "Day Off 7 Consecutive Days for Pilot", "Flight Duty VIP", "Ferry Flight", "PPC Simulator", "PPC Aircraft", "Test Flight", "Ground Run", "Recurrent Training", "Recency Flight", "Meeting Out of Office", "Medical Examination", "Annual Leave", "Sick", "Technical Representative", "Aviation Security", "Over Time"];
         const dutyAsOptions = ["Director", "Safety, Quality & Security Manager", "Operation Manager", "Maintenance Manager", "Chief Pilot Fixed Wing", "Chief Pilot Rotary Wing", "Chief Flight Support", "Chief Inspector", "Chief Engineer", "Chief Finance, Accounting & Staf", "Chief Engineering", "Pilot in Command", "Second in Command", "Ground Instructor", "Flight Instructor", "Company Check Pilot", "Engineer", "Line Pilot", "Cabin Service", "Student", "Flight Support", "Ground Support", "Technical Representative", "Engineering", "Staff", "Logistic", "Aviation Security", "Driver"];
@@ -200,7 +200,7 @@
                 if (password === firstName) {
                     loggedInUser = { email, ...userData };
                     loadUserHistory();
-                    const todayDateString = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+                    const todayDateString = new Date().toLocaleDateString('en-CA');
                     todayAttendance = userHistory.find(rec => rec.date === todayDateString) || null;
                     setupDashboard();
                     showPage('dashboard-page');
@@ -386,24 +386,33 @@
         async function handleAbsenMasuk() {
             const data = await capturePhotoAndLocation('Absen Masuk');
             if (!data) return;
-            const clockInTime = new Date();
-            const isLate = clockInTime.getHours() >= 9 && clockInTime.getMinutes() > 0;
-            let lateReason = null;
-            if (isLate) {
-                lateReason = await promptForLateReason();
-                if (lateReason === null) return;
-            }
-            todayAttendance = { 
-                ...todayAttendance,
-                date: clockInTime.toLocaleDateString('en-CA'),
-                clockInTime: clockInTime.toISOString(), 
-                fotoMasuk: data.photo, 
-                locationMasuk: data.locationString,
-                locationCoordsMasuk: data.locationCoords,
-                statusMasuk: isLate ? 'Anda Terlambat Absen' : 'Terima Kasih, Anda Telah Absen Tepat Waktu', 
-                alasanTerlambat: lateReason 
-            };
-            renderAttendanceCard();
+            
+            hideModal();
+
+            setTimeout(async () => {
+                const clockInTime = new Date();
+                const isLate = clockInTime.getHours() >= 9 && clockInTime.getMinutes() > 0;
+                let lateReason = null;
+                if (isLate) {
+                    lateReason = await promptForLateReason();
+                    if (lateReason === null) {
+                        todayAttendance = null;
+                        renderAttendanceCard();
+                        return;
+                    }
+                }
+                todayAttendance = { 
+                    ...todayAttendance,
+                    date: clockInTime.toLocaleDateString('en-CA'),
+                    clockInTime: clockInTime.toISOString(), 
+                    fotoMasuk: data.photo, 
+                    locationMasuk: data.locationString,
+                    locationCoordsMasuk: data.locationCoords,
+                    statusMasuk: isLate ? 'Anda Terlambat Absen' : 'Terima Kasih, Anda Telah Absen Tepat Waktu', 
+                    alasanTerlambat: lateReason 
+                };
+                renderAttendanceCard();
+            }, 300);
         }
 
         async function handleAbsenPulang() {
@@ -470,7 +479,7 @@
         function formatDuration(ms) { if (ms < 0) ms = 0; const s = Math.floor(ms / 1000); return `${String(Math.floor(s / 3600)).padStart(2, '0')}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; }
         function promptForLateReason() {
             return new Promise(resolve => {
-                showModal('Alasan Terlambat', `<p class="text-gray-600 mb-4">Anda tercatat terlambat. Mohon berikan alasan keterlambatan Anda.</p><textarea id="late-reason-input" rows="3" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-cyan-500 focus:border-cyan-500"></textarea><div class="mt-4 flex justify-end space-x-2"><button id="cancel-late-reason" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Batal</button><button id="submit-late-reason" class="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700">Kirim</button></div>`);
+                showModal('Alasan Terlambat', `<p class="text-gray-600 mb-4">Anda tercatat terlambat. Mohon berikan alasan keterlambatan Anda.</p><textarea id="late-reason-input" rows="3" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-cyan-500 focus:border-cyan-500"></textarea><div class="mt-4 flex justify-end space-x-2"><button id="cancel-late-reason" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Batal</button><button id="submit-late-reason" class="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700">Kirim</button></div>`, () => resolve(null));
                 document.getElementById('submit-late-reason').onclick = () => { const reason = document.getElementById('late-reason-input').value; if (reason.trim() === '') { alert('Alasan tidak boleh kosong.'); return; } hideModal(); resolve(reason); };
                 document.getElementById('cancel-late-reason').onclick = () => { hideModal(); resolve(null); };
             });
@@ -506,7 +515,7 @@
                     <div id="location-status" class="text-sm text-gray-500 mb-4"><i data-lucide="map-pin" class="inline-block w-4 h-4 mr-1"></i> Mengambil data lokasi...</div>
                     <button id="capture-btn" class="w-full bg-cyan-500 text-white py-3 rounded-lg font-semibold hover:bg-cyan-600 transition-colors disabled:bg-gray-400" disabled>Ambil Foto & Lanjutkan</button>
                 </div>`;
-                showModal(title, content);
+                showModal(title, content, () => resolve(null));
                 lucide.createIcons();
                 
                 const videoEl = document.getElementById('camera-feed');
@@ -557,7 +566,6 @@
                     context.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
                     const photoDataUrl = canvasEl.toDataURL('image/jpeg');
                     stopCamera();
-                    hideModal();
                     resolve({ photo: photoDataUrl, ...locationData });
                 });
             });
@@ -577,7 +585,18 @@
             }, 100);
         }
         function showPage(pageId) { document.querySelectorAll('.page').forEach(p => p.classList.add('page-hidden')); setTimeout(() => { document.querySelectorAll('.page').forEach(p => { if(p.id !== pageId) p.style.display = 'none'; }); const tp = document.getElementById(pageId); tp.style.display = 'block'; setTimeout(() => tp.classList.remove('page-hidden'), 50); }, 500); }
-        function showModal(title, content) { const mc = document.getElementById('modal-container'); mc.innerHTML = `<div class="bg-white rounded-2xl shadow-xl w-full max-w-md transform transition-all opacity-0 translate-y-4" id="modal-content"><div class="flex justify-between items-center p-4 border-b"><h3 class="text-lg font-bold text-gray-800">${title}</h3><button id="close-modal-btn" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="p-6">${content}</div></div>`; lucide.createIcons(); mc.classList.remove('hidden'); const m_content = document.getElementById('modal-content'); setTimeout(() => m_content.classList.remove('opacity-0', 'translate-y-4'), 10); document.getElementById('close-modal-btn').addEventListener('click', () => { hideModal(); }); }
+        function showModal(title, content, onClose = null) { 
+            const mc = document.getElementById('modal-container'); 
+            mc.innerHTML = `<div class="bg-white rounded-2xl shadow-xl w-full max-w-md transform transition-all opacity-0 translate-y-4" id="modal-content"><div class="flex justify-between items-center p-4 border-b"><h3 class="text-lg font-bold text-gray-800">${title}</h3><button id="close-modal-btn" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="p-6">${content}</div></div>`; 
+            lucide.createIcons(); 
+            mc.classList.remove('hidden'); 
+            const m_content = document.getElementById('modal-content'); 
+            setTimeout(() => m_content.classList.remove('opacity-0', 'translate-y-4'), 10); 
+            document.getElementById('close-modal-btn').addEventListener('click', () => { 
+                hideModal(); 
+                if(onClose) onClose();
+            }); 
+        }
         function hideModal() { stopCamera(); const mc = document.getElementById('modal-content'); if (mc) { mc.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => { document.getElementById('modal-container').classList.add('hidden'); document.getElementById('modal-container').innerHTML = ''; }, 300); } }
         function stopCamera() { if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; } }
         
@@ -656,7 +675,9 @@
 
             document.getElementById('news-form').addEventListener('submit', (e) => {
                 e.preventDefault();
+                const newId = isEditing ? newsItem.id : Date.now();
                 const updatedNews = {
+                    id: newId,
                     title: document.getElementById('news-title').value,
                     description: document.getElementById('news-description').value,
                     image: imagePreview.src,
