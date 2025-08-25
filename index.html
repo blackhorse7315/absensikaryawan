@@ -153,25 +153,16 @@
                         <p class="text-sm font-bold mt-1" id="check-in-status-message"></p>
                     </div>
 
-                    <div id="check-in-map-container" class="hidden">
-                        <label class="block text-sm font-medium text-slate-300 mb-2">Lokasi Masuk Anda:</label>
-                        <div id="check-in-map"></div>
-                    </div>
-
                     <div id="work-remark-section" class="space-y-4">
                         <div>
                             <label for="work-remark" class="block mb-2 text-sm font-medium text-slate-300">Remark Pekerjaan Hari Ini</label>
                             <textarea id="work-remark" rows="4" class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Tuliskan ringkasan pekerjaan Anda hari ini..."></textarea>
                         </div>
-                        <div>
-                            <label for="work-photo" class="block mb-2 text-sm font-medium text-slate-300">Foto Pekerjaan Hari Ini</label>
-                            <input type="file" id="work-photo" accept="image/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-900/50 file:text-blue-200 hover:file:bg-blue-800/50">
-                        </div>
                     </div>
 
                     <button id="check-out-btn" class="w-full btn-secondary font-bold py-4 px-4 rounded-lg text-xl shadow-lg flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                        Absen Pulang
+                        Ambil Foto & Absen Pulang
                     </button>
                 </div>
 
@@ -277,8 +268,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- URL SUDAH DIMASUKKAN ---
-            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbycydAIlGH-HmLFKmmmBuSqUi5qZilY_WR9sgFfeWs_1FBrcp61lLR3K4AuVUUQa46kCg/exec';
+            // --- GANTI URL DI BAWAH INI DENGAN URL WEB APP BARU ANDA ---
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIJPlKicd9bpu5BmhEVzfolRHZknQbKoX9QkKH61tdgsoNH6mierBjPhOQXlSiySEfLA/exec';
 
             // --- DOM ELEMENTS ---
             const loginScreen = document.getElementById('login-screen');
@@ -316,7 +307,6 @@
             const modal = document.getElementById('modal');
             const modalMessage = document.getElementById('modal-message');
             const modalCloseBtn = document.getElementById('modal-close-btn');
-            const checkInMapContainer = document.getElementById('check-in-map-container');
             
             // Camera Modal Elements
             const cameraModal = document.getElementById('camera-modal');
@@ -350,6 +340,7 @@
                 loggedInUser: null,
                 currentLocation: null,
                 attendanceData: null,
+                captureMode: 'checkin', // 'checkin' or 'checkout'
             };
             let mapInstances = {};
             let currentStream;
@@ -440,7 +431,7 @@
                     console.log("Data sent to spreadsheet.");
                 } catch (error) {
                     console.error("Error sending data to spreadsheet:", error);
-                    showModal("Gagal mengirim data ke spreadsheet. Data tersimpan lokal.");
+                    showModal("Gagal mengirim data ke spreadsheet.");
                 }
             }
             
@@ -591,10 +582,9 @@
             }
             
             function populateSummary(data) {
-                // For summary, we might need to retrieve photos from a temporary storage if needed
-                // For now, we'll use placeholders as photos are not in the history object
-                summaryElements.photoMasuk.src = data.fotoMasuk || "https://placehold.co/200x200/334155/e2e8f0?text=No+Img";
-                summaryElements.photoPekerjaan.src = data.fotoPekerjaan || "https://placehold.co/200x200/334155/e2e8f0?text=No+Img";
+                // This function now relies on data fetched from spreadsheet which doesn't include photos
+                summaryElements.photoMasuk.src = "https://placehold.co/200x200/334155/e2e8f0?text=No+Img";
+                summaryElements.photoPekerjaan.src = "https://placehold.co/200x200/334155/e2e8f0?text=No+Img";
                 summaryElements.name.textContent = data.Nama;
                 summaryElements.dutyWork.textContent = `${data['Duty As']} / ${data['Tipe Pekerjaan']}`;
                 summaryElements.absenMasuk.textContent = new Date(data['Absen Masuk']).toLocaleString('id-ID');
@@ -615,9 +605,6 @@
                     summaryElements.overtimeItem.classList.add('hidden');
                 }
                 summaryElements.remark.textContent = data['Remark Pekerjaan'];
-                
-                // Location text is stored, not coords object. This part needs adjustment if we want to show map from history.
-                // For now, we'll skip the map for historical views.
             }
 
             function renderUI() {
@@ -642,8 +629,6 @@
                     } else if (hasCheckedIn && !hasCheckedOut) {
                          checkInStatusMessage.textContent = appState.attendanceData['Status Masuk'];
                          checkInTimeStatus.textContent = `Absen Masuk: ${new Date(appState.attendanceData['Absen Masuk']).toLocaleString('id-ID')}`;
-                         // Map requires coords, which we don't fetch back. We'll skip showing map here.
-                         checkInMapContainer.classList.add('hidden');
                     } else if (hasCheckedOut) {
                         populateSummary(appState.attendanceData);
                     }
@@ -663,11 +648,14 @@
                     appState.loggedInUser = user;
                     showModal("Mengecek status terakhir...");
                     const result = await fetchFromSpreadsheet('getTodaysStatus', user.email);
+                    
                     if (result && result.status === 'found') {
-                        appState.attendanceData = result.data;
+                        const data = result.data;
+                        appState.attendanceData = data;
                     } else {
                         appState.attendanceData = null;
                     }
+                    
                     modal.classList.add('hidden');
                     updateDateTime();
                     renderUI();
@@ -693,7 +681,18 @@
                     showModal('Anda terlambat. Harap isi alasan keterlambatan sebelum absen.');
                     return;
                 }
-
+                appState.captureMode = 'checkin';
+                cameraModal.classList.remove('hidden');
+                startCamera();
+            });
+            
+            checkOutBtn.addEventListener('click', () => {
+                const workRemark = document.getElementById('work-remark').value;
+                if (!workRemark.trim()) {
+                    showModal('Harap isi Remark Pekerjaan Hari Ini sebelum absen pulang.');
+                    return;
+                }
+                appState.captureMode = 'checkout';
                 cameraModal.classList.remove('hidden');
                 startCamera();
             });
@@ -717,24 +716,26 @@
                         statusMasuk = 'Terima Kasih Anda Telah Absen Tepat Waktu';
                     }
                     
-                    appState.attendanceData = {
+                    const dataForSheet = {
                         ...appState.loggedInUser,
                         attendanceId: `ATT-${Date.now()}`,
-                        dateMasuk: now.toLocaleDateString('id-ID'),
-                        absenMasuk: now,
+                        absenMasuk: now.toISOString(),
                         locationMasuk: location,
                         statusMasuk: statusMasuk,
                         alasanTerlambat: alasanTerlambat,
                         dutyAs: dutyAsSelect.value,
                         typeOfWork: workTypeSelect.value,
-                        statusAbsen: 'On Working',
-                        absenPulang: null,
+                        statusAbsen: 'On Working'
                     };
                     
-                    await sendDataToSpreadsheet(appState.attendanceData);
-                    // Manually convert for UI display
-                    appState.attendanceData['Status Masuk'] = statusMasuk;
-                    appState.attendanceData['Absen Masuk'] = now;
+                    await sendDataToSpreadsheet(dataForSheet);
+                    
+                    // Update local state for immediate UI feedback
+                    appState.attendanceData = {
+                        'Nama': dataForSheet.name,
+                        'Absen Masuk': now,
+                        'Status Masuk': statusMasuk,
+                    };
 
                     renderUI();
                     showModal("Absen masuk berhasil!");
@@ -775,22 +776,11 @@
                         const overtimeMs = now - overtimeThreshold;
                         totalOvertime = formatDuration(overtimeMs);
                     }
-
-                    // Update local state for immediate UI feedback
-                    appState.attendanceData['absenPulang'] = now;
-                    appState.attendanceData['locationPulang'] = location;
-                    appState.attendanceData['statusPulang'] = statusPulang;
-                    appState.attendanceData['totalWorktime'] = totalWorktime;
-                    appState.attendanceData['totalOvertime'] = totalOvertime;
-                    appState.attendanceData['remarkPekerjaan'] = document.getElementById('work-remark').value;
-                    appState.attendanceData['fotoPekerjaan'] = photoDataUrl;
-                    appState.attendanceData['statusAbsen'] = 'Pulang';
-
-                    // Prepare data for spreadsheet (using original keys)
+                    
                     const dataForSheet = {
                         email: appState.loggedInUser.email,
-                        absenMasuk: appState.attendanceData['Absen Masuk'],
-                        absenPulang: now,
+                        absenMasuk: checkInTime.toISOString(),
+                        absenPulang: now.toISOString(),
                         locationPulang: location,
                         statusPulang: statusPulang,
                         totalWorktime: totalWorktime,
@@ -800,6 +790,17 @@
                     };
                     
                     await sendDataToSpreadsheet(dataForSheet);
+
+                    // Update local state for summary view
+                    appState.attendanceData['Absen Pulang'] = now;
+                    appState.attendanceData['Status Pulang'] = statusPulang;
+                    appState.attendanceData['Total Jam Kerja'] = totalWorktime;
+                    appState.attendanceData['Total Overtime'] = totalOvertime;
+                    appState.attendanceData['Remark Pekerjaan'] = dataForSheet.remarkPekerjaan;
+                    // We don't have photo URLs, so we'll just use placeholders
+                    appState.attendanceData.fotoMasuk = "https://placehold.co/200x200/334155/e2e8f0?text=Masuk";
+                    appState.attendanceData.fotoPekerjaan = photoDataUrl;
+
                     renderUI();
                     showModal("Absen pulang berhasil!");
 
@@ -881,11 +882,9 @@
                 const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
                 stopCamera();
                 
-                if (appState.attendanceData && !appState.attendanceData['Absen Pulang']) {
-                    // This is a check-out photo
+                if (appState.captureMode === 'checkout') {
                     await processCheckOut(photoDataUrl);
                 } else {
-                    // This is a check-in photo
                     await processCheckIn(photoDataUrl);
                 }
             });
