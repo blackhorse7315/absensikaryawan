@@ -30,12 +30,12 @@
             transform: scale(1.05);
         }
         .btn-secondary {
-            background-color: #D1D5DB; /* Gray */
-            color: #1F2937;
+            background-color: #4B5563; /* Gray-600 */
+            color: #E5E7EB; /* Gray-200 */
             transition: background-color 0.3s, transform 0.2s;
         }
         .btn-secondary:hover {
-            background-color: #9CA3AF;
+            background-color: #6B7280; /* Gray-500 */
             transform: scale(1.05);
         }
         .hidden {
@@ -105,6 +105,11 @@
                         <p class="text-slate-300" id="user-position"></p>
                         <p class="text-slate-400 text-sm" id="user-division"></p>
                     </div>
+                    
+                    <button id="history-btn" class="w-full btn-secondary font-bold py-3 px-4 rounded-lg text-md shadow-lg flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                        Lihat Riwayat Absen
+                    </button>
 
                     <div id="live-location-container">
                         <label class="block text-sm font-medium text-slate-300 mb-2">Lokasi Anda Saat Ini:</label>
@@ -236,6 +241,16 @@
 
                     <button id="reset-btn" class="w-full btn-primary font-bold py-3 px-4 rounded-lg mt-4">Selesai</button>
                 </div>
+
+                <!-- History Section -->
+                <div id="history-section" class="hidden space-y-4">
+                    <h2 class="text-2xl font-bold text-center">Riwayat Absensi</h2>
+                    <div id="history-container" class="space-y-3 max-h-96 overflow-y-auto">
+                        <!-- History cards will be injected here -->
+                    </div>
+                    <button id="back-to-main-btn" class="w-full btn-secondary font-bold py-3 px-4 rounded-lg">Kembali</button>
+                </div>
+
             </div>
         </div>
     </div>
@@ -276,9 +291,14 @@
             const checkInSection = document.getElementById('check-in-section');
             const onWorkingSection = document.getElementById('on-working-section');
             const summarySection = document.getElementById('summary-section');
+            const historySection = document.getElementById('history-section');
+
             const checkInBtn = document.getElementById('check-in-btn');
             const checkOutBtn = document.getElementById('check-out-btn');
             const resetBtn = document.getElementById('reset-btn');
+            const historyBtn = document.getElementById('history-btn');
+            const backToMainBtn = document.getElementById('back-to-main-btn');
+
             const checkInStatusMessage = document.getElementById('check-in-status-message');
             const checkInTimeStatus = document.getElementById('check-in-time-status');
             const lateReasonSection = document.getElementById('late-reason-section');
@@ -313,9 +333,7 @@
             let appState = {
                 loggedInUser: null,
                 currentLocation: null,
-                attendanceData: {
-                    fotoMasuk: null, locationMasuk: null, locationPulang: null, dateMasuk: null, name: null, email: null, division: null, position: null, dutyAs: null, typeOfWork: null, statusAbsen: null, absenMasuk: null, statusMasuk: null, alasanTerlambat: null, absenPulang: null, statusPulang: null, totalOvertime: null, totalWorktime: null, remarkPekerjaan: null, fotoPekerjaan: null,
-                }
+                attendanceData: null, // Will be loaded from localStorage
             };
             let mapInstances = {};
 
@@ -453,6 +471,8 @@
                     .bindPopup(message)
                     .openPopup();
                 mapInstances[containerId] = map;
+                 // Invalidate size after a short delay to ensure proper rendering
+                setTimeout(() => map.invalidateSize(), 100);
             }
 
             function displaySummaryMap(checkInCoords, checkOutCoords) {
@@ -471,6 +491,7 @@
                 const group = new L.featureGroup([checkInMarker, checkOutMarker]);
                 map.fitBounds(group.getBounds().pad(0.5));
                 mapInstances[containerId] = map;
+                setTimeout(() => map.invalidateSize(), 100);
             }
 
 
@@ -490,6 +511,30 @@
                     reader.onerror = reject;
                     reader.readAsDataURL(file);
                 });
+            }
+            
+            function saveAttendanceHistory(data) {
+                const historyKey = `attendanceHistory_${appState.loggedInUser.email}`;
+                let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+                // Remove today's record if it already exists to prevent duplicates
+                history = history.filter(rec => rec.dateMasuk !== data.dateMasuk);
+                history.push(data);
+                localStorage.setItem(historyKey, JSON.stringify(history));
+            }
+
+            function loadAttendanceForToday() {
+                const historyKey = `attendanceHistory_${appState.loggedInUser.email}`;
+                const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+                const today = new Date().toLocaleDateString('id-ID');
+                const todayRecord = history.find(rec => rec.dateMasuk === today);
+                if (todayRecord) {
+                    // Re-parse date strings into Date objects
+                    todayRecord.absenMasuk = new Date(todayRecord.absenMasuk);
+                    if(todayRecord.absenPulang) {
+                       todayRecord.absenPulang = new Date(todayRecord.absenPulang);
+                    }
+                }
+                appState.attendanceData = todayRecord;
             }
 
             function handleLateVisibility() {
@@ -516,6 +561,30 @@
                     showModal(error.message);
                 }
             }
+            
+            function populateSummary(data) {
+                summaryElements.photoMasuk.src = data.fotoMasuk;
+                summaryElements.photoPekerjaan.src = data.fotoPekerjaan;
+                summaryElements.name.textContent = data.name;
+                summaryElements.dutyWork.textContent = `${data.dutyAs} / ${data.typeOfWork}`;
+                summaryElements.absenMasuk.textContent = new Date(data.absenMasuk).toLocaleString('id-ID');
+                summaryElements.statusMasuk.textContent = data.statusMasuk;
+                if (data.alasanTerlambat) {
+                    summaryElements.lateReason.textContent = data.alasanTerlambat;
+                    summaryElements.lateReasonItem.classList.remove('hidden');
+                }
+                summaryElements.absenPulang.textContent = new Date(data.absenPulang).toLocaleString('id-ID');
+                summaryElements.statusPulang.textContent = data.statusPulang;
+                summaryElements.totalWorktime.textContent = data.totalWorktime;
+                 const overtimeThreshold = new Date(new Date(data.absenPulang).setHours(17, 30, 0, 0));
+                 if (new Date(data.absenPulang) > overtimeThreshold) {
+                    summaryElements.totalOvertime.textContent = data.totalOvertime;
+                    summaryElements.overtimeItem.classList.remove('hidden');
+                }
+                summaryElements.remark.textContent = data.remarkPekerjaan;
+                
+                displaySummaryMap(data.locationMasuk, data.locationPulang);
+            }
 
             function renderUI() {
                 if (appState.loggedInUser) {
@@ -526,15 +595,23 @@
                     userInfo.position.textContent = appState.loggedInUser.position;
                     userInfo.division.textContent = appState.loggedInUser.division;
 
-                    const hasCheckedIn = !!appState.attendanceData.absenMasuk;
-                    const hasCheckedOut = !!appState.attendanceData.absenPulang;
+                    const hasCheckedIn = !!appState.attendanceData?.absenMasuk;
+                    const hasCheckedOut = !!appState.attendanceData?.absenPulang;
 
                     checkInSection.classList.toggle('hidden', hasCheckedIn);
                     onWorkingSection.classList.toggle('hidden', !hasCheckedIn || hasCheckedOut);
                     summarySection.classList.toggle('hidden', !hasCheckedOut);
+                    historySection.classList.add('hidden');
 
                     if (!hasCheckedIn) {
                         initializeCheckinView();
+                    } else if (hasCheckedIn && !hasCheckedOut) {
+                         checkInStatusMessage.textContent = appState.attendanceData.statusMasuk;
+                         checkInTimeStatus.textContent = `Absen Masuk: ${appState.attendanceData.absenMasuk.toLocaleString('id-ID')}`;
+                         checkInMapContainer.classList.remove('hidden');
+                         displayMap('check-in-map', appState.attendanceData.locationMasuk, 'Lokasi Absen Masuk');
+                    } else if (hasCheckedOut) {
+                        populateSummary(appState.attendanceData);
                     }
 
                 } else {
@@ -550,10 +627,7 @@
 
                 if (user) {
                     appState.loggedInUser = user;
-                    appState.attendanceData.name = user.name;
-                    appState.attendanceData.email = user.email;
-                    appState.attendanceData.division = user.division;
-                    appState.attendanceData.position = user.position;
+                    loadAttendanceForToday();
                     updateDateTime();
                     renderUI();
                 } else {
@@ -596,31 +670,31 @@
                         const lateThreshold = 9 * 60 + 1;
                         
                         let statusMasuk;
+                        let alasanTerlambat = null;
                         if (checkInTimeInMinutes >= lateThreshold) {
                             statusMasuk = 'Anda Terlambat Absen';
-                            appState.attendanceData.alasanTerlambat = lateReasonInput.value;
+                            alasanTerlambat = lateReasonInput.value;
                         } else {
                             statusMasuk = 'Terima Kasih Anda Telah Absen Tepat Waktu';
                         }
-
-                        appState.attendanceData.absenMasuk = now;
-                        appState.attendanceData.dateMasuk = now.toLocaleDateString('id-ID');
-                        appState.attendanceData.fotoMasuk = photoDataUrl;
-                        appState.attendanceData.locationMasuk = location;
-                        appState.attendanceData.statusMasuk = statusMasuk;
-                        appState.attendanceData.statusAbsen = 'On Working';
-                        appState.attendanceData.dutyAs = dutyAsSelect.value;
-                        appState.attendanceData.typeOfWork = workTypeSelect.value;
-
-                        checkInStatusMessage.textContent = statusMasuk;
-                        checkInTimeStatus.textContent = `Absen Masuk: ${now.toLocaleString('id-ID')}`;
                         
-                        checkInMapContainer.classList.remove('hidden');
-                        displayMap('check-in-map', location, 'Lokasi Absen Masuk');
+                        appState.attendanceData = {
+                            ...appState.loggedInUser,
+                            dateMasuk: now.toLocaleDateString('id-ID'),
+                            absenMasuk: now,
+                            fotoMasuk: photoDataUrl,
+                            locationMasuk: location,
+                            statusMasuk: statusMasuk,
+                            alasanTerlambat: alasanTerlambat,
+                            dutyAs: dutyAsSelect.value,
+                            typeOfWork: workTypeSelect.value,
+                            statusAbsen: 'On Working',
+                            absenPulang: null,
+                        };
 
+                        renderUI();
                         console.log("--- DATA ABSEN MASUK (to be sent to spreadsheet) ---", appState.attendanceData);
                         showModal("Absen masuk berhasil!");
-                        renderUI();
 
                     } catch (error) {
                         showModal(error.message || 'Terjadi kesalahan tidak diketahui.');
@@ -669,40 +743,22 @@
                         totalOvertime = formatDuration(overtimeMs);
                     }
 
-                    appState.attendanceData.absenPulang = now;
-                    appState.attendanceData.locationPulang = location;
-                    appState.attendanceData.statusPulang = statusPulang;
-                    appState.attendanceData.totalWorktime = totalWorktime;
-                    appState.attendanceData.totalOvertime = totalOvertime;
-                    appState.attendanceData.remarkPekerjaan = workRemark;
-                    appState.attendanceData.fotoPekerjaan = photoDataUrl;
-                    appState.attendanceData.statusAbsen = 'Pulang';
-
-                    // Populate Summary
-                    summaryElements.photoMasuk.src = appState.attendanceData.fotoMasuk;
-                    summaryElements.photoPekerjaan.src = appState.attendanceData.fotoPekerjaan;
-                    summaryElements.name.textContent = appState.attendanceData.name;
-                    summaryElements.dutyWork.textContent = `${appState.attendanceData.dutyAs} / ${appState.attendanceData.typeOfWork}`;
-                    summaryElements.absenMasuk.textContent = appState.attendanceData.absenMasuk.toLocaleString('id-ID');
-                    summaryElements.statusMasuk.textContent = appState.attendanceData.statusMasuk;
-                    if (appState.attendanceData.alasanTerlambat) {
-                        summaryElements.lateReason.textContent = appState.attendanceData.alasanTerlambat;
-                        summaryElements.lateReasonItem.classList.remove('hidden');
-                    }
-                    summaryElements.absenPulang.textContent = appState.attendanceData.absenPulang.toLocaleString('id-ID');
-                    summaryElements.statusPulang.textContent = statusPulang;
-                    summaryElements.totalWorktime.textContent = totalWorktime;
-                     if (now > overtimeThreshold) {
-                        summaryElements.totalOvertime.textContent = totalOvertime;
-                        summaryElements.overtimeItem.classList.remove('hidden');
-                    }
-                    summaryElements.remark.textContent = workRemark;
+                    appState.attendanceData = {
+                        ...appState.attendanceData,
+                        absenPulang: now,
+                        locationPulang: location,
+                        statusPulang: statusPulang,
+                        totalWorktime: totalWorktime,
+                        totalOvertime: totalOvertime,
+                        remarkPekerjaan: workRemark,
+                        fotoPekerjaan: photoDataUrl,
+                        statusAbsen: 'Pulang',
+                    };
                     
-                    displaySummaryMap(appState.attendanceData.locationMasuk, appState.attendanceData.locationPulang);
-
+                    saveAttendanceHistory(appState.attendanceData);
+                    renderUI();
                     console.log("--- DATA ABSEN PULANG (to be sent to spreadsheet) ---", appState.attendanceData);
                     showModal("Absen pulang berhasil!");
-                    renderUI();
 
                 } catch (error) {
                     showModal(error.message || 'Terjadi kesalahan tidak diketahui.');
@@ -713,15 +769,7 @@
             });
 
             resetBtn.addEventListener('click', () => {
-                const loggedInUser = appState.loggedInUser;
-                appState = {
-                    loggedInUser: loggedInUser,
-                    currentLocation: null,
-                    attendanceData: {
-                        ...appState.attendanceData,
-                        fotoMasuk: null, locationMasuk: null, locationPulang: null, dateMasuk: null, statusAbsen: null, absenMasuk: null, statusMasuk: null, alasanTerlambat: null, absenPulang: null, statusPulang: null, totalOvertime: null, totalWorktime: null, remarkPekerjaan: null, fotoPekerjaan: null,
-                    }
-                };
+                appState.attendanceData = null;
                 lateReasonInput.value = '';
                 document.getElementById('work-remark').value = '';
                 document.getElementById('work-photo').value = '';
@@ -732,6 +780,40 @@
                 summaryElements.overtimeItem.classList.add('hidden');
                 locationLoader.classList.remove('hidden');
                 locationLoader.textContent = 'Memuat peta lokasi...';
+                renderUI();
+            });
+            
+            historyBtn.addEventListener('click', () => {
+                const historyKey = `attendanceHistory_${appState.loggedInUser.email}`;
+                const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+                const historyContainer = document.getElementById('history-container');
+                historyContainer.innerHTML = '';
+
+                if (history.length === 0) {
+                    historyContainer.innerHTML = '<p class="text-center text-slate-400">Tidak ada riwayat absensi.</p>';
+                } else {
+                    history.slice().reverse().forEach(rec => {
+                        const card = document.createElement('div');
+                        card.className = 'bg-slate-800/50 p-4 rounded-lg';
+                        const checkInTime = new Date(rec.absenMasuk).toLocaleTimeString('id-ID');
+                        const checkOutTime = rec.absenPulang ? new Date(rec.absenPulang).toLocaleTimeString('id-ID') : 'Belum Absen';
+                        
+                        card.innerHTML = `
+                            <p class="font-bold text-lg">${rec.dateMasuk}</p>
+                            <div class="text-sm text-slate-300 mt-2">
+                                <p><span class="font-semibold">Masuk:</span> ${checkInTime} (${rec.statusMasuk})</p>
+                                <p><span class="font-semibold">Pulang:</span> ${checkOutTime} (${rec.statusPulang || ''})</p>
+                            </div>
+                        `;
+                        historyContainer.appendChild(card);
+                    });
+                }
+
+                checkInSection.classList.add('hidden');
+                historySection.classList.remove('hidden');
+            });
+
+            backToMainBtn.addEventListener('click', () => {
                 renderUI();
             });
 
