@@ -46,6 +46,11 @@
             height: 200px;
             border-radius: 0.5rem;
         }
+        /* Custom select style */
+        .custom-select {
+            background-color: #374151; /* bg-gray-700 */
+            border: 1px solid #4B5563; /* border-gray-600 */
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-white flex items-center justify-center min-h-screen p-4">
@@ -60,8 +65,8 @@
             </div>
             <form id="login-form">
                 <div class="mb-4">
-                    <label for="email" class="block mb-2 text-sm font-medium text-slate-300">Email</label>
-                    <input type="email" id="email" class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="nama@perusahaan.com" required>
+                    <label for="email-input" class="block mb-2 text-sm font-medium text-slate-300">Email Anda</label>
+                    <input type="email" id="email-input" class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Masukkan email terdaftar..." required>
                 </div>
                 <button type="submit" class="w-full btn-primary font-bold py-3 px-4 rounded-lg shadow-md">Login</button>
             </form>
@@ -76,18 +81,43 @@
             </div>
 
             <div class="glassmorphism p-6 rounded-2xl shadow-lg space-y-6">
-                <!-- User Info -->
-                <div id="user-info-card" class="text-center">
-                    <p class="font-semibold text-xl" id="user-name"></p>
-                    <p class="text-slate-300" id="user-position"></p>
-                    <p class="text-slate-400 text-sm" id="user-division"></p>
-                </div>
-
+                
                 <!-- Check-in Section -->
-                <div id="check-in-section">
-                    <button id="check-in-btn" class="w-full btn-primary font-bold py-4 px-4 rounded-lg text-xl shadow-lg flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                        Absen Masuk
+                <div id="check-in-section" class="space-y-4">
+                    <div class="text-center bg-slate-800/50 p-4 rounded-lg">
+                        <p class="font-semibold text-xl" id="user-name"></p>
+                        <p class="text-slate-300" id="user-position"></p>
+                        <p class="text-slate-400 text-sm" id="user-division"></p>
+                    </div>
+
+                    <!-- Live Location Map -->
+                    <div id="live-location-container">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Lokasi Anda Saat Ini:</label>
+                        <div id="live-location-map"></div>
+                         <p id="location-loader" class="text-center text-slate-400 p-4">Memuat peta lokasi...</p>
+                    </div>
+
+                    <!-- Manual Selection Dropdowns -->
+                    <div class="space-y-4">
+                        <div>
+                            <label for="duty-as-select" class="block text-sm font-medium text-slate-300 mb-2">Duty As</label>
+                            <select id="duty-as-select" class="w-full p-3 rounded-lg custom-select">
+                                <option value="" disabled selected>Pilih Duty As...</option>
+                                <option>Director</option><option>Safety, Quality & Security Manager</option><option>Operation Manager</option><option>Maintenance Manager</option><option>Chief Pilot Fixed Wing</option><option>Chief Pilot Rotary Wing</option><option>Chief Flight Support</option><option>Chief Inspector</option><option>Chief Engineer</option><option>Chief Finance, Accounting & Staf</option><option>Chief Engineering</option><option>Pilot in Command</option><option>Second in Command</option><option>Ground Instructor</option><option>Flight Instructor</option><option>Company Check Pilot</option><option>Engineer</option><option>Line Pilot</option><option>Cabin Service</option><option>Student</option><option>Flight Support</option><option>Ground Support</option><option>Technical Representative</option><option>Engineering</option><option>Staff</option><option>Logistic</option><option>Aviation Security</option><option>Driver</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="work-type-select" class="block text-sm font-medium text-slate-300 mb-2">Tipe Pekerjaan</label>
+                            <select id="work-type-select" class="w-full p-3 rounded-lg custom-select">
+                                <option value="" disabled selected>Pilih Tipe Pekerjaan...</option>
+                                <option>Office Hour</option><option>Standby Flight</option><option>Standby on Call</option><option>Pos One Gate</option><option>Day Off</option><option>Day Off 7 Consecutive Days for Pilot</option><option>Flight Duty VIP</option><option>Ferry Flight</option><option>PPC Simulator</option><option>PPC Aircraft</option><option>Test Flight</option><option>Ground Run</option><option>Recurrent Training</option><option>Recency Flight</option><option>Meeting Out of Office</option><option>Medical Examination</option><option>Annual Leave</option><option>Sick</option><option>Technical Representative</option><option>Aviation Security</option><option>Over Time</option>
+                            </select>
+                        </div>
+                    </div>
+                     <!-- Photo & Check-in Button -->
+                    <button id="check-in-btn" class="w-full btn-primary font-bold py-4 px-4 rounded-lg text-xl shadow-lg flex items-center justify-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        Ambil Foto & Absen Masuk
                     </button>
                 </div>
 
@@ -174,6 +204,7 @@
             const loginScreen = document.getElementById('login-screen');
             const appScreen = document.getElementById('app-screen');
             const loginForm = document.getElementById('login-form');
+            const emailInput = document.getElementById('email-input');
             const greeting = document.getElementById('greeting');
             const currentDateEl = document.getElementById('current-date');
             const currentTimeEl = document.getElementById('current-time');
@@ -182,6 +213,11 @@
                 position: document.getElementById('user-position'),
                 division: document.getElementById('user-division'),
             };
+            const dutyAsSelect = document.getElementById('duty-as-select');
+            const workTypeSelect = document.getElementById('work-type-select');
+            const liveLocationContainer = document.getElementById('live-location-container');
+            const locationLoader = document.getElementById('location-loader');
+
             const checkInSection = document.getElementById('check-in-section');
             const onWorkingSection = document.getElementById('on-working-section');
             const summarySection = document.getElementById('summary-section');
@@ -205,43 +241,77 @@
             // --- APP STATE ---
             let appState = {
                 loggedInUser: null,
+                currentLocation: null,
                 attendanceData: {
-                    fotoMasuk: null,
-                    locationMasuk: null,
-                    locationPulang: null,
-                    dateMasuk: null,
-                    name: null,
-                    email: null,
-                    division: null,
-                    position: null,
-                    dutyAs: 'On Duty', // Example data
-                    typeOfWork: 'WFO', // Example data
-                    statusAbsen: null,
-                    absenMasuk: null,
-                    statusMasuk: null,
-                    alasanTerlambat: null,
-                    absenPulang: null,
-                    statusPulang: null,
-                    totalOvertime: null,
-                    totalWorktime: null,
-                    remarkPekerjaan: null,
-                    fotoPekerjaan: null,
+                    fotoMasuk: null, locationMasuk: null, locationPulang: null, dateMasuk: null, name: null, email: null, division: null, position: null, dutyAs: null, typeOfWork: null, statusAbsen: null, absenMasuk: null, statusMasuk: null, alasanTerlambat: null, absenPulang: null, statusPulang: null, totalOvertime: null, totalWorktime: null, remarkPekerjaan: null, fotoPekerjaan: null,
                 }
             };
             let mapInstances = {};
 
-            // --- MOCK USER DATABASE ---
-            const users = {
-                'demo@transwisata.com': {
-                    name: 'Budi Santoso',
-                    division: 'Flight Operations',
-                    position: 'Pilot'
-                }
-            };
+            // --- USER DATABASE ---
+            const users = [
+                { name: 'Rustam Suhanda', email: 'managementtranswisata@gmail.com', division: 'Staf', position: 'President Director' },
+                { name: 'Selfy Warauw', email: 'warauw_1@yahoo.com', division: 'Staf', position: 'Director' },
+                { name: 'Muhamad Ramdani Masri', email: 'crunkbolcow@gmail.com', division: 'Operation', position: 'Chief Pilot Rotary Wing' },
+                { name: 'Sulaksono Teddy Prabowo', email: 'fly5103@gmail.com', division: 'Operation', position: 'Line Pilot' },
+                { name: 'Marcelino Bhaharoenawanto', email: 'marcelino412ep@gmail.com', division: 'Operation', position: 'Line Pilot' },
+                { name: 'Muhamad Sofwan', email: 'sofwanm819@gmail.com', division: 'Operation', position: 'Chief Pilot Fixed Wing' },
+                { name: 'Sofian M. L. Tobing', email: 'sofiantobing692@gmail.com', division: 'Operation', position: 'General Manager' },
+                { name: 'Rico Febdiandana', email: 'ricofebdi@gmail.com', division: 'Operation', position: 'Chief Flight Support' },
+                { name: 'Alfajri', email: 'alfajri_koto@yahoo.com', division: 'Operation', position: 'Line Pilot' },
+                { name: 'Eli Setya', email: 'tioxpilot@gmail.com', division: 'Operation', position: 'Line Pilot' },
+                { name: 'Susetyo Harijanto', email: 'harijantosusetyo@gmail.com', division: 'Operation', position: 'Operation Manager' },
+                { name: 'Purwoko', email: 'purwoko.mulyono@yahoo.com', division: 'Operation', position: 'Line Pilot' },
+                { name: 'Riza Hanindita', email: 'icul2122@gmail.com', division: 'Operation', position: 'Line Pilot' },
+                { name: 'Henaldy Arifia Sudrajat', email: 'henaldy.ts204@gmail.com', division: 'Operation', position: 'Line Pilot' },
+                { name: 'Kadek Amelia Nadya Berliana', email: 'amelberliana@yahoo.co.id', division: 'Operation', position: 'Line Pilot' },
+                { name: 'Qorry Maulidya Natawijaya', email: 'qnatawijaya@gmail.com', division: 'Operation', position: 'Cabin Service' },
+                { name: 'Shentira Anggia Putri', email: 'anggiashentira@gmail.com', division: 'Operation', position: 'Cabin Service' },
+                { name: 'Tiffani Pricilia Hasan', email: 'tiffanipriciliaaaa@gmail.com', division: 'Operation', position: 'Cabin Service' },
+                { name: 'Agustin Zulfani Prihatini', email: 'agustinzulfani74@gmail.com', division: 'Operation', position: 'Cabin Service' },
+                { name: 'Nadya Casey Ivanka', email: 'ivankacasey99@gmail.com', division: 'Operation', position: 'Cabin Service' },
+                { name: 'Yanu Prihatno', email: 'prihatnoyanu@gmail.com', division: 'Maintenance', position: 'Engineer' },
+                { name: 'Bayu Nugroho', email: 'bayu.avicena@gmail.com', division: 'Maintenance', position: 'Engineer' },
+                { name: 'Wahyudi Suseno', email: 'nawawahyudisuseno090@gmail.com', division: 'Maintenance', position: 'Avionic' },
+                { name: 'Sigit Hardadi', email: 'sigithardadi88@yahoo.com', division: 'Maintenance', position: 'Engineer' },
+                { name: 'Hadi Sutrisno', email: 'hadikamilatun@gmail.com', division: 'Maintenance', position: 'Maintenance Manager' },
+                { name: 'Suhairi', email: 'suhairitwa@gmail.com', division: 'Maintenance', position: 'Engineer' },
+                { name: 'Suyanto', email: 'yanto.umardin@gmail.com', division: 'Maintenance', position: 'Avionic' },
+                { name: 'Lazarus Rio Raymond', email: 'rioraymond89@gmail.com', division: 'Maintenance', position: 'Engineer' },
+                { name: 'Febie Aguti Effendi', email: 'mpiipie@gmail.com', division: 'Maintenance', position: 'Engineer' },
+                { name: 'Diki Hariyanto', email: 'dikiatnu7@gmail.com', division: 'Maintenance', position: 'Chief Engineer' },
+                { name: 'Prayit Susonggo', email: 'prayitsusonggo@yahoo.com', division: 'Maintenance', position: 'Avionic' },
+                { name: 'Iskandar Akbar Hakim', email: 'iskandarakbarhakim@gmail.com', division: 'Maintenance', position: 'Chief Inspector' },
+                { name: 'Arif Vrybadi Halim', email: 'GlexXRSvpcgo@outlook.com', division: 'Maintenance', position: 'Engineer' },
+                { name: 'Alfiza Eka Putra', email: 'alfizaekap@gmail.com', division: 'Maintenance', position: 'Engineer' },
+                { name: 'Dedi Prasetyo', email: 'deditren99@gmail.com', division: 'Safety', position: 'Aviation Security' },
+                { name: 'Media H Marbun', email: 'mediamarbun@gmail.com', division: 'Staf', position: 'Human Resource Development' },
+                { name: 'Fatmawati', email: 'ulieumeda@gmail.com', division: 'Staf', position: 'Finance' },
+                { name: 'Dede Rahman Arafiq', email: 'd2rahman@yahoo.co.id', division: 'Staf', position: 'Finance' },
+                { name: 'Leo Fitzgerald Sinay', email: 'leosinay@gmail.com', division: 'Maintenance', position: 'Chief Engineering' },
+                { name: 'Khairul Zaman Pohan', email: 'pohan16zaman@gmail.com', division: 'Operation', position: 'Flight Support' },
+                { name: 'Sentot Basuki', email: 'sentotbasuki@gmail.com', division: 'Operation', position: 'Flight Support' },
+                { name: 'Bobby Feisal Mahardhika', email: 'bobby.feisal22@gmail.com', division: 'Staf', position: 'Engineering' },
+                { name: 'Tri Widayat', email: 'tri3wiwid@gmail.com', division: 'Operation', position: 'Flight Support' },
+                { name: 'Isdarminto', email: 'is.darminto35@gmail.com', division: 'Staf', position: 'Logistic' },
+                { name: 'Sulaichan Noor Ali', email: 'sulaichann@gmail.com', division: 'Staf', position: 'Logistic' },
+                { name: 'Sri Muljono Bayu Putro', email: 'sbayuputro@gmail.com', division: 'Operation', position: 'Flight Support' },
+                { name: 'Asri Gatot Yulianto', email: 'Asrigatot.67@gmail.com', division: 'Safety', position: 'Aviation Security' },
+                { name: 'Nanang Chabibi', email: 'nanangchabibi3@gmail.com', division: 'Safety', position: 'Aviation Security' },
+                { name: 'Hariyanto', email: 'katellisna423@gmail.com', division: 'Safety', position: 'Aviation Security' },
+                { name: 'Supriyono', email: 'fardhan0509@gmail.com', division: 'Staf', position: 'Kurir' },
+                { name: 'Kasna', email: 'kasna.pjln799@gmail.com', division: 'Staf', position: 'Driver' },
+                { name: 'Rizal Setiawan', email: 'rizalsetiawan020812@gmail.com', division: 'Staf', position: 'Driver' },
+                { name: 'Ardi Rizki', email: 'ardi.rizk91@gmail.com', division: 'Maintenance', position: 'Engineer' },
+                { name: 'Wawan Setiawan', email: 'setiawanwawan7312@gmail.com', division: 'Operation', position: 'Line Pilot' },
+                { name: 'Tommy Saputra', email: 'tommysaputra473@gmail.com', division: 'Staf', position: 'Chief Finance, Accounting & Tax' },
+                { name: 'Mochamad Riza', email: 'mch_riza@yahoo.com', division: 'Safety', position: 'Quality, Safety, Security Manager' },
+                { name: 'Alexander Anggarda Yunan Devata', email: 'alexanderdevata@yahoo.co.id', division: 'Operation', position: 'Flight Support' },
+                { name: 'Sukyono', email: 'sskkyy020@gmail.com', division: 'Operation', position: 'Flight Support' }
+            ];
 
             // --- FUNCTIONS ---
 
-            // Function to show a modal message
             function showModal(message) {
                 modalMessage.textContent = message;
                 modal.classList.remove('hidden');
@@ -249,7 +319,6 @@
             
             modalCloseBtn.addEventListener('click', () => modal.classList.add('hidden'));
 
-            // Update clock and date
             function updateDateTime() {
                 const now = new Date();
                 const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -257,18 +326,19 @@
                 currentTimeEl.textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 
                 const hours = now.getHours();
-                if (hours < 12) {
-                    greeting.textContent = `Selamat Pagi, ${appState.loggedInUser?.name || ''}`;
-                } else if (hours < 15) {
-                    greeting.textContent = `Selamat Siang, ${appState.loggedInUser?.name || ''}`;
-                } else if (hours < 18) {
-                    greeting.textContent = `Selamat Sore, ${appState.loggedInUser?.name || ''}`;
-                } else {
-                    greeting.textContent = `Selamat Malam, ${appState.loggedInUser?.name || ''}`;
+                if (appState.loggedInUser) {
+                    if (hours < 12) {
+                        greeting.textContent = `Selamat Pagi, ${appState.loggedInUser.name.split(' ')[0]}`;
+                    } else if (hours < 15) {
+                        greeting.textContent = `Selamat Siang, ${appState.loggedInUser.name.split(' ')[0]}`;
+                    } else if (hours < 18) {
+                        greeting.textContent = `Selamat Sore, ${appState.loggedInUser.name.split(' ')[0]}`;
+                    } else {
+                        greeting.textContent = `Selamat Malam, ${appState.loggedInUser.name.split(' ')[0]}`;
+                    }
                 }
             }
 
-            // Get user location with detailed error handling
             function getLocation() {
                 return new Promise((resolve, reject) => {
                     if (!navigator.geolocation) {
@@ -284,27 +354,23 @@
                                 let message;
                                 switch(error.code) {
                                     case error.PERMISSION_DENIED:
-                                        message = "Anda menolak izin akses lokasi. Absensi tidak dapat dilanjutkan.";
-                                        break;
+                                        message = "Anda menolak izin akses lokasi. Absensi tidak dapat dilanjutkan."; break;
                                     case error.POSITION_UNAVAILABLE:
-                                        message = "Informasi lokasi tidak tersedia. Pastikan GPS Anda aktif.";
-                                        break;
+                                        message = "Informasi lokasi tidak tersedia. Pastikan GPS Anda aktif."; break;
                                     case error.TIMEOUT:
-                                        message = "Waktu permintaan lokasi habis. Coba lagi.";
-                                        break;
+                                        message = "Waktu permintaan lokasi habis. Coba lagi."; break;
                                     default:
-                                        message = "Terjadi kesalahan saat mengambil lokasi.";
-                                        break;
+                                        message = "Terjadi kesalahan saat mengambil lokasi."; break;
                                 }
                                 reject({ message: message });
-                            }
+                            },
+                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                         );
                     }
                 });
             }
 
-            // Display map
-            function displayMap(containerId, coords) {
+            function displayMap(containerId, coords, message = 'Lokasi Anda') {
                 if (mapInstances[containerId]) {
                     mapInstances[containerId].remove();
                 }
@@ -313,12 +379,11 @@
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map);
                 L.marker(coords).addTo(map)
-                    .bindPopup('Lokasi Anda.')
+                    .bindPopup(message)
                     .openPopup();
                 mapInstances[containerId] = map;
             }
 
-            // Format duration from milliseconds to HH:MM:SS
             function formatDuration(ms) {
                 if (ms < 0) ms = 0;
                 const totalSeconds = Math.floor(ms / 1000);
@@ -328,7 +393,18 @@
                 return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             }
 
-            // Update UI based on state
+            async function initializeCheckinView() {
+                try {
+                    const location = await getLocation();
+                    appState.currentLocation = location;
+                    locationLoader.classList.add('hidden');
+                    displayMap('live-location-map', [location.lat, location.lng]);
+                } catch (error) {
+                    locationLoader.textContent = `Gagal memuat lokasi: ${error.message}`;
+                    showModal(error.message);
+                }
+            }
+
             function renderUI() {
                 if (appState.loggedInUser) {
                     loginScreen.classList.add('hidden');
@@ -344,15 +420,9 @@
                     checkInSection.classList.toggle('hidden', hasCheckedIn);
                     onWorkingSection.classList.toggle('hidden', !hasCheckedIn || hasCheckedOut);
                     summarySection.classList.toggle('hidden', !hasCheckedOut);
-                    
-                    if (hasCheckedIn && !hasCheckedOut) {
-                        userInfo.name.classList.add('hidden');
-                        userInfo.position.classList.add('hidden');
-                        userInfo.division.classList.add('hidden');
-                    } else {
-                         userInfo.name.classList.remove('hidden');
-                        userInfo.position.classList.remove('hidden');
-                        userInfo.division.classList.remove('hidden');
+
+                    if (!hasCheckedIn) {
+                        initializeCheckinView();
                     }
 
                 } else {
@@ -361,24 +431,36 @@
                 }
             }
 
-            // Handle Login
             loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const email = document.getElementById('email').value;
-                if (users[email]) {
-                    appState.loggedInUser = users[email];
-                    appState.attendanceData.name = users[email].name;
-                    appState.attendanceData.email = email;
-                    appState.attendanceData.division = users[email].division;
-                    appState.attendanceData.position = users[email].position;
+                const enteredEmail = emailInput.value.trim().toLowerCase();
+                const user = users.find(u => u.email.trim().toLowerCase() === enteredEmail);
+
+                if (user) {
+                    appState.loggedInUser = user;
+                    appState.attendanceData.name = user.name;
+                    appState.attendanceData.email = user.email;
+                    appState.attendanceData.division = user.division;
+                    appState.attendanceData.position = user.position;
+                    updateDateTime();
                     renderUI();
                 } else {
-                    showModal('Email tidak terdaftar. Silakan gunakan email: demo@transwisata.com');
+                    showModal('Email tidak terdaftar. Mohon periksa kembali email Anda.');
                 }
             });
 
-            // Handle Check-in
             checkInBtn.addEventListener('click', () => {
+                if (!appState.currentLocation) {
+                    showModal('Lokasi belum siap. Mohon tunggu atau pastikan GPS Anda aktif.');
+                    return;
+                }
+                const selectedDuty = dutyAsSelect.value;
+                const selectedWorkType = workTypeSelect.value;
+
+                if (!selectedDuty || !selectedWorkType) {
+                    showModal('Harap pilih "Duty As" dan "Tipe Pekerjaan" sebelum melanjutkan.');
+                    return;
+                }
                 checkInPhotoInput.click();
             });
 
@@ -388,7 +470,7 @@
                     checkInBtn.textContent = 'Memproses...';
 
                     try {
-                        const location = await getLocation();
+                        const location = appState.currentLocation;
                         const now = new Date();
                         
                         const checkInTime = now.getHours() * 60 + now.getMinutes();
@@ -409,12 +491,14 @@
                         appState.attendanceData.locationMasuk = location.text;
                         appState.attendanceData.statusMasuk = statusMasuk;
                         appState.attendanceData.statusAbsen = 'On Working';
+                        appState.attendanceData.dutyAs = dutyAsSelect.value;
+                        appState.attendanceData.typeOfWork = workTypeSelect.value;
 
                         checkInStatusMessage.textContent = statusMasuk;
                         checkInTimeStatus.textContent = `Absen Masuk: ${now.toLocaleString('id-ID')}`;
                         
                         checkInMapContainer.classList.remove('hidden');
-                        displayMap('check-in-map', [location.lat, location.lng]);
+                        displayMap('check-in-map', [location.lat, location.lng], 'Lokasi Absen Masuk');
 
                         console.log("--- DATA ABSEN MASUK (to be sent to spreadsheet) ---", appState.attendanceData);
                         showModal("Absen masuk berhasil!");
@@ -424,12 +508,11 @@
                         showModal(error.message || 'Terjadi kesalahan tidak diketahui.');
                     } finally {
                         checkInBtn.disabled = false;
-                        checkInBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Absen Masuk';
+                        checkInBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Ambil Foto & Absen Masuk';
                     }
                 }
             });
 
-            // Handle Check-out
             checkOutBtn.addEventListener('click', async () => {
                 const workRemark = document.getElementById('work-remark').value;
                 const workPhoto = document.getElementById('work-photo').files[0];
@@ -487,7 +570,7 @@
                     summaryTotalOvertime.textContent = totalOvertime;
                     
                     summaryMapCard.classList.remove('hidden');
-                    displayMap('summary-map', [location.lat, location.lng]);
+                    displayMap('summary-map', [location.lat, location.lng], 'Lokasi Absen Pulang');
 
                     console.log("--- DATA ABSEN PULANG (to be sent to spreadsheet) ---", appState.attendanceData);
                     showModal("Absen pulang berhasil!");
@@ -501,11 +584,11 @@
                 }
             });
 
-            // Handle Reset for next day
             resetBtn.addEventListener('click', () => {
                 const loggedInUser = appState.loggedInUser;
                 appState = {
                     loggedInUser: loggedInUser,
+                    currentLocation: null,
                     attendanceData: {
                         ...appState.attendanceData,
                         fotoMasuk: null, locationMasuk: null, locationPulang: null, dateMasuk: null, statusAbsen: null, absenMasuk: null, statusMasuk: null, alasanTerlambat: null, absenPulang: null, statusPulang: null, totalOvertime: null, totalWorktime: null, remarkPekerjaan: null, fotoPekerjaan: null,
@@ -514,8 +597,12 @@
                 document.getElementById('late-reason').value = '';
                 document.getElementById('work-remark').value = '';
                 document.getElementById('work-photo').value = '';
+                dutyAsSelect.value = '';
+                workTypeSelect.value = '';
                 checkInMapContainer.classList.add('hidden');
                 summaryMapCard.classList.add('hidden');
+                locationLoader.classList.remove('hidden');
+                locationLoader.textContent = 'Memuat peta lokasi...';
                 renderUI();
             });
 
