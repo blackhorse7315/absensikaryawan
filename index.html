@@ -255,9 +255,16 @@
         </div>
     </div>
 
-    <!-- Hidden file input for check-in photo -->
-    <input type="file" id="check-in-photo" class="hidden" accept="image/*" capture="user">
-    
+    <!-- Camera Modal -->
+    <div id="camera-modal" class="hidden fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center p-4 z-50">
+        <video id="camera-stream" class="w-full max-w-md rounded-lg" autoplay playsinline></video>
+        <canvas id="camera-canvas" class="hidden"></canvas>
+        <div class="mt-4 flex gap-4">
+            <button id="capture-btn" class="w-16 h-16 bg-white rounded-full border-4 border-slate-500"></button>
+            <button id="cancel-camera-btn" class="absolute top-4 right-4 text-white bg-red-600 rounded-full w-10 h-10 flex items-center justify-center text-xl">&times;</button>
+        </div>
+    </div>
+
     <!-- Modal for messages -->
     <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
         <div class="bg-slate-800 rounded-2xl p-8 shadow-lg text-center max-w-sm w-full">
@@ -271,7 +278,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- URL SUDAH DIMASUKKAN ---
-            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzhvsCIrVXaAjyg0hB1ZOcP1X2f5Z5sLWrQUDdtscavE48M23Dw9RjpLT4IUphYO2I1Ew/exec';
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtVoLz48gbpttMRtMzQb2AhX4EC0OmlPS5EQYacd7yb_97AkcSmKfu4pvMX4IXcgE7og/exec';
 
             // --- DOM ELEMENTS ---
             const loginScreen = document.getElementById('login-screen');
@@ -306,11 +313,17 @@
             const checkInTimeStatus = document.getElementById('check-in-time-status');
             const lateReasonSection = document.getElementById('late-reason-section');
             const lateReasonInput = document.getElementById('late-reason');
-            const checkInPhotoInput = document.getElementById('check-in-photo');
             const modal = document.getElementById('modal');
             const modalMessage = document.getElementById('modal-message');
             const modalCloseBtn = document.getElementById('modal-close-btn');
             const checkInMapContainer = document.getElementById('check-in-map-container');
+            
+            // Camera Modal Elements
+            const cameraModal = document.getElementById('camera-modal');
+            const videoStream = document.getElementById('camera-stream');
+            const canvas = document.getElementById('camera-canvas');
+            const captureBtn = document.getElementById('capture-btn');
+            const cancelCameraBtn = document.getElementById('cancel-camera-btn');
             
             // Summary Elements
             const summaryElements = {
@@ -339,6 +352,7 @@
                 attendanceData: null,
             };
             let mapInstances = {};
+            let currentStream;
 
             // --- USER DATABASE ---
             const users = [
@@ -427,6 +441,25 @@
                 } catch (error) {
                     console.error("Error sending data to spreadsheet:", error);
                     showModal("Gagal mengirim data ke spreadsheet. Data tersimpan lokal.");
+                }
+            }
+            
+            async function fetchFromSpreadsheet(action, email) {
+                if (!APPS_SCRIPT_URL) {
+                    showModal("URL Spreadsheet belum diatur.");
+                    return null;
+                }
+                const url = `${APPS_SCRIPT_URL}?action=${action}&email=${encodeURIComponent(email)}`;
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok.");
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error("Error fetching from spreadsheet:", error);
+                    showModal("Gagal mengambil data dari spreadsheet. Cek koneksi Anda.");
+                    return null;
                 }
             }
 
@@ -532,67 +565,6 @@
                 return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             }
             
-            function fileToDataUrl(file) {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-            }
-            
-            // PERBAIKAN: Fungsi untuk menyimpan state hari ini (termasuk foto)
-            function saveCurrentState(data) {
-                const state = {
-                    loggedInUser: appState.loggedInUser,
-                    attendanceData: data,
-                };
-                try {
-                    // Hanya simpan state hari ini, akan ditimpa besok
-                    localStorage.setItem(`ecrewCurrentState_${appState.loggedInUser.email}`, JSON.stringify(state));
-                } catch (e) {
-                    console.error("Error saving current state (might be due to large photo):", e);
-                    showModal("Gagal menyimpan foto di perangkat, tapi data teks aman.");
-                }
-            }
-            
-            // PERBAIKAN: Fungsi untuk menyimpan riwayat (tanpa foto)
-            function saveToHistory(data) {
-                const historyKey = `ecrewHistory_${appState.loggedInUser.email}`;
-                let history = JSON.parse(localStorage.getItem(historyKey)) || [];
-                
-                const lightRecord = { ...data };
-                delete lightRecord.fotoMasuk;
-                delete lightRecord.fotoPekerjaan;
-
-                history = history.filter(rec => rec.dateMasuk !== lightRecord.dateMasuk);
-                history.push(lightRecord);
-
-                try {
-                    localStorage.setItem(historyKey, JSON.stringify(history));
-                } catch (e) {
-                    console.error("Error saving history:", e);
-                }
-            }
-
-
-            function loadState() {
-                const savedState = localStorage.getItem(`ecrewCurrentState_${appState.loggedInUser.email}`);
-                if (savedState) {
-                    const parsedState = JSON.parse(savedState);
-                    const today = new Date().toLocaleDateString('id-ID');
-                    if (parsedState.attendanceData && new Date(parsedState.attendanceData.absenMasuk).toLocaleDateString('id-ID') === today) {
-                        appState.attendanceData = parsedState.attendanceData;
-                        appState.attendanceData.absenMasuk = new Date(appState.attendanceData.absenMasuk);
-                        if (appState.attendanceData.absenPulang) {
-                            appState.attendanceData.absenPulang = new Date(appState.attendanceData.absenPulang);
-                        }
-                    } else {
-                        localStorage.removeItem(`ecrewCurrentState_${appState.loggedInUser.email}`);
-                    }
-                }
-            }
-
             function handleLateVisibility() {
                 const now = new Date();
                 const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
@@ -619,31 +591,33 @@
             }
             
             function populateSummary(data) {
+                // For summary, we might need to retrieve photos from a temporary storage if needed
+                // For now, we'll use placeholders as photos are not in the history object
                 summaryElements.photoMasuk.src = data.fotoMasuk || "https://placehold.co/200x200/334155/e2e8f0?text=No+Img";
                 summaryElements.photoPekerjaan.src = data.fotoPekerjaan || "https://placehold.co/200x200/334155/e2e8f0?text=No+Img";
-                summaryElements.name.textContent = data.name;
-                summaryElements.dutyWork.textContent = `${data.dutyAs} / ${data.typeOfWork}`;
-                summaryElements.absenMasuk.textContent = new Date(data.absenMasuk).toLocaleString('id-ID');
-                summaryElements.statusMasuk.textContent = data.statusMasuk;
-                if (data.alasanTerlambat) {
-                    summaryElements.lateReason.textContent = data.alasanTerlambat;
+                summaryElements.name.textContent = data.Nama;
+                summaryElements.dutyWork.textContent = `${data['Duty As']} / ${data['Tipe Pekerjaan']}`;
+                summaryElements.absenMasuk.textContent = new Date(data['Absen Masuk']).toLocaleString('id-ID');
+                summaryElements.statusMasuk.textContent = data['Status Masuk'];
+                if (data['Alasan Terlambat']) {
+                    summaryElements.lateReason.textContent = data['Alasan Terlambat'];
                     summaryElements.lateReasonItem.classList.remove('hidden');
                 } else {
                     summaryElements.lateReasonItem.classList.add('hidden');
                 }
-                summaryElements.absenPulang.textContent = new Date(data.absenPulang).toLocaleString('id-ID');
-                summaryElements.statusPulang.textContent = data.statusPulang;
-                summaryElements.totalWorktime.textContent = data.totalWorktime;
-                 const overtimeThreshold = new Date(new Date(data.absenPulang).setHours(17, 30, 0, 0));
-                 if (new Date(data.absenPulang) > overtimeThreshold) {
-                    summaryElements.totalOvertime.textContent = data.totalOvertime;
+                summaryElements.absenPulang.textContent = new Date(data['Absen Pulang']).toLocaleString('id-ID');
+                summaryElements.statusPulang.textContent = data['Status Pulang'];
+                summaryElements.totalWorktime.textContent = data['Total Jam Kerja'];
+                 if (data['Total Overtime'] && data['Total Overtime'] !== '00:00:00') {
+                    summaryElements.totalOvertime.textContent = data['Total Overtime'];
                     summaryElements.overtimeItem.classList.remove('hidden');
                 } else {
                     summaryElements.overtimeItem.classList.add('hidden');
                 }
-                summaryElements.remark.textContent = data.remarkPekerjaan;
+                summaryElements.remark.textContent = data['Remark Pekerjaan'];
                 
-                displaySummaryMap(data.locationMasuk, data.locationPulang);
+                // Location text is stored, not coords object. This part needs adjustment if we want to show map from history.
+                // For now, we'll skip the map for historical views.
             }
 
             function renderUI() {
@@ -655,8 +629,8 @@
                     userInfo.position.textContent = appState.loggedInUser.position;
                     userInfo.division.textContent = appState.loggedInUser.division;
 
-                    const hasCheckedIn = !!appState.attendanceData?.absenMasuk;
-                    const hasCheckedOut = !!appState.attendanceData?.absenPulang;
+                    const hasCheckedIn = !!appState.attendanceData;
+                    const hasCheckedOut = !!appState.attendanceData?.['Absen Pulang'];
 
                     checkInSection.classList.toggle('hidden', hasCheckedIn);
                     onWorkingSection.classList.toggle('hidden', !hasCheckedIn || hasCheckedOut);
@@ -666,10 +640,10 @@
                     if (!hasCheckedIn) {
                         initializeCheckinView();
                     } else if (hasCheckedIn && !hasCheckedOut) {
-                         checkInStatusMessage.textContent = appState.attendanceData.statusMasuk;
-                         checkInTimeStatus.textContent = `Absen Masuk: ${appState.attendanceData.absenMasuk.toLocaleString('id-ID')}`;
-                         checkInMapContainer.classList.remove('hidden');
-                         displayMap('check-in-map', appState.attendanceData.locationMasuk, 'Lokasi Absen Masuk');
+                         checkInStatusMessage.textContent = appState.attendanceData['Status Masuk'];
+                         checkInTimeStatus.textContent = `Absen Masuk: ${new Date(appState.attendanceData['Absen Masuk']).toLocaleString('id-ID')}`;
+                         // Map requires coords, which we don't fetch back. We'll skip showing map here.
+                         checkInMapContainer.classList.add('hidden');
                     } else if (hasCheckedOut) {
                         populateSummary(appState.attendanceData);
                     }
@@ -680,15 +654,21 @@
                 }
             }
 
-            loginForm.addEventListener('submit', (e) => {
+            loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const enteredEmail = emailInput.value.trim().toLowerCase();
                 const user = users.find(u => u.email.trim().toLowerCase() === enteredEmail);
 
                 if (user) {
                     appState.loggedInUser = user;
-                    appState.attendanceData = null; // Reset data for new login
-                    loadState(); // Load data for this specific user
+                    showModal("Mengecek status terakhir...");
+                    const result = await fetchFromSpreadsheet('getTodaysStatus', user.email);
+                    if (result && result.status === 'found') {
+                        appState.attendanceData = result.data;
+                    } else {
+                        appState.attendanceData = null;
+                    }
+                    modal.classList.add('hidden');
                     updateDateTime();
                     renderUI();
                 } else {
@@ -714,77 +694,67 @@
                     return;
                 }
 
-                checkInPhotoInput.click();
+                cameraModal.classList.remove('hidden');
+                startCamera();
             });
 
-            checkInPhotoInput.addEventListener('change', async (event) => {
-                 if (event.target.files && event.target.files[0]) {
-                    checkInBtn.disabled = true;
-                    checkInBtn.textContent = 'Memproses...';
+            async function processCheckIn(photoDataUrl) {
+                checkInBtn.disabled = true;
+                checkInBtn.textContent = 'Memproses...';
 
-                    try {
-                        const photoDataUrl = await fileToDataUrl(event.target.files[0]);
-                        const location = appState.currentLocation;
-                        const now = new Date();
-                        
-                        const checkInTimeInMinutes = now.getHours() * 60 + now.getMinutes();
-                        const lateThreshold = 9 * 60 + 1;
-                        
-                        let statusMasuk;
-                        let alasanTerlambat = null;
-                        if (checkInTimeInMinutes >= lateThreshold) {
-                            statusMasuk = 'Anda Terlambat Absen';
-                            alasanTerlambat = lateReasonInput.value;
-                        } else {
-                            statusMasuk = 'Terima Kasih Anda Telah Absen Tepat Waktu';
-                        }
-                        
-                        appState.attendanceData = {
-                            ...appState.loggedInUser,
-                            dateMasuk: now.toLocaleDateString('id-ID'),
-                            absenMasuk: now,
-                            fotoMasuk: photoDataUrl,
-                            locationMasuk: location,
-                            statusMasuk: statusMasuk,
-                            alasanTerlambat: alasanTerlambat,
-                            dutyAs: dutyAsSelect.value,
-                            typeOfWork: workTypeSelect.value,
-                            statusAbsen: 'On Working',
-                            absenPulang: null,
-                        };
-                        
-                        sendDataToSpreadsheet(appState.attendanceData);
-                        saveCurrentState(appState.attendanceData);
-                        saveToHistory(appState.attendanceData);
-                        renderUI();
-                        showModal("Absen masuk berhasil!");
-
-                    } catch (error) {
-                        showModal(error.message || 'Terjadi kesalahan tidak diketahui.');
-                    } finally {
-                        checkInBtn.disabled = false;
-                        checkInBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Ambil Foto & Absen Masuk';
+                try {
+                    const location = appState.currentLocation;
+                    const now = new Date();
+                    const checkInTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+                    const lateThreshold = 9 * 60 + 1;
+                    
+                    let statusMasuk;
+                    let alasanTerlambat = null;
+                    if (checkInTimeInMinutes >= lateThreshold) {
+                        statusMasuk = 'Anda Terlambat Absen';
+                        alasanTerlambat = lateReasonInput.value;
+                    } else {
+                        statusMasuk = 'Terima Kasih Anda Telah Absen Tepat Waktu';
                     }
+                    
+                    appState.attendanceData = {
+                        ...appState.loggedInUser,
+                        attendanceId: `ATT-${Date.now()}`,
+                        dateMasuk: now.toLocaleDateString('id-ID'),
+                        absenMasuk: now,
+                        locationMasuk: location,
+                        statusMasuk: statusMasuk,
+                        alasanTerlambat: alasanTerlambat,
+                        dutyAs: dutyAsSelect.value,
+                        typeOfWork: workTypeSelect.value,
+                        statusAbsen: 'On Working',
+                        absenPulang: null,
+                    };
+                    
+                    await sendDataToSpreadsheet(appState.attendanceData);
+                    // Manually convert for UI display
+                    appState.attendanceData['Status Masuk'] = statusMasuk;
+                    appState.attendanceData['Absen Masuk'] = now;
+
+                    renderUI();
+                    showModal("Absen masuk berhasil!");
+
+                } catch (error) {
+                    showModal(error.message || 'Terjadi kesalahan tidak diketahui.');
+                } finally {
+                    checkInBtn.disabled = false;
+                    checkInBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Ambil Foto & Absen Masuk';
                 }
-            });
-
-            checkOutBtn.addEventListener('click', async () => {
-                const workRemark = document.getElementById('work-remark').value;
-                const workPhotoFile = document.getElementById('work-photo').files[0];
-
-                if (!workRemark || !workPhotoFile) {
-                    showModal('Harap isi Remark dan Foto Pekerjaan sebelum absen pulang.');
-                    return;
-                }
-
+            }
+            
+            async function processCheckOut(photoDataUrl) {
                 checkOutBtn.disabled = true;
                 checkOutBtn.textContent = 'Memproses...';
 
                 try {
-                    const photoDataUrl = await fileToDataUrl(workPhotoFile);
                     const location = await getLocation();
                     const now = new Date();
-                    const checkInTime = appState.attendanceData.absenMasuk;
+                    const checkInTime = new Date(appState.attendanceData['Absen Masuk']);
 
                     const checkOutHour = now.getHours();
                     let statusPulang;
@@ -806,21 +776,30 @@
                         totalOvertime = formatDuration(overtimeMs);
                     }
 
-                    appState.attendanceData = {
-                        ...appState.attendanceData,
+                    // Update local state for immediate UI feedback
+                    appState.attendanceData['absenPulang'] = now;
+                    appState.attendanceData['locationPulang'] = location;
+                    appState.attendanceData['statusPulang'] = statusPulang;
+                    appState.attendanceData['totalWorktime'] = totalWorktime;
+                    appState.attendanceData['totalOvertime'] = totalOvertime;
+                    appState.attendanceData['remarkPekerjaan'] = document.getElementById('work-remark').value;
+                    appState.attendanceData['fotoPekerjaan'] = photoDataUrl;
+                    appState.attendanceData['statusAbsen'] = 'Pulang';
+
+                    // Prepare data for spreadsheet (using original keys)
+                    const dataForSheet = {
+                        email: appState.loggedInUser.email,
+                        absenMasuk: appState.attendanceData['Absen Masuk'],
                         absenPulang: now,
                         locationPulang: location,
                         statusPulang: statusPulang,
                         totalWorktime: totalWorktime,
                         totalOvertime: totalOvertime,
-                        remarkPekerjaan: workRemark,
-                        fotoPekerjaan: photoDataUrl,
+                        remarkPekerjaan: document.getElementById('work-remark').value,
                         statusAbsen: 'Pulang',
                     };
                     
-                    saveCurrentState(appState.attendanceData);
-                    saveToHistory(appState.attendanceData);
-                    sendDataToSpreadsheet(appState.attendanceData);
+                    await sendDataToSpreadsheet(dataForSheet);
                     renderUI();
                     showModal("Absen pulang berhasil!");
 
@@ -830,48 +809,40 @@
                     checkOutBtn.disabled = false;
                     checkOutBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Absen Pulang';
                 }
-            });
+            }
+
 
             resetBtn.addEventListener('click', () => {
-                localStorage.removeItem(`ecrewCurrentState_${appState.loggedInUser.email}`);
                 appState.attendanceData = null;
-                lateReasonInput.value = '';
-                document.getElementById('work-remark').value = '';
-                document.getElementById('work-photo').value = '';
-                dutyAsSelect.value = '';
-                workTypeSelect.value = '';
-                checkInMapContainer.classList.add('hidden');
-                summaryElements.lateReasonItem.classList.add('hidden');
-                summaryElements.overtimeItem.classList.add('hidden');
-                locationLoader.classList.remove('hidden');
-                locationLoader.textContent = 'Memuat peta lokasi...';
                 renderUI();
             });
             
-            historyBtn.addEventListener('click', () => {
-                const historyKey = `ecrewHistory_${appState.loggedInUser.email}`;
-                const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+            historyBtn.addEventListener('click', async () => {
+                showModal("Mengambil riwayat...");
+                const result = await fetchFromSpreadsheet('getHistory', appState.loggedInUser.email);
+                modal.classList.add('hidden');
+
                 const historyContainer = document.getElementById('history-container');
                 historyContainer.innerHTML = '';
 
-                if (history.length === 0) {
-                    historyContainer.innerHTML = '<p class="text-center text-slate-400">Tidak ada riwayat absensi.</p>';
-                } else {
-                    history.slice().reverse().forEach(rec => {
+                if (result && result.status === 'success' && result.data.length > 0) {
+                    result.data.forEach(rec => {
                         const card = document.createElement('div');
                         card.className = 'bg-slate-800/50 p-4 rounded-lg';
-                        const checkInTime = new Date(rec.absenMasuk).toLocaleTimeString('id-ID');
-                        const checkOutTime = rec.absenPulang ? new Date(rec.absenPulang).toLocaleTimeString('id-ID') : 'Belum Absen';
+                        const checkInTime = new Date(rec['Absen Masuk']).toLocaleTimeString('id-ID');
+                        const checkOutTime = rec['Absen Pulang'] ? new Date(rec['Absen Pulang']).toLocaleTimeString('id-ID') : 'Belum Absen';
                         
                         card.innerHTML = `
-                            <p class="font-bold text-lg">${rec.dateMasuk}</p>
+                            <p class="font-bold text-lg">${new Date(rec['Tanggal Masuk']).toLocaleDateString('id-ID')}</p>
                             <div class="text-sm text-slate-300 mt-2">
-                                <p><span class="font-semibold">Masuk:</span> ${checkInTime} (${rec.statusMasuk})</p>
-                                <p><span class="font-semibold">Pulang:</span> ${checkOutTime} (${rec.statusPulang || ''})</p>
+                                <p><span class="font-semibold">Masuk:</span> ${checkInTime} (${rec['Status Masuk']})</p>
+                                <p><span class="font-semibold">Pulang:</span> ${checkOutTime} (${rec['Status Pulang'] || ''})</p>
                             </div>
                         `;
                         historyContainer.appendChild(card);
                     });
+                } else {
+                    historyContainer.innerHTML = '<p class="text-center text-slate-400">Tidak ada riwayat absensi.</p>';
                 }
 
                 checkInSection.classList.add('hidden');
@@ -881,10 +852,48 @@
             backToMainBtn.addEventListener('click', () => {
                 renderUI();
             });
+            
+            // Camera Functions
+            async function startCamera() {
+                try {
+                    currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                    videoStream.srcObject = currentStream;
+                } catch (err) {
+                    console.error("Error accessing camera: ", err);
+                    showModal("Tidak bisa mengakses kamera. Pastikan Anda memberikan izin.");
+                    cameraModal.classList.add('hidden');
+                }
+            }
+
+            function stopCamera() {
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+                cameraModal.classList.add('hidden');
+            }
+            
+            cancelCameraBtn.addEventListener('click', stopCamera);
+            
+            captureBtn.addEventListener('click', async () => {
+                canvas.width = videoStream.videoWidth;
+                canvas.height = videoStream.videoHeight;
+                canvas.getContext('2d').drawImage(videoStream, 0, 0);
+                const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                stopCamera();
+                
+                if (appState.attendanceData && !appState.attendanceData['Absen Pulang']) {
+                    // This is a check-out photo
+                    await processCheckOut(photoDataUrl);
+                } else {
+                    // This is a check-in photo
+                    await processCheckIn(photoDataUrl);
+                }
+            });
+
 
             // --- INITIALIZATION ---
             setInterval(updateDateTime, 1000);
-            // Don't load state until user is logged in
+            renderUI();
         });
     </script>
 </body>
