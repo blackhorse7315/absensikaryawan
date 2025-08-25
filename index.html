@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecrew - Aplikasi Absensi (V4 Final - Cloud Sync)</title>
+    <title>Ecrew - Aplikasi Absensi (V4 Final)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -158,35 +158,16 @@
     
     <div id="modal-container" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden"></div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, addDoc, query, where, getDocs, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
-        
-        // --- KONFIGURASI FIREBASE ---
-        const firebaseConfig = {
-          apiKey: "AIzaSyAoUgIGL2IVeyXaSMh17g9XpjzXCau2thA",
-          authDomain: "ecrew-absensi-karyawan.firebaseapp.com",
-          projectId: "ecrew-absensi-karyawan",
-          storageBucket: "ecrew-absensi-karyawan.appspot.com",
-          messagingSenderId: "511799277557",
-          appId: "1:511799277557:web:7ed1222ae0d6a2c54512bc",
-          measurementId: "G-EDRGMM0396"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
         // --- STATE & DATA ---
         let loggedInUser = null;
         let cameraStream = null;
         let todayAttendance = null;
         let userHistory = [];
         let timeInterval = null;
-        let newsUnsubscribe = null;
 
-        // --- DATABASE KARYAWAN (Lokal untuk verifikasi login) ---
+        // --- DATABASE KARYAWAN ---
         const employeeDatabase = {
             "managementtranswisata@gmail.com": { name: "Rustam Suhanda", division: "Staf", position: "President Director", role: "ADMIN" },
             "warauw_1@yahoo.com": { name: "Selfy Warauw", division: "Staf", position: "Director", role: "ADMIN" },
@@ -232,7 +213,7 @@
             "bobby.feisal22@gmail.com": { name: "Bobby Feisal Mahardhika", division: "Staf", position: "Engineering", role: "USER" },
             "tri3wiwid@gmail.com": { name: "Tri Widayat", division: "Operation", position: "Flight Support", role: "USER" },
             "is.darminto35@gmail.com": { name: "Isdarminto", division: "Staf", position: "Logistic", role: "USER" },
-            "sulaichann@gmail.com": { name: "Sulaichan Noor Ali", division: "Staf", position: "Logistic", role: "USER" },
+            "sulaichann @gmail.com": { name: "Sulaichan Noor Ali", division: "Staf", position: "Logistic", role: "USER" },
             "sbayuputro@gmail.com": { name: "Sri Muljono Bayu Putro", division: "Operation", position: "Flight Support", role: "USER" },
             "Asrigatot.67@gmail.com": { name: "Asri Gatot Yulianto", division: "Safety", position: "Aviation Security", role: "USER" },
             "nanangchabibi3@gmail.com": { name: "Nanang Chabibi", division: "Safety", position: "Aviation Security", role: "USER" },
@@ -247,6 +228,10 @@
             "alexanderdevata@yahoo.co.id": { name: "Alexander Anggarda Yunan Devata", division: "Operation", position: "Flight Support", role: "USER" },
             "sskkyy020@gmail.com": { name: "Sukyono", division: "Operation", position: "Flight Support", role: "USER" }
         };
+        let mockNewsData = JSON.parse(localStorage.getItem('ecrew_news')) || [
+            { id: 1, title: 'Jadwal Libur Nasional Terbaru', description: 'Pemerintah telah menetapkan jadwal libur nasional...', image: 'https://placehold.co/600x400/3498db/ffffff?text=Info+Libur', date: '24 Agu 2025' },
+            { id: 2, title: 'Program Karyawan Terbaik Bulan Ini', description: 'Selamat kepada Budi Santoso dari Divisi Marketing...', image: 'https://placehold.co/600x400/2ecc71/ffffff?text=Selamat!', date: '22 Agu 2025' }
+        ];
         const workTypes = ["Office Hour", "Standby Flight", "Standby on Call", "Pos One Gate", "Day Off", "Day Off 7 Consecutive Days for Pilot", "Flight Duty VIP", "Ferry Flight", "PPC Simulator", "PPC Aircraft", "Test Flight", "Ground Run", "Recurrent Training", "Recency Flight", "Meeting Out of Office", "Medical Examination", "Annual Leave", "Sick", "Technical Representative", "Aviation Security", "Over Time"];
         const dutyAsOptions = ["Director", "Safety, Quality & Security Manager", "Operation Manager", "Maintenance Manager", "Chief Pilot Fixed Wing", "Chief Pilot Rotary Wing", "Chief Flight Support", "Chief Inspector", "Chief Engineer", "Chief Finance, Accounting & Staf", "Chief Engineering", "Pilot in Command", "Second in Command", "Ground Instructor", "Flight Instructor", "Company Check Pilot", "Engineer", "Line Pilot", "Cabin Service", "Student", "Flight Support", "Ground Support", "Technical Representative", "Engineering", "Staff", "Logistic", "Aviation Security", "Driver"];
 
@@ -256,28 +241,21 @@
         const loginError = document.getElementById('login-error');
 
         // --- EVENT LISTENERS ---
-        loginForm.addEventListener('submit', async (e) => {
+        loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             loginError.classList.add('hidden');
-            const email = document.getElementById('email').value.trim().toLowerCase();
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            
             const userData = employeeDatabase[email];
             if (userData) {
                 const firstName = userData.name.split(' ')[0].toLowerCase();
                 if (password === firstName) {
                     loggedInUser = { email, ...userData };
-                    try {
-                        await loadUserHistory();
-                        const todayDateString = new Date().toLocaleDateString('en-CA');
-                        todayAttendance = userHistory.find(rec => rec.date === todayDateString) || null;
-                        setupDashboard();
-                        showPage('dashboard-page');
-                    } catch (err) {
-                        console.error("Firebase Error:", err);
-                        loginError.textContent = 'Gagal terhubung ke database. Coba lagi.';
-                        loginError.classList.remove('hidden');
-                    }
+                    loadUserHistory();
+                    const todayDateString = new Date().toLocaleDateString('en-CA');
+                    todayAttendance = userHistory.find(rec => rec.date === todayDateString) || null;
+                    setupDashboard();
+                    showPage('dashboard-page');
                 } else {
                     loginError.textContent = 'Password salah.';
                     loginError.classList.remove('hidden');
@@ -290,7 +268,6 @@
         
         logoutBtn.addEventListener('click', () => {
             if (timeInterval) clearInterval(timeInterval);
-            if (newsUnsubscribe) newsUnsubscribe();
             loggedInUser = null;
             document.getElementById('email').value = '';
             document.getElementById('password').value = '';
@@ -301,7 +278,6 @@
         function setupDashboard() {
             document.getElementById('user-name').textContent = loggedInUser.name;
             document.getElementById('user-avatar').src = `https://placehold.co/40x40/${loggedInUser.role === 'ADMIN' ? '4A5568' : '0D253F'}/FFFFFF?text=${loggedInUser.name.charAt(0)}`;
-            listenToNewsUpdates();
             if (loggedInUser.role === 'ADMIN') {
                 document.getElementById('user-view').classList.add('hidden');
                 document.getElementById('admin-view').classList.remove('hidden');
@@ -320,9 +296,11 @@
             timeInterval = setInterval(updateTime, 1000);
             renderAttendanceCard();
             renderHistorySummary();
+            renderNewsForUser();
         }
 
         function setupAdminDashboard() {
+            renderAdminNewsList();
             document.getElementById('add-news-btn').addEventListener('click', () => showNewsModal());
             renderAdminHistoryTable('daily');
             document.querySelectorAll('#history-filter-buttons .filter-btn').forEach(btn => {
@@ -379,12 +357,11 @@
             lucide.createIcons();
         }
         
-        function renderNewsForUser(newsData) {
+        function renderNewsForUser() {
             const newsFeed = document.getElementById('news-feed');
-            if(!newsFeed) return;
             newsFeed.innerHTML = '';
-            if (!newsData || newsData.length === 0) { newsFeed.innerHTML = `<p class="text-gray-500 text-center">Belum ada berita terbaru.</p>`; return; }
-            newsData.slice().reverse().forEach(news => { newsFeed.innerHTML += `<div class="bg-white rounded-lg shadow overflow-hidden"><img src="${news.image}" alt="${news.title}" class="w-full h-40 object-cover"><div class="p-4"><p class="font-bold text-lg text-gray-800">${news.title}</p><p class="text-sm text-gray-500 mb-2">${news.date}</p><p class="text-gray-600">${news.description}</p></div></div>`; });
+            if (mockNewsData.length === 0) { newsFeed.innerHTML = `<p class="text-gray-500 text-center">Belum ada berita terbaru.</p>`; return; }
+            mockNewsData.slice().reverse().forEach(news => { newsFeed.innerHTML += `<div class="bg-white rounded-lg shadow overflow-hidden"><img src="${news.image}" alt="${news.title}" class="w-full h-40 object-cover"><div class="p-4"><p class="font-bold text-lg text-gray-800">${news.title}</p><p class="text-sm text-gray-500 mb-2">${news.date}</p><p class="text-gray-600">${news.description}</p></div></div>`; });
         }
 
         function renderHistorySummary() {
@@ -535,27 +512,23 @@
                 totalWorkTime, 
                 totalOvertime 
             };
-            await saveAttendanceRecord();
+            saveAttendanceRecord();
             renderAttendanceCard();
             renderHistorySummary();
         }
 
         // --- FUNGSI DATA & HELPER ---
-        async function saveAttendanceRecord() {
-            const docId = `${todayAttendance.date}_${loggedInUser.email}`;
-            const attendanceRef = doc(db, "attendance", docId);
-            await setDoc(attendanceRef, { email: loggedInUser.email, ...todayAttendance });
-            await loadUserHistory();
+        function saveAttendanceRecord() {
+            const allHistory = JSON.parse(localStorage.getItem('ecrew_attendance_history')) || [];
+            const otherUsersHistory = allHistory.filter(rec => rec.email !== loggedInUser.email || rec.date !== todayAttendance.date);
+            const updatedHistory = [...otherUsersHistory, {email: loggedInUser.email, ...todayAttendance}];
+            localStorage.setItem('ecrew_attendance_history', JSON.stringify(updatedHistory));
+            loadUserHistory();
         }
 
-        async function loadUserHistory() {
-            const q = query(collection(db, "attendance"), where("email", "==", loggedInUser.email));
-            const querySnapshot = await getDocs(q);
-            userHistory = [];
-            querySnapshot.forEach((doc) => {
-                userHistory.push(doc.data());
-            });
-            userHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
+        function loadUserHistory() {
+            const allHistory = JSON.parse(localStorage.getItem('ecrew_attendance_history')) || [];
+            userHistory = allHistory.filter(rec => rec.email === loggedInUser.email);
         }
 
         function updateTime() {
@@ -690,34 +663,37 @@
         function stopCamera() { if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; } }
         
         // --- ADMIN FUNCTIONS ---
-        async function renderAdminHistoryTable(filterType) {
+        function renderAdminHistoryTable(filterType) {
             const tableBody = document.getElementById('admin-history-table');
-            tableBody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-gray-500">Memuat data...</td></tr>`;
+            tableBody.innerHTML = '';
+            const allHistory = JSON.parse(localStorage.getItem('ecrew_attendance_history')) || [];
             
             const now = new Date();
-            let q;
-            const attendanceCol = collection(db, "attendance");
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).setHours(0,0,0,0); // Monday
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
-            if (filterType === 'daily') {
-                q = query(attendanceCol, where("date", "==", today.toLocaleDateString('en-CA')));
-            } else if (filterType === 'weekly') {
-                const firstDay = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
-                q = query(attendanceCol, where("date", ">=", firstDay.toLocaleDateString('en-CA')));
-            } else if (filterType === 'monthly') {
-                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                q = query(attendanceCol, where("date", ">=", firstDay.toLocaleDateString('en-CA')));
-            }
+            const filteredHistory = allHistory.filter(record => {
+                if (!record.date) return false;
+                const recordDate = new Date(record.date).getTime();
+                if (filterType === 'daily') {
+                    return recordDate === today;
+                }
+                if (filterType === 'weekly') {
+                    return recordDate >= firstDayOfWeek;
+                }
+                if (filterType === 'monthly') {
+                    return recordDate >= firstDayOfMonth;
+                }
+                return false;
+            });
 
-            const querySnapshot = await getDocs(q);
-            if (querySnapshot.empty) {
+            if (filteredHistory.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-gray-500">Tidak ada data absensi untuk periode ini.</td></tr>`;
                 return;
             }
 
-            tableBody.innerHTML = '';
-            querySnapshot.forEach(doc => {
-                const record = doc.data();
+            filteredHistory.forEach(record => {
                 const user = employeeDatabase[record.email];
                 const clockInDate = new Date(record.clockInTime);
                 const isLate = record.statusMasuk.includes('Terlambat');
@@ -744,7 +720,7 @@
             }
         }
 
-        async function downloadReport() {
+        function downloadReport() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'landscape' });
 
@@ -756,22 +732,22 @@
                 alert('Mohon lengkapi semua filter (Nama, Mulai Tanggal, Sampai Tanggal).');
                 return;
             }
-            
-            const q = query(collection(db, "attendance"), 
-                where("email", "==", userEmail),
-                where("date", ">=", startDate),
-                where("date", "<=", endDate)
-            );
-            
-            const querySnapshot = await getDocs(q);
 
-            if (querySnapshot.empty) {
+            const allHistory = JSON.parse(localStorage.getItem('ecrew_attendance_history')) || [];
+            const userData = employeeDatabase[userEmail];
+            
+            const filteredHistory = allHistory.filter(record => {
+                return record.email === userEmail &&
+                       record.date >= startDate &&
+                       record.date <= endDate;
+            });
+
+            if (filteredHistory.length === 0) {
                 alert('Tidak ada data absensi ditemukan untuk karyawan dan periode yang dipilih.');
                 return;
             }
-            
-            const userData = employeeDatabase[userEmail];
-            
+
+            // --- PDF CONTENT ---
             doc.setFontSize(16);
             doc.text('REKAP ABSENSI BULANAN KARYAWAN TRANSWISATA PRIMA AVIATION', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
             
@@ -783,8 +759,7 @@
             const tableColumn = ["DATE", "NAME", "DIVISION", "POSITION", "DUTY AS", "TYPE OF WORK", "STATUS ABSEN", "ABSEN MASUK", "ABSEN PULANG", "TOTAL TIME", "REMARKS"];
             const tableRows = [];
 
-            querySnapshot.forEach(docSnap => {
-                const record = docSnap.data();
+            filteredHistory.forEach(record => {
                 const clockIn = new Date(record.clockInTime);
                 const clockOut = new Date(record.clockOutTime);
                 const rowData = [
@@ -815,29 +790,14 @@
             doc.save(`Laporan Absensi - ${userData.name}.pdf`);
         }
 
-        function listenToNewsUpdates() {
-            const newsCol = collection(db, "news");
-            newsUnsubscribe = onSnapshot(newsCol, (querySnapshot) => {
-                const newsData = [];
-                querySnapshot.forEach((doc) => {
-                    newsData.push({ id: doc.id, ...doc.data() });
-                });
-                if (loggedInUser.role === 'ADMIN') {
-                    renderAdminNewsList(newsData);
-                } else {
-                    renderNewsForUser(newsData);
-                }
-            });
-        }
-
-        function renderAdminNewsList(newsData) {
+        function renderAdminNewsList() {
             const container = document.getElementById('admin-news-list');
             container.innerHTML = '';
-            if (!newsData || newsData.length === 0) {
+            if (mockNewsData.length === 0) {
                 container.innerHTML = `<p class="text-center text-gray-500">Belum ada berita.</p>`;
                 return;
             }
-            newsData.forEach((news) => {
+            mockNewsData.forEach((news, index) => {
                 container.innerHTML += `
                     <div class="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
                         <div class="flex items-center space-x-4">
@@ -848,24 +808,18 @@
                             </div>
                         </div>
                         <div class="flex space-x-2">
-                            <button class="edit-news-btn p-2 text-gray-500 hover:text-blue-600" data-id="${news.id}"><i data-lucide="edit" class="w-5 h-5"></i></button>
-                            <button class="delete-news-btn p-2 text-gray-500 hover:text-red-600" data-id="${news.id}"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                            <button class="edit-news-btn p-2 text-gray-500 hover:text-blue-600" data-index="${index}"><i data-lucide="edit" class="w-5 h-5"></i></button>
+                            <button class="delete-news-btn p-2 text-gray-500 hover:text-red-600" data-index="${index}"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
                         </div>
                     </div>
                 `;
             });
-            document.querySelectorAll('.edit-news-btn').forEach(btn => btn.addEventListener('click', async (e) => {
-                const docRef = doc(db, "news", e.currentTarget.dataset.id);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    showNewsModal(docSnap.data(), docSnap.id);
-                }
-            }));
-            document.querySelectorAll('.delete-news-btn').forEach(btn => btn.addEventListener('click', (e) => deleteNews(e.currentTarget.dataset.id)));
+            document.querySelectorAll('.edit-news-btn').forEach(btn => btn.addEventListener('click', (e) => showNewsModal(mockNewsData[e.currentTarget.dataset.index], e.currentTarget.dataset.index)));
+            document.querySelectorAll('.delete-news-btn').forEach(btn => btn.addEventListener('click', (e) => deleteNews(e.currentTarget.dataset.index)));
             lucide.createIcons();
         }
         
-        async function showNewsModal(newsItem = null, docId = null) {
+        function showNewsModal(newsItem = null, index = -1) {
             const isEditing = newsItem !== null;
             const modalTitle = isEditing ? 'Edit Berita' : 'Tambah Berita Baru';
             const buttonText = isEditing ? 'Simpan Perubahan' : 'Simpan Berita';
@@ -908,9 +862,11 @@
                 }
             });
 
-            document.getElementById('news-form').addEventListener('submit', async (e) => {
+            document.getElementById('news-form').addEventListener('submit', (e) => {
                 e.preventDefault();
+                const newId = isEditing ? newsItem.id : Date.now();
                 const updatedNews = {
+                    id: newId,
                     title: document.getElementById('news-title').value,
                     description: document.getElementById('news-description').value,
                     image: imagePreview.src,
@@ -918,18 +874,21 @@
                 };
 
                 if (isEditing) {
-                    const newsRef = doc(db, "news", docId);
-                    await updateDoc(newsRef, updatedNews);
+                    mockNewsData[index] = updatedNews;
                 } else {
-                    await addDoc(collection(db, "news"), updatedNews);
+                    mockNewsData.push(updatedNews);
                 }
+                localStorage.setItem('ecrew_news', JSON.stringify(mockNewsData));
                 hideModal();
+                renderAdminNewsList();
             });
         }
 
-        async function deleteNews(docId) {
+        function deleteNews(index) {
             if (confirm('Apakah Anda yakin ingin menghapus berita ini?')) {
-                await deleteDoc(doc(db, "news", docId));
+                mockNewsData.splice(index, 1);
+                localStorage.setItem('ecrew_news', JSON.stringify(mockNewsData));
+                renderAdminNewsList();
             }
         }
 
