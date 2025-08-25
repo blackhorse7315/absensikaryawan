@@ -51,6 +51,22 @@
             background-color: #374151; /* bg-gray-700 */
             border: 1px solid #4B5563; /* border-gray-600 */
         }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        .summary-label {
+            color: #9CA3AF; /* text-slate-400 */
+        }
+        .summary-value {
+            font-weight: 600;
+            text-align: right;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-white flex items-center justify-center min-h-screen p-4">
@@ -90,14 +106,12 @@
                         <p class="text-slate-400 text-sm" id="user-division"></p>
                     </div>
 
-                    <!-- Live Location Map -->
                     <div id="live-location-container">
                         <label class="block text-sm font-medium text-slate-300 mb-2">Lokasi Anda Saat Ini:</label>
                         <div id="live-location-map"></div>
                          <p id="location-loader" class="text-center text-slate-400 p-4">Memuat peta lokasi...</p>
                     </div>
 
-                    <!-- Manual Selection Dropdowns -->
                     <div class="space-y-4">
                         <div>
                             <label for="duty-as-select" class="block text-sm font-medium text-slate-300 mb-2">Duty As</label>
@@ -114,7 +128,12 @@
                             </select>
                         </div>
                     </div>
-                     <!-- Photo & Check-in Button -->
+                    
+                    <div id="late-reason-section" class="hidden space-y-2">
+                        <label for="late-reason" class="block text-sm font-medium text-red-400">Alasan Terlambat (Wajib Diisi)</label>
+                        <textarea id="late-reason" rows="3" class="w-full p-3 bg-slate-700 border border-red-500 rounded-lg focus:ring-red-500 focus:border-red-500" placeholder="Jelaskan alasan keterlambatan Anda..."></textarea>
+                    </div>
+
                     <button id="check-in-btn" class="w-full btn-primary font-bold py-4 px-4 rounded-lg text-xl shadow-lg flex items-center justify-center gap-3">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                         Ambil Foto & Absen Masuk
@@ -129,19 +148,11 @@
                         <p class="text-sm font-bold mt-1" id="check-in-status-message"></p>
                     </div>
 
-                    <!-- Check-in Map -->
                     <div id="check-in-map-container" class="hidden">
                         <label class="block text-sm font-medium text-slate-300 mb-2">Lokasi Masuk Anda:</label>
                         <div id="check-in-map"></div>
                     </div>
 
-                    <!-- Late Reason Form -->
-                    <div id="late-reason-section" class="hidden space-y-2">
-                         <label for="late-reason" class="block text-sm font-medium text-slate-300">Alasan Terlambat</label>
-                         <textarea id="late-reason" rows="3" class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Jelaskan alasan keterlambatan Anda..."></textarea>
-                    </div>
-
-                    <!-- Work Remark Form -->
                     <div id="work-remark-section" class="space-y-4">
                         <div>
                             <label for="work-remark" class="block mb-2 text-sm font-medium text-slate-300">Remark Pekerjaan Hari Ini</label>
@@ -160,26 +171,70 @@
                 </div>
 
                 <!-- Summary Section -->
-                <div id="summary-section" class="hidden space-y-3 text-center">
-                    <h2 class="text-xl font-bold">Ringkasan Kerja Hari Ini</h2>
-                    <div class="bg-slate-800 p-4 rounded-lg">
-                        <p class="text-slate-400">Status Pulang</p>
-                        <p id="summary-status-pulang" class="text-lg font-semibold"></p>
+                <div id="summary-section" class="hidden space-y-4">
+                    <h2 class="text-2xl font-bold text-center">Laporan Absensi Hari Ini</h2>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center">
+                            <p class="font-semibold mb-2">Foto Masuk</p>
+                            <img id="summary-photo-masuk" src="https://placehold.co/200x200/334155/e2e8f0?text=Foto" alt="Foto Masuk" class="rounded-lg w-full h-auto aspect-square object-cover">
+                        </div>
+                        <div class="text-center">
+                            <p class="font-semibold mb-2">Foto Pekerjaan</p>
+                            <img id="summary-photo-pekerjaan" src="https://placehold.co/200x200/334155/e2e8f0?text=Foto" alt="Foto Pekerjaan" class="rounded-lg w-full h-auto aspect-square object-cover">
+                        </div>
                     </div>
-                    <div class="bg-slate-800 p-4 rounded-lg">
-                        <p class="text-slate-400">Total Jam Kerja</p>
-                        <p id="summary-total-worktime" class="text-lg font-semibold"></p>
+
+                    <div class="bg-slate-800/50 p-4 rounded-lg space-y-2">
+                        <div class="summary-item">
+                            <span class="summary-label">Nama</span>
+                            <span id="summary-name" class="summary-value"></span>
+                        </div>
+                         <div class="summary-item">
+                            <span class="summary-label">Duty / Tipe Kerja</span>
+                            <span id="summary-duty-work" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Absen Masuk</span>
+                            <span id="summary-absen-masuk" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Status Masuk</span>
+                            <span id="summary-status-masuk" class="summary-value"></span>
+                        </div>
+                         <div id="summary-late-reason-item" class="summary-item hidden">
+                            <span class="summary-label">Alasan Terlambat</span>
+                            <span id="summary-late-reason" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Absen Pulang</span>
+                            <span id="summary-absen-pulang" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Status Pulang</span>
+                            <span id="summary-status-pulang" class="summary-value"></span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Total Jam Kerja</span>
+                            <span id="summary-total-worktime" class="summary-value text-green-400"></span>
+                        </div>
+                        <div id="summary-overtime-item" class="summary-item hidden">
+                            <span class="summary-label">Total Overtime</span>
+                            <span id="summary-total-overtime" class="summary-value text-yellow-400"></span>
+                        </div>
                     </div>
-                    <div id="summary-overtime-card" class="hidden bg-slate-800 p-4 rounded-lg">
-                        <p class="text-slate-400">Total Overtime</p>
-                        <p id="summary-total-overtime" class="text-lg font-semibold"></p>
+                    
+                    <div>
+                        <p class="font-semibold mb-2 text-center">Remark Pekerjaan</p>
+                        <p id="summary-remark" class="bg-slate-800/50 p-3 rounded-lg text-slate-300 text-sm"></p>
                     </div>
-                    <!-- Summary Map -->
-                    <div id="summary-map-card" class="hidden bg-slate-800 p-4 rounded-lg">
-                        <p class="text-slate-400 mb-2">Lokasi Pulang Anda</p>
+
+                    <div>
+                        <p class="font-semibold mb-2 text-center">Peta Lokasi Absen</p>
                         <div id="summary-map"></div>
                     </div>
-                    <button id="reset-btn" class="w-full btn-primary font-bold py-3 px-4 rounded-lg mt-4">Selesai & Kembali</button>
+
+                    <button id="reset-btn" class="w-full btn-primary font-bold py-3 px-4 rounded-lg mt-4">Selesai</button>
                 </div>
             </div>
         </div>
@@ -227,16 +282,32 @@
             const checkInStatusMessage = document.getElementById('check-in-status-message');
             const checkInTimeStatus = document.getElementById('check-in-time-status');
             const lateReasonSection = document.getElementById('late-reason-section');
-            const summaryStatusPulang = document.getElementById('summary-status-pulang');
-            const summaryTotalWorktime = document.getElementById('summary-total-worktime');
-            const summaryOvertimeCard = document.getElementById('summary-overtime-card');
-            const summaryTotalOvertime = document.getElementById('summary-total-overtime');
+            const lateReasonInput = document.getElementById('late-reason');
             const checkInPhotoInput = document.getElementById('check-in-photo');
             const modal = document.getElementById('modal');
             const modalMessage = document.getElementById('modal-message');
             const modalCloseBtn = document.getElementById('modal-close-btn');
             const checkInMapContainer = document.getElementById('check-in-map-container');
-            const summaryMapCard = document.getElementById('summary-map-card');
+            
+            // Summary Elements
+            const summaryElements = {
+                photoMasuk: document.getElementById('summary-photo-masuk'),
+                photoPekerjaan: document.getElementById('summary-photo-pekerjaan'),
+                name: document.getElementById('summary-name'),
+                dutyWork: document.getElementById('summary-duty-work'),
+                absenMasuk: document.getElementById('summary-absen-masuk'),
+                statusMasuk: document.getElementById('summary-status-masuk'),
+                lateReasonItem: document.getElementById('summary-late-reason-item'),
+                lateReason: document.getElementById('summary-late-reason'),
+                absenPulang: document.getElementById('summary-absen-pulang'),
+                statusPulang: document.getElementById('summary-status-pulang'),
+                totalWorktime: document.getElementById('summary-total-worktime'),
+                overtimeItem: document.getElementById('summary-overtime-item'),
+                totalOvertime: document.getElementById('summary-total-overtime'),
+                remark: document.getElementById('summary-remark'),
+                map: document.getElementById('summary-map'),
+            };
+
 
             // --- APP STATE ---
             let appState = {
@@ -371,18 +442,37 @@
             }
 
             function displayMap(containerId, coords, message = 'Lokasi Anda') {
-                if (mapInstances[containerId]) {
+                 if (mapInstances[containerId]) {
                     mapInstances[containerId].remove();
                 }
-                const map = L.map(containerId).setView(coords, 16);
+                const map = L.map(containerId).setView([coords.lat, coords.lng], 16);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map);
-                L.marker(coords).addTo(map)
+                L.marker([coords.lat, coords.lng]).addTo(map)
                     .bindPopup(message)
                     .openPopup();
                 mapInstances[containerId] = map;
             }
+
+            function displaySummaryMap(checkInCoords, checkOutCoords) {
+                const containerId = 'summary-map';
+                if (mapInstances[containerId]) {
+                    mapInstances[containerId].remove();
+                }
+                const map = L.map(containerId);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                
+                const checkInMarker = L.marker([checkInCoords.lat, checkInCoords.lng]).addTo(map).bindPopup('Lokasi Masuk');
+                const checkOutMarker = L.marker([checkOutCoords.lat, checkOutCoords.lng]).addTo(map).bindPopup('Lokasi Pulang');
+                
+                const group = new L.featureGroup([checkInMarker, checkOutMarker]);
+                map.fitBounds(group.getBounds().pad(0.5));
+                mapInstances[containerId] = map;
+            }
+
 
             function formatDuration(ms) {
                 if (ms < 0) ms = 0;
@@ -392,13 +482,35 @@
                 const seconds = totalSeconds % 60;
                 return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             }
+            
+            function fileToDataUrl(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function handleLateVisibility() {
+                const now = new Date();
+                const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+                const lateThreshold = 9 * 60 + 1; // 09:01
+                
+                if (currentTimeInMinutes >= lateThreshold) {
+                    lateReasonSection.classList.remove('hidden');
+                } else {
+                    lateReasonSection.classList.add('hidden');
+                }
+            }
 
             async function initializeCheckinView() {
+                handleLateVisibility();
                 try {
                     const location = await getLocation();
                     appState.currentLocation = location;
                     locationLoader.classList.add('hidden');
-                    displayMap('live-location-map', [location.lat, location.lng]);
+                    displayMap('live-location-map', location);
                 } catch (error) {
                     locationLoader.textContent = `Gagal memuat lokasi: ${error.message}`;
                     showModal(error.message);
@@ -461,6 +573,12 @@
                     showModal('Harap pilih "Duty As" dan "Tipe Pekerjaan" sebelum melanjutkan.');
                     return;
                 }
+
+                if (!lateReasonSection.classList.contains('hidden') && !lateReasonInput.value.trim()) {
+                    showModal('Anda terlambat. Harap isi alasan keterlambatan sebelum absen.');
+                    return;
+                }
+
                 checkInPhotoInput.click();
             });
 
@@ -470,25 +588,25 @@
                     checkInBtn.textContent = 'Memproses...';
 
                     try {
+                        const photoDataUrl = await fileToDataUrl(event.target.files[0]);
                         const location = appState.currentLocation;
                         const now = new Date();
                         
-                        const checkInTime = now.getHours() * 60 + now.getMinutes();
-                        const lateThreshold = 9 * 60;
+                        const checkInTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+                        const lateThreshold = 9 * 60 + 1;
                         
                         let statusMasuk;
-                        if (checkInTime > lateThreshold) {
+                        if (checkInTimeInMinutes >= lateThreshold) {
                             statusMasuk = 'Anda Terlambat Absen';
-                            lateReasonSection.classList.remove('hidden');
+                            appState.attendanceData.alasanTerlambat = lateReasonInput.value;
                         } else {
                             statusMasuk = 'Terima Kasih Anda Telah Absen Tepat Waktu';
-                            lateReasonSection.classList.add('hidden');
                         }
 
                         appState.attendanceData.absenMasuk = now;
                         appState.attendanceData.dateMasuk = now.toLocaleDateString('id-ID');
-                        appState.attendanceData.fotoMasuk = event.target.files[0].name;
-                        appState.attendanceData.locationMasuk = location.text;
+                        appState.attendanceData.fotoMasuk = photoDataUrl;
+                        appState.attendanceData.locationMasuk = location;
                         appState.attendanceData.statusMasuk = statusMasuk;
                         appState.attendanceData.statusAbsen = 'On Working';
                         appState.attendanceData.dutyAs = dutyAsSelect.value;
@@ -498,7 +616,7 @@
                         checkInTimeStatus.textContent = `Absen Masuk: ${now.toLocaleString('id-ID')}`;
                         
                         checkInMapContainer.classList.remove('hidden');
-                        displayMap('check-in-map', [location.lat, location.lng], 'Lokasi Absen Masuk');
+                        displayMap('check-in-map', location, 'Lokasi Absen Masuk');
 
                         console.log("--- DATA ABSEN MASUK (to be sent to spreadsheet) ---", appState.attendanceData);
                         showModal("Absen masuk berhasil!");
@@ -515,9 +633,9 @@
 
             checkOutBtn.addEventListener('click', async () => {
                 const workRemark = document.getElementById('work-remark').value;
-                const workPhoto = document.getElementById('work-photo').files[0];
+                const workPhotoFile = document.getElementById('work-photo').files[0];
 
-                if (!workRemark || !workPhoto) {
+                if (!workRemark || !workPhotoFile) {
                     showModal('Harap isi Remark dan Foto Pekerjaan sebelum absen pulang.');
                     return;
                 }
@@ -526,6 +644,7 @@
                 checkOutBtn.textContent = 'Memproses...';
 
                 try {
+                    const photoDataUrl = await fileToDataUrl(workPhotoFile);
                     const location = await getLocation();
                     const now = new Date();
                     const checkInTime = appState.attendanceData.absenMasuk;
@@ -548,29 +667,38 @@
                     if (now > overtimeThreshold) {
                         const overtimeMs = now - overtimeThreshold;
                         totalOvertime = formatDuration(overtimeMs);
-                        summaryOvertimeCard.classList.remove('hidden');
-                    } else {
-                        summaryOvertimeCard.classList.add('hidden');
                     }
 
                     appState.attendanceData.absenPulang = now;
-                    appState.attendanceData.locationPulang = location.text;
+                    appState.attendanceData.locationPulang = location;
                     appState.attendanceData.statusPulang = statusPulang;
                     appState.attendanceData.totalWorktime = totalWorktime;
                     appState.attendanceData.totalOvertime = totalOvertime;
                     appState.attendanceData.remarkPekerjaan = workRemark;
-                    appState.attendanceData.fotoPekerjaan = workPhoto.name;
+                    appState.attendanceData.fotoPekerjaan = photoDataUrl;
                     appState.attendanceData.statusAbsen = 'Pulang';
-                    if (lateReasonSection.classList.contains('hidden') === false) {
-                        appState.attendanceData.alasanTerlambat = document.getElementById('late-reason').value;
-                    }
 
-                    summaryStatusPulang.textContent = statusPulang;
-                    summaryTotalWorktime.textContent = totalWorktime;
-                    summaryTotalOvertime.textContent = totalOvertime;
+                    // Populate Summary
+                    summaryElements.photoMasuk.src = appState.attendanceData.fotoMasuk;
+                    summaryElements.photoPekerjaan.src = appState.attendanceData.fotoPekerjaan;
+                    summaryElements.name.textContent = appState.attendanceData.name;
+                    summaryElements.dutyWork.textContent = `${appState.attendanceData.dutyAs} / ${appState.attendanceData.typeOfWork}`;
+                    summaryElements.absenMasuk.textContent = appState.attendanceData.absenMasuk.toLocaleString('id-ID');
+                    summaryElements.statusMasuk.textContent = appState.attendanceData.statusMasuk;
+                    if (appState.attendanceData.alasanTerlambat) {
+                        summaryElements.lateReason.textContent = appState.attendanceData.alasanTerlambat;
+                        summaryElements.lateReasonItem.classList.remove('hidden');
+                    }
+                    summaryElements.absenPulang.textContent = appState.attendanceData.absenPulang.toLocaleString('id-ID');
+                    summaryElements.statusPulang.textContent = statusPulang;
+                    summaryElements.totalWorktime.textContent = totalWorktime;
+                     if (now > overtimeThreshold) {
+                        summaryElements.totalOvertime.textContent = totalOvertime;
+                        summaryElements.overtimeItem.classList.remove('hidden');
+                    }
+                    summaryElements.remark.textContent = workRemark;
                     
-                    summaryMapCard.classList.remove('hidden');
-                    displayMap('summary-map', [location.lat, location.lng], 'Lokasi Absen Pulang');
+                    displaySummaryMap(appState.attendanceData.locationMasuk, appState.attendanceData.locationPulang);
 
                     console.log("--- DATA ABSEN PULANG (to be sent to spreadsheet) ---", appState.attendanceData);
                     showModal("Absen pulang berhasil!");
@@ -594,13 +722,14 @@
                         fotoMasuk: null, locationMasuk: null, locationPulang: null, dateMasuk: null, statusAbsen: null, absenMasuk: null, statusMasuk: null, alasanTerlambat: null, absenPulang: null, statusPulang: null, totalOvertime: null, totalWorktime: null, remarkPekerjaan: null, fotoPekerjaan: null,
                     }
                 };
-                document.getElementById('late-reason').value = '';
+                lateReasonInput.value = '';
                 document.getElementById('work-remark').value = '';
                 document.getElementById('work-photo').value = '';
                 dutyAsSelect.value = '';
                 workTypeSelect.value = '';
                 checkInMapContainer.classList.add('hidden');
-                summaryMapCard.classList.add('hidden');
+                summaryElements.lateReasonItem.classList.add('hidden');
+                summaryElements.overtimeItem.classList.add('hidden');
                 locationLoader.classList.remove('hidden');
                 locationLoader.textContent = 'Memuat peta lokasi...';
                 renderUI();
