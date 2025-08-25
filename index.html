@@ -336,7 +336,7 @@
             let appState = {
                 loggedInUser: null,
                 currentLocation: null,
-                attendanceData: null, // Will be loaded from localStorage
+                attendanceData: null,
             };
             let mapInstances = {};
 
@@ -541,27 +541,34 @@
                 });
             }
             
-            function saveAttendanceHistory(data) {
-                const historyKey = `attendanceHistory_${appState.loggedInUser.email}`;
-                let history = JSON.parse(localStorage.getItem(historyKey)) || [];
-                history = history.filter(rec => rec.dateMasuk !== data.dateMasuk);
-                history.push(data);
-                localStorage.setItem(historyKey, JSON.stringify(history));
+            function saveState() {
+                const state = {
+                    loggedInUser: appState.loggedInUser,
+                    attendanceData: appState.attendanceData,
+                };
+                localStorage.setItem('ecrewAppState', JSON.stringify(state));
             }
 
-            function loadAttendanceForToday() {
-                const historyKey = `attendanceHistory_${appState.loggedInUser.email}`;
-                const history = JSON.parse(localStorage.getItem(historyKey)) || [];
-                const today = new Date().toLocaleDateString('id-ID');
-                const todayRecord = history.find(rec => rec.dateMasuk === today);
-                if (todayRecord) {
-                    todayRecord.absenMasuk = new Date(todayRecord.absenMasuk);
-                    if(todayRecord.absenPulang) {
-                       todayRecord.absenPulang = new Date(todayRecord.absenPulang);
+            function loadState() {
+                const savedState = localStorage.getItem('ecrewAppState');
+                if (savedState) {
+                    const parsedState = JSON.parse(savedState);
+                    // Check if the saved data is for today
+                    if (parsedState.attendanceData && new Date(parsedState.attendanceData.absenMasuk).toLocaleDateString('id-ID') === new Date().toLocaleDateString('id-ID')) {
+                        appState.loggedInUser = parsedState.loggedInUser;
+                        appState.attendanceData = parsedState.attendanceData;
+                        // Re-parse date strings into Date objects
+                        appState.attendanceData.absenMasuk = new Date(appState.attendanceData.absenMasuk);
+                        if (appState.attendanceData.absenPulang) {
+                            appState.attendanceData.absenPulang = new Date(appState.attendanceData.absenPulang);
+                        }
+                    } else {
+                        // Clear old state if it's from a previous day
+                        localStorage.removeItem('ecrewAppState');
                     }
                 }
-                appState.attendanceData = todayRecord;
             }
+
 
             function handleLateVisibility() {
                 const now = new Date();
@@ -598,6 +605,8 @@
                 if (data.alasanTerlambat) {
                     summaryElements.lateReason.textContent = data.alasanTerlambat;
                     summaryElements.lateReasonItem.classList.remove('hidden');
+                } else {
+                    summaryElements.lateReasonItem.classList.add('hidden');
                 }
                 summaryElements.absenPulang.textContent = new Date(data.absenPulang).toLocaleString('id-ID');
                 summaryElements.statusPulang.textContent = data.statusPulang;
@@ -606,6 +615,8 @@
                  if (new Date(data.absenPulang) > overtimeThreshold) {
                     summaryElements.totalOvertime.textContent = data.totalOvertime;
                     summaryElements.overtimeItem.classList.remove('hidden');
+                } else {
+                    summaryElements.overtimeItem.classList.add('hidden');
                 }
                 summaryElements.remark.textContent = data.remarkPekerjaan;
                 
@@ -653,7 +664,10 @@
 
                 if (user) {
                     appState.loggedInUser = user;
-                    loadAttendanceForToday();
+                    // Clear previous user's data
+                    localStorage.removeItem('ecrewAppState');
+                    appState.attendanceData = null;
+                    
                     updateDateTime();
                     renderUI();
                 } else {
@@ -719,6 +733,7 @@
                         };
                         
                         sendDataToSpreadsheet(appState.attendanceData);
+                        saveState();
                         renderUI();
                         showModal("Absen masuk berhasil!");
 
@@ -781,7 +796,7 @@
                         statusAbsen: 'Pulang',
                     };
                     
-                    saveAttendanceHistory(appState.attendanceData);
+                    saveState();
                     sendDataToSpreadsheet(appState.attendanceData);
                     renderUI();
                     showModal("Absen pulang berhasil!");
@@ -795,6 +810,7 @@
             });
 
             resetBtn.addEventListener('click', () => {
+                localStorage.removeItem('ecrewAppState');
                 appState.attendanceData = null;
                 lateReasonInput.value = '';
                 document.getElementById('work-remark').value = '';
@@ -810,33 +826,9 @@
             });
             
             historyBtn.addEventListener('click', () => {
-                const historyKey = `attendanceHistory_${appState.loggedInUser.email}`;
-                const history = JSON.parse(localStorage.getItem(historyKey)) || [];
-                const historyContainer = document.getElementById('history-container');
-                historyContainer.innerHTML = '';
-
-                if (history.length === 0) {
-                    historyContainer.innerHTML = '<p class="text-center text-slate-400">Tidak ada riwayat absensi.</p>';
-                } else {
-                    history.slice().reverse().forEach(rec => {
-                        const card = document.createElement('div');
-                        card.className = 'bg-slate-800/50 p-4 rounded-lg';
-                        const checkInTime = new Date(rec.absenMasuk).toLocaleTimeString('id-ID');
-                        const checkOutTime = rec.absenPulang ? new Date(rec.absenPulang).toLocaleTimeString('id-ID') : 'Belum Absen';
-                        
-                        card.innerHTML = `
-                            <p class="font-bold text-lg">${rec.dateMasuk}</p>
-                            <div class="text-sm text-slate-300 mt-2">
-                                <p><span class="font-semibold">Masuk:</span> ${checkInTime} (${rec.statusMasuk})</p>
-                                <p><span class="font-semibold">Pulang:</span> ${checkOutTime} (${rec.statusPulang || ''})</p>
-                            </div>
-                        `;
-                        historyContainer.appendChild(card);
-                    });
-                }
-
-                checkInSection.classList.add('hidden');
-                historySection.classList.remove('hidden');
+                // This button is now only for showing past days, not today.
+                // A more robust history would fetch from a server, but for now, this is a simple implementation.
+                showModal("Fitur riwayat sedang dalam pengembangan. Data Anda sudah tersimpan di Spreadsheet.");
             });
 
             backToMainBtn.addEventListener('click', () => {
@@ -844,6 +836,7 @@
             });
 
             // --- INITIALIZATION ---
+            loadState(); // Load state on start
             setInterval(updateDateTime, 1000);
             renderUI();
         });
