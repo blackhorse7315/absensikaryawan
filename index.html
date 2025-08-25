@@ -20,6 +20,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
+    <!-- jsPDF for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         body { font-family: 'Poppins', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         .running-text-container { overflow: hidden; white-space: nowrap; box-sizing: border-box; }
@@ -115,6 +119,28 @@
                             </thead>
                             <tbody id="admin-history-table"></tbody>
                         </table>
+                    </div>
+                </div>
+                <!-- Laporan Absensi -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Laporan Absensi</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div>
+                            <label for="report-name" class="block text-sm font-medium text-gray-700">Nama Karyawan</label>
+                            <select id="report-name" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"></select>
+                        </div>
+                        <div>
+                            <label for="start-date" class="block text-sm font-medium text-gray-700">Mulai Tanggal</label>
+                            <input type="date" id="start-date" class="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="end-date" class="block text-sm font-medium text-gray-700">Sampai Tanggal</label>
+                            <input type="date" id="end-date" class="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm">
+                        </div>
+                        <button id="download-report-btn" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center space-x-2">
+                            <i data-lucide="download" class="w-5 h-5"></i>
+                            <span>Download Laporan</span>
+                        </button>
                     </div>
                 </div>
                 <div class="bg-white rounded-2xl shadow-lg p-6">
@@ -284,6 +310,8 @@
                     renderAdminHistoryTable(e.currentTarget.dataset.filter);
                 });
             });
+            populateReportUserDropdown();
+            document.getElementById('download-report-btn').addEventListener('click', downloadReport);
         }
 
         // --- RENDER KARTU ABSENSI DINAMIS ---
@@ -641,12 +669,13 @@
             const allHistory = JSON.parse(localStorage.getItem('ecrew_attendance_history')) || [];
             
             const now = new Date();
-            const today = now.setHours(0, 0, 0, 0);
-            const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).setHours(0,0,0,0);
-            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).setHours(0,0,0,0);
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1))).setHours(0,0,0,0); // Monday
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
             const filteredHistory = allHistory.filter(record => {
-                const recordDate = new Date(record.date).setHours(0,0,0,0);
+                if (!record.date) return false;
+                const recordDate = new Date(record.date).getTime();
                 if (filterType === 'daily') {
                     return recordDate === today;
                 }
@@ -678,6 +707,87 @@
                     </tr>
                 `;
             });
+        }
+
+        function populateReportUserDropdown() {
+            const select = document.getElementById('report-name');
+            select.innerHTML = '<option value="">Pilih Karyawan</option>';
+            for (const email in employeeDatabase) {
+                if (employeeDatabase[email].role === 'USER') {
+                    const user = employeeDatabase[email];
+                    select.innerHTML += `<option value="${email}">${user.name}</option>`;
+                }
+            }
+        }
+
+        function downloadReport() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape' });
+
+            const userEmail = document.getElementById('report-name').value;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+
+            if (!userEmail || !startDate || !endDate) {
+                alert('Mohon lengkapi semua filter (Nama, Mulai Tanggal, Sampai Tanggal).');
+                return;
+            }
+
+            const allHistory = JSON.parse(localStorage.getItem('ecrew_attendance_history')) || [];
+            const userData = employeeDatabase[userEmail];
+            
+            const filteredHistory = allHistory.filter(record => {
+                return record.email === userEmail &&
+                       record.date >= startDate &&
+                       record.date <= endDate;
+            });
+
+            if (filteredHistory.length === 0) {
+                alert('Tidak ada data absensi ditemukan untuk karyawan dan periode yang dipilih.');
+                return;
+            }
+
+            // --- PDF CONTENT ---
+            doc.setFontSize(16);
+            doc.text('REKAP ABSENSI BULANAN KARYAWAN TRANSWISATA PRIMA AVIATION', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.text(`Nama: ${userData.name}`, 14, 25);
+            doc.text(`Start Date: ${new Date(startDate).toLocaleDateString('id-ID')}`, 14, 30);
+            doc.text(`End Date: ${new Date(endDate).toLocaleDateString('id-ID')}`, 14, 35);
+
+            const tableColumn = ["DATE", "NAME", "DIVISION", "POSITION", "DUTY AS", "TYPE OF WORK", "STATUS ABSEN", "ABSEN MASUK", "ABSEN PULANG", "TOTAL TIME", "REMARKS"];
+            const tableRows = [];
+
+            filteredHistory.forEach(record => {
+                const clockIn = new Date(record.clockInTime);
+                const clockOut = new Date(record.clockOutTime);
+                const rowData = [
+                    clockIn.toLocaleDateString('id-ID'),
+                    userData.name,
+                    userData.division,
+                    userData.position,
+                    record.dutyAs,
+                    record.workType,
+                    record.statusMasuk,
+                    clockIn.toLocaleTimeString('id-ID'),
+                    clockOut.toLocaleTimeString('id-ID'),
+                    record.totalWorkTime,
+                    record.remark || '-'
+                ];
+                tableRows.push(rowData);
+            });
+
+            doc.autoTable({
+                head: [tableColumn],
+                body: tableRows,
+                startY: 40,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 160, 133] },
+                styles: { fontSize: 8 },
+            });
+
+            doc.save(`Laporan Absensi - ${userData.name}.pdf`);
         }
 
         function renderAdminNewsList() {
