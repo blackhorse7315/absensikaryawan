@@ -5,569 +5,481 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ecrew - Absensi Karyawan</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
-        .form-container {
-            transition: all 0.5s ease-in-out;
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .hidden-form {
-            opacity: 0;
-            transform: scale(0.95);
-            pointer-events: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
+        .btn-primary {
+            background-color: #1E3A8A; /* Dark Blue */
+            color: white;
+            transition: background-color 0.3s, transform 0.2s;
         }
-        .visible-form {
-            opacity: 1;
-            transform: scale(1);
-            pointer-events: auto;
-            position: static;
+        .btn-primary:hover {
+            background-color: #1C3473;
+            transform: scale(1.05);
         }
-        .loader {
-            border-top-color: #3498db;
-            animation: spin 1s linear infinite;
+        .btn-secondary {
+            background-color: #D1D5DB; /* Gray */
+            color: #1F2937;
+            transition: background-color 0.3s, transform 0.2s;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .btn-secondary:hover {
+            background-color: #9CA3AF;
+            transform: scale(1.05);
         }
-        /* Custom Modal Styles */
-        .modal-backdrop {
-            transition: opacity 0.3s ease;
-        }
-        .modal-content {
-            transition: transform 0.3s ease;
+        .hidden {
+            display: none;
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="bg-slate-900 text-white flex items-center justify-center min-h-screen p-4">
 
     <div class="w-full max-w-md mx-auto">
-        <!-- Header -->
-        <header class="text-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">Ecrew</h1>
-            <p class="text-gray-500">PT. Transwisata Prima Aviation</p>
-        </header>
+        <!-- Login Screen -->
+        <div id="login-screen" class="glassmorphism p-8 rounded-2xl shadow-lg">
+            <div class="text-center mb-8">
+                <img src="https://placehold.co/150x50/1E3A8A/FFFFFF?text=ECREW" alt="Ecrew Logo" class="mx-auto mb-4 rounded">
+                <h1 class="text-2xl font-bold text-white">PT. Transwisata Prima Aviation</h1>
+                <p class="text-slate-300">Sistem Absensi Karyawan</p>
+            </div>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="email" class="block mb-2 text-sm font-medium text-slate-300">Email</label>
+                    <input type="email" id="email" class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="nama@perusahaan.com" required>
+                </div>
+                <button type="submit" class="w-full btn-primary font-bold py-3 px-4 rounded-lg shadow-md">Login</button>
+            </form>
+        </div>
 
-        <main class="bg-white rounded-2xl shadow-xl p-6 md:p-8 relative overflow-hidden">
-            
-            <!-- Check-in Form -->
-            <div id="checkin-form" class="form-container visible-form">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Formulir Absen Masuk</h2>
-                <div class="space-y-4">
-                    <input type="text" id="name" placeholder="Nama Lengkap" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <input type="email" id="email" placeholder="Email Valid" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <input type="text" id="division" placeholder="Divisi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <input type="text" id="position" placeholder="Jabatan" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    
-                    <select id="duty" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                        <option value="">Pilih Duty As</option>
-                        <option value="Director">Director</option>
-                        <option value="Safety, Quality & Security Manager">Safety, Quality & Security Manager</option>
-                        <option value="Operation Manager">Operation Manager</option>
-                        <option value="Maintenance Manager">Maintenance Manager</option>
-                        <option value="Chief Pilot Fixed Wing">Chief Pilot Fixed Wing</option>
-                        <option value="Chief Pilot Rotary Wing">Chief Pilot Rotary Wing</option>
-                        <option value="Chief Flight Support">Chief Flight Support</option>
-                        <option value="Chief Inspector">Chief Inspector</option>
-                        <option value="Chief Engineer">Chief Engineer</option>
-                        <option value="Chief Finance, Accounting & Staf">Chief Finance, Accounting & Staf</option>
-                        <option value="Chief Engineering">Chief Engineering</option>
-                        <option value="Pilot in Command">Pilot in Command</option>
-                        <option value="Second in Command">Second in Command</option>
-                        <option value="Ground Instructor">Ground Instructor</option>
-                        <option value="Flight Instructor">Flight Instructor</option>
-                        <option value="Company Check Pilot">Company Check Pilot</option>
-                        <option value="Engineer">Engineer</option>
-                        <option value="Line Pilot">Line Pilot</option>
-                        <option value="Cabin Service">Cabin Service</option>
-                        <option value="Student">Student</option>
-                        <option value="Flight Support">Flight Support</option>
-                        <option value="Ground Support">Ground Support</option>
-                        <option value="Technical Representative">Technical Representative</option>
-                        <option value="Engineering">Engineering</option>
-                        <option value="Staff">Staff</option>
-                        <option value="Logistic">Logistic</option>
-                        <option value="Aviation Security">Aviation Security</option>
-                        <option value="Driver">Driver</option>
-                    </select>
+        <!-- Main App Screen -->
+        <div id="app-screen" class="hidden">
+            <div class="text-center mb-6">
+                <h1 id="greeting" class="text-3xl font-bold">Selamat Pagi, Nama</h1>
+                <p id="current-date" class="text-slate-400 text-lg"></p>
+                <p id="current-time" class="text-slate-200 text-4xl font-bold mt-2"></p>
+            </div>
 
-                    <select id="work-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                        <option value="">Pilih Tipe Pekerjaan</option>
-                        <option value="Office Hour">Office Hour</option>
-                        <option value="Standby Flight">Standby Flight</option>
-                        <option value="Standby on Call">Standby on Call</option>
-                        <option value="Pos One Gate">Pos One Gate</option>
-                        <option value="Day Off">Day Off</option>
-                        <option value="Day Off 7 Consecutive Days for Pilot">Day Off 7 Consecutive Days for Pilot</option>
-                        <option value="Flight Duty VIP">Flight Duty VIP</option>
-                        <option value="Ferry Flight">Ferry Flight</option>
-                        <option value="PPC Simulator">PPC Simulator</option>
-                        <option value="PPC Aircraft">PPC Aircraft</option>
-                        <option value="Test Flight">Test Flight</option>
-                        <option value="Ground Run">Ground Run</option>
-                        <option value="Recurrent Training">Recurrent Training</option>
-                        <option value="Recency Flight">Recency Flight</option>
-                        <option value="Meeting Out of Office">Meeting Out of Office</option>
-                        <option value="Medical Examination">Medical Examination</option>
-                        <option value="Annual Leave">Annual Leave</option>
-                        <option value="Sick">Sick</option>
-                        <option value="Technical Representative">Technical Representative</option>
-                        <option value="Aviation Security">Aviation Security</option>
-                        <option value="Over Time">Over Time</option>
-                    </select>
-                    
-                    <div class="text-center">
-                        <button id="take-checkin-photo-btn" class="w-full bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center gap-2">
-                            <i class="fas fa-camera"></i>
-                            <span>Ambil Foto Masuk</span>
-                        </button>
-                        <img id="checkin-photo-preview" src="" class="mt-2 rounded-lg hidden max-w-xs mx-auto" alt="Preview Foto Masuk">
-                    </div>
+            <div class="glassmorphism p-6 rounded-2xl shadow-lg space-y-6">
+                <!-- User Info -->
+                <div id="user-info-card" class="text-center">
+                    <p class="font-semibold text-xl" id="user-name"></p>
+                    <p class="text-slate-300" id="user-position"></p>
+                    <p class="text-slate-400 text-sm" id="user-division"></p>
+                </div>
 
-                    <div id="late-reason-container" class="hidden">
-                        <textarea id="late-reason" placeholder="Alasan Terlambat" rows="3" class="w-full px-4 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
-                    </div>
-
-                    <button id="checkin-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span>Absen Masuk</span>
+                <!-- Check-in Section -->
+                <div id="check-in-section">
+                    <button id="check-in-btn" class="w-full btn-primary font-bold py-4 px-4 rounded-lg text-xl shadow-lg flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        Absen Masuk
                     </button>
                 </div>
-            </div>
 
-            <!-- Checkout Form -->
-            <div id="checkout-form" class="form-container hidden-form">
-                <div class="text-center">
-                    <h2 class="text-xl font-semibold text-gray-700">Anda Sudah Absen Masuk</h2>
-                    <p id="checkin-time-display" class="text-gray-500 mt-1"></p>
-                    <p id="checkin-status-display" class="font-medium mt-1"></p>
-                </div>
-                <div class="mt-6 space-y-4">
-                    <textarea id="work-remark" placeholder="Remark pekerjaan hari ini" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                    
-                    <div class="text-center">
-                        <button id="take-checkout-photo-btn" class="w-full bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center gap-2">
-                            <i class="fas fa-briefcase"></i>
-                            <span>Foto Pekerjaan Hari Ini</span>
-                        </button>
-                        <img id="checkout-photo-preview" src="" class="mt-2 rounded-lg hidden max-w-xs mx-auto" alt="Preview Foto Pekerjaan">
+                <!-- On Working Section -->
+                <div id="on-working-section" class="hidden space-y-4">
+                     <div class="bg-green-900/50 border border-green-700 text-green-200 px-4 py-3 rounded-lg text-center">
+                        <p class="font-bold">Status: On Working</p>
+                        <p class="text-sm" id="check-in-time-status"></p>
+                        <p class="text-sm font-bold mt-1" id="check-in-status-message"></p>
                     </div>
 
-                    <button id="checkout-btn" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Absen Pulang</span>
+                    <!-- Late Reason Form -->
+                    <div id="late-reason-section" class="hidden space-y-2">
+                         <label for="late-reason" class="block text-sm font-medium text-slate-300">Alasan Terlambat</label>
+                         <textarea id="late-reason" rows="3" class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Jelaskan alasan keterlambatan Anda..."></textarea>
+                    </div>
+
+                    <!-- Work Remark Form -->
+                    <div id="work-remark-section" class="space-y-4">
+                        <div>
+                            <label for="work-remark" class="block mb-2 text-sm font-medium text-slate-300">Remark Pekerjaan Hari Ini</label>
+                            <textarea id="work-remark" rows="4" class="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Tuliskan ringkasan pekerjaan Anda hari ini..."></textarea>
+                        </div>
+                        <div>
+                            <label for="work-photo" class="block mb-2 text-sm font-medium text-slate-300">Foto Pekerjaan Hari Ini</label>
+                            <input type="file" id="work-photo" accept="image/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-900/50 file:text-blue-200 hover:file:bg-blue-800/50">
+                        </div>
+                    </div>
+
+                    <button id="check-out-btn" class="w-full btn-secondary font-bold py-4 px-4 rounded-lg text-xl shadow-lg flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Absen Pulang
                     </button>
                 </div>
-            </div>
 
-            <!-- Loading Overlay -->
-            <div id="loader-overlay" class="absolute inset-0 bg-white bg-opacity-80 flex-col items-center justify-center hidden">
-                <div class="loader w-12 h-12 rounded-full border-4 border-gray-200"></div>
-                <p id="loader-text" class="mt-4 text-gray-600 font-medium">Memproses...</p>
+                <!-- Summary Section -->
+                <div id="summary-section" class="hidden space-y-3 text-center">
+                    <h2 class="text-xl font-bold">Ringkasan Kerja Hari Ini</h2>
+                    <div class="bg-slate-800 p-4 rounded-lg">
+                        <p class="text-slate-400">Status Pulang</p>
+                        <p id="summary-status-pulang" class="text-lg font-semibold"></p>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded-lg">
+                        <p class="text-slate-400">Total Jam Kerja</p>
+                        <p id="summary-total-worktime" class="text-lg font-semibold"></p>
+                    </div>
+                    <div id="summary-overtime-card" class="hidden bg-slate-800 p-4 rounded-lg">
+                        <p class="text-slate-400">Total Overtime</p>
+                        <p id="summary-total-overtime" class="text-lg font-semibold"></p>
+                    </div>
+                    <button id="reset-btn" class="w-full btn-primary font-bold py-3 px-4 rounded-lg mt-4">Selesai & Kembali</button>
+                </div>
             </div>
-
-            <!-- Hidden elements for photo capture -->
-            <input type="file" id="photo-input" accept="image/*" class="hidden">
-        </main>
+        </div>
     </div>
 
-    <!-- Custom Alert Modal -->
-    <div id="alert-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-        <div id="alert-backdrop" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop"></div>
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center z-10 modal-content transform scale-95">
-            <p id="alert-message" class="text-gray-700"></p>
-            <button id="alert-close-btn" class="mt-6 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">OK</button>
+    <!-- Hidden file input for check-in photo -->
+    <input type="file" id="check-in-photo" class="hidden" accept="image/*" capture="user">
+    
+    <!-- Modal for messages -->
+    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 rounded-2xl p-8 shadow-lg text-center max-w-sm w-full">
+            <p id="modal-message" class="text-lg mb-6"></p>
+            <button id="modal-close-btn" class="btn-primary font-bold py-2 px-6 rounded-lg">OK</button>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- CONFIGURATION ---
-            // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzA__hiWoi8-mbpY-LBMqVDEI9yFfr4ZOS21zLGHSIEfDWOXoIvvqHMr4_p9mTp2PJL/exec"; 
-
             // --- DOM ELEMENTS ---
-            const checkinForm = document.getElementById('checkin-form');
-            const checkoutForm = document.getElementById('checkout-form');
-            const loaderOverlay = document.getElementById('loader-overlay');
-            const loaderText = document.getElementById('loader-text');
+            const loginScreen = document.getElementById('login-screen');
+            const appScreen = document.getElementById('app-screen');
+            const loginForm = document.getElementById('login-form');
+            const greeting = document.getElementById('greeting');
+            const currentDateEl = document.getElementById('current-date');
+            const currentTimeEl = document.getElementById('current-time');
+            const userInfo = {
+                name: document.getElementById('user-name'),
+                position: document.getElementById('user-position'),
+                division: document.getElementById('user-division'),
+            };
+            const checkInSection = document.getElementById('check-in-section');
+            const onWorkingSection = document.getElementById('on-working-section');
+            const summarySection = document.getElementById('summary-section');
+            const checkInBtn = document.getElementById('check-in-btn');
+            const checkOutBtn = document.getElementById('check-out-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const checkInStatusMessage = document.getElementById('check-in-status-message');
+            const checkInTimeStatus = document.getElementById('check-in-time-status');
+            const lateReasonSection = document.getElementById('late-reason-section');
+            const summaryStatusPulang = document.getElementById('summary-status-pulang');
+            const summaryTotalWorktime = document.getElementById('summary-total-worktime');
+            const summaryOvertimeCard = document.getElementById('summary-overtime-card');
+            const summaryTotalOvertime = document.getElementById('summary-total-overtime');
+            const checkInPhotoInput = document.getElementById('check-in-photo');
+            const modal = document.getElementById('modal');
+            const modalMessage = document.getElementById('modal-message');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
 
-            // Form Inputs
-            const nameInput = document.getElementById('name');
-            const emailInput = document.getElementById('email');
-            const divisionInput = document.getElementById('division');
-            const positionInput = document.getElementById('position');
-            const dutyInput = document.getElementById('duty');
-            const workTypeInput = document.getElementById('work-type');
-            
-            // Photo Elements
-            const photoInput = document.getElementById('photo-input');
-            let currentPhotoType = null; // 'checkin' or 'checkout'
-            const checkinPhotoPreview = document.getElementById('checkin-photo-preview');
-            const checkoutPhotoPreview = document.getElementById('checkout-photo-preview');
-            let checkinPhotoData = null;
-            let checkoutPhotoData = null;
+            // --- APP STATE ---
+            let appState = {
+                loggedInUser: null,
+                attendanceData: {
+                    fotoMasuk: null,
+                    locationMasuk: null,
+                    locationPulang: null,
+                    dateMasuk: null,
+                    name: null,
+                    email: null,
+                    division: null,
+                    position: null,
+                    dutyAs: 'On Duty', // Example data
+                    typeOfWork: 'WFO', // Example data
+                    statusAbsen: null,
+                    absenMasuk: null,
+                    statusMasuk: null,
+                    alasanTerlambat: null,
+                    absenPulang: null,
+                    statusPulang: null,
+                    totalOvertime: null,
+                    totalWorktime: null,
+                    remarkPekerjaan: null,
+                    fotoPekerjaan: null,
+                }
+            };
 
-            // Buttons
-            const takeCheckinPhotoBtn = document.getElementById('take-checkin-photo-btn');
-            const takeCheckoutPhotoBtn = document.getElementById('take-checkout-photo-btn');
-            const checkinBtn = document.getElementById('checkin-btn');
-            const checkoutBtn = document.getElementById('checkout-btn');
-
-            // Late Reason
-            const lateReasonContainer = document.getElementById('late-reason-container');
-            const lateReasonInput = document.getElementById('late-reason');
-
-            // Checkout Display
-            const checkinTimeDisplay = document.getElementById('checkin-time-display');
-            const checkinStatusDisplay = document.getElementById('checkin-status-display');
-            
-            // Modal Elements
-            const alertModal = document.getElementById('alert-modal');
-            const alertBackdrop = document.getElementById('alert-backdrop');
-            const alertMessage = document.getElementById('alert-message');
-            const alertCloseBtn = document.getElementById('alert-close-btn');
-
-            // --- STATE MANAGEMENT ---
-            let checkinData = null;
-
-            // --- EVENT LISTENERS ---
-            takeCheckinPhotoBtn.addEventListener('click', () => {
-                currentPhotoType = 'checkin';
-                photoInput.setAttribute('capture', 'user');
-                photoInput.click();
-            });
-
-            takeCheckoutPhotoBtn.addEventListener('click', () => {
-                currentPhotoType = 'checkout';
-                photoInput.removeAttribute('capture');
-                photoInput.click();
-            });
-
-            photoInput.addEventListener('change', handlePhotoTaken);
-            checkinBtn.addEventListener('click', handleCheckin);
-            checkoutBtn.addEventListener('click', handleCheckout);
-            
-            alertCloseBtn.addEventListener('click', hideAlert);
-            alertBackdrop.addEventListener('click', hideAlert);
-
+            // --- MOCK USER DATABASE ---
+            const users = {
+                'crunkbolcow@gmail.com': {
+                    name: 'Budi Santoso',
+                    division: 'Flight Operations',
+                    position: 'Pilot'
+                }
+            };
 
             // --- FUNCTIONS ---
+
+            // Function to show a modal message
+            function showModal(message) {
+                modalMessage.textContent = message;
+                modal.classList.remove('hidden');
+            }
             
-            function showAlert(message) {
-                alertMessage.textContent = message;
-                alertModal.classList.remove('hidden');
-                setTimeout(() => {
-                    alertBackdrop.classList.remove('opacity-0');
-                    alertModal.querySelector('.modal-content').classList.remove('scale-95');
-                }, 10);
+            modalCloseBtn.addEventListener('click', () => modal.classList.add('hidden'));
+
+            // Update clock and date
+            function updateDateTime() {
+                const now = new Date();
+                const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                currentDateEl.textContent = now.toLocaleDateString('id-ID', optionsDate);
+                currentTimeEl.textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                
+                const hours = now.getHours();
+                if (hours < 12) {
+                    greeting.textContent = `Selamat Pagi, ${appState.loggedInUser?.name || ''}`;
+                } else if (hours < 15) {
+                    greeting.textContent = `Selamat Siang, ${appState.loggedInUser?.name || ''}`;
+                } else if (hours < 18) {
+                    greeting.textContent = `Selamat Sore, ${appState.loggedInUser?.name || ''}`;
+                } else {
+                    greeting.textContent = `Selamat Malam, ${appState.loggedInUser?.name || ''}`;
+                }
             }
 
-            function hideAlert() {
-                alertBackdrop.classList.add('opacity-0');
-                alertModal.querySelector('.modal-content').classList.add('scale-95');
-                setTimeout(() => {
-                    alertModal.classList.add('hidden');
-                }, 300);
-            }
-
-            function handlePhotoTaken(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const base64String = e.target.result;
-                    if (currentPhotoType === 'checkin') {
-                        checkinPhotoData = base64String;
-                        checkinPhotoPreview.src = base64String;
-                        checkinPhotoPreview.classList.remove('hidden');
-                        takeCheckinPhotoBtn.querySelector('span').textContent = 'Foto Diambil';
-                        takeCheckinPhotoBtn.classList.remove('bg-gray-200');
-                        takeCheckinPhotoBtn.classList.add('bg-green-200', 'text-green-800');
-                    } else if (currentPhotoType === 'checkout') {
-                        checkoutPhotoData = base64String;
-                        checkoutPhotoPreview.src = base64String;
-                        checkoutPhotoPreview.classList.remove('hidden');
-                        takeCheckoutPhotoBtn.querySelector('span').textContent = 'Foto Diambil';
-                        takeCheckoutPhotoBtn.classList.remove('bg-gray-200');
-                        takeCheckoutPhotoBtn.classList.add('bg-green-200', 'text-green-800');
-                    }
-                };
-                reader.readAsDataURL(file);
-                event.target.value = '';
-            }
-
-            function getGeolocation() {
+            // Get user location
+            function getLocation() {
                 return new Promise((resolve, reject) => {
                     if (!navigator.geolocation) {
-                        reject('Geolocation tidak didukung oleh browser ini.');
+                        reject('Geolocation is not supported by your browser.');
                     } else {
                         navigator.geolocation.getCurrentPosition(
-                            (position) => {
-                                resolve(`${position.coords.latitude}, ${position.coords.longitude}`);
-                            },
-                            () => {
-                                reject('Tidak dapat mengambil lokasi. Pastikan izin lokasi telah diberikan.');
-                            },
-                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                            (position) => resolve(`${position.coords.latitude}, ${position.coords.longitude}`),
+                            () => reject('Unable to retrieve your location.')
                         );
                     }
                 });
             }
 
-            function showLoader(text) {
-                loaderText.textContent = text;
-                loaderOverlay.classList.remove('hidden');
-                loaderOverlay.classList.add('flex');
+            // Format duration from milliseconds to HH:MM:SS
+            function formatDuration(ms) {
+                if (ms < 0) ms = 0;
+                const totalSeconds = Math.floor(ms / 1000);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             }
 
-            function hideLoader() {
-                loaderOverlay.classList.add('hidden');
-                loaderOverlay.classList.remove('flex');
-            }
-
-            function validateCheckinForm() {
-                const fields = [
-                    { value: nameInput.value, name: "Nama Lengkap" },
-                    { value: emailInput.value, name: "Email" },
-                    { value: divisionInput.value, name: "Divisi" },
-                    { value: positionInput.value, name: "Jabatan" },
-                    { value: dutyInput.value, name: "Duty As" },
-                    { value: workTypeInput.value, name: "Tipe Pekerjaan" }
-                ];
-
-                for (const field of fields) {
-                    if (!field.value) {
-                        showAlert(`Kolom "${field.name}" harus diisi.`);
-                        return false;
-                    }
-                }
-                
-                if (!/^\S+@\S+\.\S+$/.test(emailInput.value)) {
-                    showAlert('Format email tidak valid.');
-                    return false;
-                }
-                if (!checkinPhotoData) {
-                    showAlert('Foto masuk wajib diambil.');
-                    return false;
-                }
-                return true;
-            }
-
-            async function handleCheckin() {
-                if (SCRIPT_URL === "") {
-                    showAlert("Aplikasi belum terkonfigurasi. Harap hubungi administrator.");
-                    return;
-                }
-                
-                if (!validateCheckinForm()) {
-                    return;
-                }
-
-                showLoader('Mengambil lokasi...');
-                let location;
-                try {
-                    location = await getGeolocation();
-                } catch (error) {
-                    hideLoader();
-                    showAlert(error);
-                    return;
-                }
-
-                const now = new Date();
-                const checkinTime = now.toISOString();
-                const checkinHour = now.getHours();
-                const checkinMinute = now.getMinutes();
-
-                let checkinStatus = "Terima Kasih Anda Telah Absen Tepat Waktu";
-                let isLate = false;
-
-                if (checkinHour > 9 || (checkinHour === 9 && checkinMinute > 0)) {
-                    checkinStatus = "Anda Terlambat Absen";
-                    isLate = true;
-                }
-
-                if (isLate && !lateReasonInput.value) {
-                    hideLoader();
-                    lateReasonContainer.classList.remove('hidden');
-                    showAlert('Anda terlambat, mohon isi alasan keterlambatan.');
-                    return;
-                }
-
-                showLoader('Mengirim data absen masuk...');
-
-                const data = {
-                    action: 'checkin',
-                    checkinPhoto: checkinPhotoData.split(',')[1],
-                    checkinLocation: location,
-                    date: now.toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' }),
-                    name: nameInput.value,
-                    email: emailInput.value,
-                    division: divisionInput.value,
-                    position: positionInput.value,
-                    dutyAs: dutyInput.value,
-                    workType: workTypeInput.value,
-                    attendanceStatus: 'On Working',
-                    checkinDateTime: checkinTime,
-                    checkinStatus: checkinStatus,
-                    lateReason: lateReasonInput.value || ''
-                };
-                
-                checkinData = data;
-
-                try {
-                    const response = await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify(data)
-                    });
+            // Update UI based on state
+            function renderUI() {
+                if (appState.loggedInUser) {
+                    loginScreen.classList.add('hidden');
+                    appScreen.classList.remove('hidden');
                     
-                    // Since Apps Script redirects, we can't easily read the JSON response.
-                    // We will assume success if there's no network error.
-                    if (!response.ok && response.type !== 'opaque') {
-                         throw new Error('Gagal mengirim data. Status: ' + response.statusText);
-                    }
+                    userInfo.name.textContent = appState.loggedInUser.name;
+                    userInfo.position.textContent = appState.loggedInUser.position;
+                    userInfo.division.textContent = appState.loggedInUser.division;
 
-                    localStorage.setItem('ecrewCheckinData', JSON.stringify(checkinData));
-                    switchToCheckoutView();
+                    const hasCheckedIn = !!appState.attendanceData.absenMasuk;
+                    const hasCheckedOut = !!appState.attendanceData.absenPulang;
 
-                } catch (error) {
-                    console.error("Fetch Error:", error);
-                    showAlert(`Terjadi kesalahan saat mengirim data. Silakan coba lagi. Error: ${error.message}`);
-                } finally {
-                    hideLoader();
-                }
-            }
-
-            function switchToCheckoutView() {
-                checkinForm.classList.remove('visible-form');
-                checkinForm.classList.add('hidden-form');
-                
-                checkoutForm.classList.remove('hidden-form');
-                checkoutForm.classList.add('visible-form');
-
-                const checkinDate = new Date(checkinData.checkinDateTime);
-                checkinTimeDisplay.textContent = `Masuk pada: ${checkinDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
-                checkinStatusDisplay.textContent = checkinData.checkinStatus;
-                checkinStatusDisplay.className = checkinData.checkinStatus.includes('Terlambat') ? 'font-medium mt-1 text-red-500' : 'font-medium mt-1 text-green-500';
-            }
-
-            async function handleCheckout() {
-                const workRemark = document.getElementById('work-remark').value;
-                if (!workRemark || !checkoutPhotoData) {
-                    showAlert('Remark pekerjaan dan foto pekerjaan wajib diisi sebelum absen pulang.');
-                    return;
-                }
-
-                showLoader('Mengambil lokasi pulang...');
-                let location;
-                try {
-                    location = await getGeolocation();
-                } catch (error) {
-                    hideLoader();
-                    showAlert(error);
-                    return;
-                }
-
-                showLoader('Menghitung waktu kerja & mengirim data...');
-
-                const now = new Date();
-                const checkoutTime = now.toISOString();
-                const checkoutHour = now.getHours();
-                const checkoutMinute = now.getMinutes();
-
-                let checkoutStatus = "Anda Pulang tepat Waktu";
-                if (checkoutHour < 17) {
-                    checkoutStatus = "Anda Pulang Sebelum waktunya";
-                } else if (checkoutHour > 17 || (checkoutHour === 17 && checkoutMinute > 30)) {
-                    checkoutStatus = "Waktu Kerja Melebihi";
-                }
-
-                const checkinDate = new Date(checkinData.checkinDateTime);
-                const totalWorkMillis = now - checkinDate;
-                const hours = Math.floor(totalWorkMillis / 3600000);
-                const minutes = Math.floor((totalWorkMillis % 3600000) / 60000);
-                const seconds = Math.floor(((totalWorkMillis % 3600000) % 60000) / 1000);
-                const totalWorkTime = `${hours} jam, ${minutes} menit, ${seconds} detik`;
-
-                let totalOvertime = '0 jam, 0 menit';
-                if (checkoutStatus === "Waktu Kerja Melebihi") {
-                    const fiveThirtyPM = new Date(now);
-                    fiveThirtyPM.setHours(17, 30, 0, 0);
-                    const overtimeMillis = now - fiveThirtyPM;
-                    if (overtimeMillis > 0) {
-                        const otHours = Math.floor(overtimeMillis / 3600000);
-                        const otMinutes = Math.floor((overtimeMillis % 3600000) / 60000);
-                        totalOvertime = `${otHours} jam, ${otMinutes} menit`;
-                    }
-                }
-
-                const data = {
-                    action: 'checkout',
-                    email: checkinData.email,
-                    date: checkinData.date,
-                    checkoutLocation: location,
-                    attendanceStatus: 'Pulang',
-                    checkoutDateTime: checkoutTime,
-                    checkoutStatus: checkoutStatus,
-                    totalOvertime: totalOvertime,
-                    totalWorkTime: totalWorkTime,
-                    workRemark: workRemark,
-                    workPhoto: checkoutPhotoData.split(',')[1]
-                };
-
-                try {
-                    const response = await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify(data)
-                    });
+                    checkInSection.classList.toggle('hidden', hasCheckedIn);
+                    onWorkingSection.classList.toggle('hidden', !hasCheckedIn || hasCheckedOut);
+                    summarySection.classList.toggle('hidden', !hasCheckedOut);
                     
-                    if (!response.ok && response.type !== 'opaque') {
-                         throw new Error('Gagal mengirim data. Status: ' + response.statusText);
-                    }
-
-                    localStorage.removeItem('ecrewCheckinData');
-                    showAlert('Terima kasih, Anda telah berhasil absen pulang.');
-                    setTimeout(() => window.location.reload(), 2000);
-
-                } catch (error) {
-                    console.error("Fetch Error:", error);
-                    showAlert(`Terjadi kesalahan saat update data. Silakan coba lagi. Error: ${error.message}`);
-                } finally {
-                    hideLoader();
-                }
-            }
-            
-            function checkForExistingSession() {
-                const savedData = localStorage.getItem('ecrewCheckinData');
-                if (savedData) {
-                    checkinData = JSON.parse(savedData);
-                    const savedDateStr = new Date(checkinData.checkinDateTime).toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' });
-                    const todayDateStr = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' });
-                    
-                    if (savedDateStr === todayDateStr) {
-                        nameInput.value = checkinData.name;
-                        emailInput.value = checkinData.email;
-                        divisionInput.value = checkinData.division;
-                        positionInput.value = checkinData.position;
-                        dutyInput.value = checkinData.dutyAs;
-                        workTypeInput.value = checkinData.workType;
-                        
-                        [nameInput, emailInput, divisionInput, positionInput, dutyInput, workTypeInput].forEach(input => input.disabled = true);
-                        switchToCheckoutView();
+                    if (hasCheckedIn && !hasCheckedOut) {
+                        userInfo.name.classList.add('hidden');
+                        userInfo.position.classList.add('hidden');
+                        userInfo.division.classList.add('hidden');
                     } else {
-                        localStorage.removeItem('ecrewCheckinData');
+                         userInfo.name.classList.remove('hidden');
+                        userInfo.position.classList.remove('hidden');
+                        userInfo.division.classList.remove('hidden');
                     }
+
+
+                } else {
+                    loginScreen.classList.remove('hidden');
+                    appScreen.classList.add('hidden');
                 }
             }
 
-            checkForExistingSession();
+            // Handle Login
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                if (users[email]) {
+                    appState.loggedInUser = users[email];
+                    // Populate initial data
+                    appState.attendanceData.name = users[email].name;
+                    appState.attendanceData.email = email;
+                    appState.attendanceData.division = users[email].division;
+                    appState.attendanceData.position = users[email].position;
+                    renderUI();
+                } else {
+                    showModal('Email tidak terdaftar. Silakan gunakan email demo: demo@transwisata.com');
+                }
+            });
+
+            // Handle Check-in
+            checkInBtn.addEventListener('click', () => {
+                checkInPhotoInput.click();
+            });
+
+            checkInPhotoInput.addEventListener('change', async (event) => {
+                 if (event.target.files && event.target.files[0]) {
+                    checkInBtn.disabled = true;
+                    checkInBtn.textContent = 'Memproses...';
+
+                    try {
+                        const location = await getLocation();
+                        const now = new Date();
+                        
+                        // Logic for check-in status
+                        const checkInTime = now.getHours() * 60 + now.getMinutes();
+                        const lateThreshold = 9 * 60; // 09:00
+                        
+                        let statusMasuk;
+                        if (checkInTime > lateThreshold) {
+                            statusMasuk = 'Anda Terlambat Absen';
+                            lateReasonSection.classList.remove('hidden');
+                        } else {
+                            statusMasuk = 'Terima Kasih Anda Telah Absen Tepat Waktu';
+                            lateReasonSection.classList.add('hidden');
+                        }
+
+                        // Update state
+                        appState.attendanceData.absenMasuk = now;
+                        appState.attendanceData.dateMasuk = now.toLocaleDateString('id-ID');
+                        appState.attendanceData.fotoMasuk = event.target.files[0].name; // In real app, upload and get URL
+                        appState.attendanceData.locationMasuk = location;
+                        appState.attendanceData.statusMasuk = statusMasuk;
+                        appState.attendanceData.statusAbsen = 'On Working';
+
+                        // Update UI
+                        checkInStatusMessage.textContent = statusMasuk;
+                        checkInTimeStatus.textContent = `Absen Masuk: ${now.toLocaleString('id-ID')}`;
+                        
+                        console.log("--- DATA ABSEN MASUK (to be sent to spreadsheet) ---", appState.attendanceData);
+                        showModal("Absen masuk berhasil!");
+                        renderUI();
+
+                    } catch (error) {
+                        showModal(`Error: ${error}`);
+                    } finally {
+                        checkInBtn.disabled = false;
+                        checkInBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Absen Masuk';
+                    }
+                }
+            });
+
+            // Handle Check-out
+            checkOutBtn.addEventListener('click', async () => {
+                const workRemark = document.getElementById('work-remark').value;
+                const workPhoto = document.getElementById('work-photo').files[0];
+
+                if (!workRemark || !workPhoto) {
+                    showModal('Harap isi Remark dan Foto Pekerjaan sebelum absen pulang.');
+                    return;
+                }
+
+                checkOutBtn.disabled = true;
+                checkOutBtn.textContent = 'Memproses...';
+
+                try {
+                    const location = await getLocation();
+                    const now = new Date();
+                    const checkInTime = appState.attendanceData.absenMasuk;
+
+                    // Logic for check-out status
+                    const checkOutHour = now.getHours();
+                    let statusPulang;
+                    if (checkOutHour < 17) {
+                        statusPulang = 'Anda Pulang Sebelum waktunya';
+                    } else if (checkOutHour === 17 && now.getMinutes() <= 30) {
+                        statusPulang = 'Anda Pulang tepat Waktu';
+                    } else {
+                        statusPulang = 'Waktu Kerja Melebihi';
+                    }
+
+                    // Calculate worktime and overtime
+                    const totalWorktimeMs = now - checkInTime;
+                    const totalWorktime = formatDuration(totalWorktimeMs);
+
+                    let totalOvertime = '00:00:00';
+                    const overtimeThreshold = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 30, 0);
+                    if (now > overtimeThreshold) {
+                        const overtimeMs = now - overtimeThreshold;
+                        totalOvertime = formatDuration(overtimeMs);
+                        summaryOvertimeCard.classList.remove('hidden');
+                    } else {
+                        summaryOvertimeCard.classList.add('hidden');
+                    }
+
+                    // Update state
+                    appState.attendanceData.absenPulang = now;
+                    appState.attendanceData.locationPulang = location;
+                    appState.attendanceData.statusPulang = statusPulang;
+                    appState.attendanceData.totalWorktime = totalWorktime;
+                    appState.attendanceData.totalOvertime = totalOvertime;
+                    appState.attendanceData.remarkPekerjaan = workRemark;
+                    appState.attendanceData.fotoPekerjaan = workPhoto.name; // In real app, upload and get URL
+                    appState.attendanceData.statusAbsen = 'Pulang';
+                    if (lateReasonSection.classList.contains('hidden') === false) {
+                        appState.attendanceData.alasanTerlambat = document.getElementById('late-reason').value;
+                    }
+
+                    // Update summary UI
+                    summaryStatusPulang.textContent = statusPulang;
+                    summaryTotalWorktime.textContent = totalWorktime;
+                    summaryTotalOvertime.textContent = totalOvertime;
+                    
+                    console.log("--- DATA ABSEN PULANG (to be sent to spreadsheet) ---", appState.attendanceData);
+                    showModal("Absen pulang berhasil!");
+                    renderUI();
+
+                } catch (error) {
+                    showModal(`Error: ${error}`);
+                } finally {
+                    checkOutBtn.disabled = false;
+                    checkOutBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Absen Pulang';
+                }
+            });
+
+            // Handle Reset for next day
+            resetBtn.addEventListener('click', () => {
+                // Reset attendance data but keep user logged in
+                const loggedInUser = appState.loggedInUser;
+                appState = {
+                    loggedInUser: loggedInUser,
+                    attendanceData: {
+                        ...appState.attendanceData, // keep user details
+                        fotoMasuk: null,
+                        locationMasuk: null,
+                        locationPulang: null,
+                        dateMasuk: null,
+                        statusAbsen: null,
+                        absenMasuk: null,
+                        statusMasuk: null,
+                        alasanTerlambat: null,
+                        absenPulang: null,
+                        statusPulang: null,
+                        totalOvertime: null,
+                        totalWorktime: null,
+                        remarkPekerjaan: null,
+                        fotoPekerjaan: null,
+                    }
+                };
+                // Clear form fields
+                document.getElementById('late-reason').value = '';
+                document.getElementById('work-remark').value = '';
+                document.getElementById('work-photo').value = '';
+                renderUI();
+            });
+
+
+            // --- INITIALIZATION ---
+            setInterval(updateDateTime, 1000);
+            renderUI();
         });
     </script>
 </body>
