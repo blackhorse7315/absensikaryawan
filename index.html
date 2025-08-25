@@ -541,34 +541,57 @@
                 });
             }
             
-            function saveState() {
+            // PERBAIKAN: Fungsi untuk menyimpan state hari ini (termasuk foto)
+            function saveCurrentState(data) {
                 const state = {
                     loggedInUser: appState.loggedInUser,
-                    attendanceData: appState.attendanceData,
+                    attendanceData: data,
                 };
-                localStorage.setItem('ecrewAppState', JSON.stringify(state));
+                try {
+                    // Hanya simpan state hari ini, akan ditimpa besok
+                    localStorage.setItem(`ecrewCurrentState_${appState.loggedInUser.email}`, JSON.stringify(state));
+                } catch (e) {
+                    console.error("Error saving current state (might be due to large photo):", e);
+                    showModal("Gagal menyimpan foto di perangkat, tapi data teks aman.");
+                }
+            }
+            
+            // PERBAIKAN: Fungsi untuk menyimpan riwayat (tanpa foto)
+            function saveToHistory(data) {
+                const historyKey = `ecrewHistory_${appState.loggedInUser.email}`;
+                let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+                
+                const lightRecord = { ...data };
+                delete lightRecord.fotoMasuk;
+                delete lightRecord.fotoPekerjaan;
+
+                history = history.filter(rec => rec.dateMasuk !== lightRecord.dateMasuk);
+                history.push(lightRecord);
+
+                try {
+                    localStorage.setItem(historyKey, JSON.stringify(history));
+                } catch (e) {
+                    console.error("Error saving history:", e);
+                }
             }
 
+
             function loadState() {
-                const savedState = localStorage.getItem('ecrewAppState');
+                const savedState = localStorage.getItem(`ecrewCurrentState_${appState.loggedInUser.email}`);
                 if (savedState) {
                     const parsedState = JSON.parse(savedState);
-                    // Check if the saved data is for today
-                    if (parsedState.attendanceData && new Date(parsedState.attendanceData.absenMasuk).toLocaleDateString('id-ID') === new Date().toLocaleDateString('id-ID')) {
-                        appState.loggedInUser = parsedState.loggedInUser;
+                    const today = new Date().toLocaleDateString('id-ID');
+                    if (parsedState.attendanceData && new Date(parsedState.attendanceData.absenMasuk).toLocaleDateString('id-ID') === today) {
                         appState.attendanceData = parsedState.attendanceData;
-                        // Re-parse date strings into Date objects
                         appState.attendanceData.absenMasuk = new Date(appState.attendanceData.absenMasuk);
                         if (appState.attendanceData.absenPulang) {
                             appState.attendanceData.absenPulang = new Date(appState.attendanceData.absenPulang);
                         }
                     } else {
-                        // Clear old state if it's from a previous day
-                        localStorage.removeItem('ecrewAppState');
+                        localStorage.removeItem(`ecrewCurrentState_${appState.loggedInUser.email}`);
                     }
                 }
             }
-
 
             function handleLateVisibility() {
                 const now = new Date();
@@ -596,8 +619,8 @@
             }
             
             function populateSummary(data) {
-                summaryElements.photoMasuk.src = data.fotoMasuk;
-                summaryElements.photoPekerjaan.src = data.fotoPekerjaan;
+                summaryElements.photoMasuk.src = data.fotoMasuk || "https://placehold.co/200x200/334155/e2e8f0?text=No+Img";
+                summaryElements.photoPekerjaan.src = data.fotoPekerjaan || "https://placehold.co/200x200/334155/e2e8f0?text=No+Img";
                 summaryElements.name.textContent = data.name;
                 summaryElements.dutyWork.textContent = `${data.dutyAs} / ${data.typeOfWork}`;
                 summaryElements.absenMasuk.textContent = new Date(data.absenMasuk).toLocaleString('id-ID');
@@ -664,10 +687,8 @@
 
                 if (user) {
                     appState.loggedInUser = user;
-                    // Clear previous user's data
-                    localStorage.removeItem('ecrewAppState');
-                    appState.attendanceData = null;
-                    
+                    appState.attendanceData = null; // Reset data for new login
+                    loadState(); // Load data for this specific user
                     updateDateTime();
                     renderUI();
                 } else {
@@ -733,7 +754,8 @@
                         };
                         
                         sendDataToSpreadsheet(appState.attendanceData);
-                        saveState();
+                        saveCurrentState(appState.attendanceData);
+                        saveToHistory(appState.attendanceData);
                         renderUI();
                         showModal("Absen masuk berhasil!");
 
@@ -796,7 +818,8 @@
                         statusAbsen: 'Pulang',
                     };
                     
-                    saveState();
+                    saveCurrentState(appState.attendanceData);
+                    saveToHistory(appState.attendanceData);
                     sendDataToSpreadsheet(appState.attendanceData);
                     renderUI();
                     showModal("Absen pulang berhasil!");
@@ -810,7 +833,7 @@
             });
 
             resetBtn.addEventListener('click', () => {
-                localStorage.removeItem('ecrewAppState');
+                localStorage.removeItem(`ecrewCurrentState_${appState.loggedInUser.email}`);
                 appState.attendanceData = null;
                 lateReasonInput.value = '';
                 document.getElementById('work-remark').value = '';
@@ -826,9 +849,33 @@
             });
             
             historyBtn.addEventListener('click', () => {
-                // This button is now only for showing past days, not today.
-                // A more robust history would fetch from a server, but for now, this is a simple implementation.
-                showModal("Fitur riwayat sedang dalam pengembangan. Data Anda sudah tersimpan di Spreadsheet.");
+                const historyKey = `ecrewHistory_${appState.loggedInUser.email}`;
+                const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+                const historyContainer = document.getElementById('history-container');
+                historyContainer.innerHTML = '';
+
+                if (history.length === 0) {
+                    historyContainer.innerHTML = '<p class="text-center text-slate-400">Tidak ada riwayat absensi.</p>';
+                } else {
+                    history.slice().reverse().forEach(rec => {
+                        const card = document.createElement('div');
+                        card.className = 'bg-slate-800/50 p-4 rounded-lg';
+                        const checkInTime = new Date(rec.absenMasuk).toLocaleTimeString('id-ID');
+                        const checkOutTime = rec.absenPulang ? new Date(rec.absenPulang).toLocaleTimeString('id-ID') : 'Belum Absen';
+                        
+                        card.innerHTML = `
+                            <p class="font-bold text-lg">${rec.dateMasuk}</p>
+                            <div class="text-sm text-slate-300 mt-2">
+                                <p><span class="font-semibold">Masuk:</span> ${checkInTime} (${rec.statusMasuk})</p>
+                                <p><span class="font-semibold">Pulang:</span> ${checkOutTime} (${rec.statusPulang || ''})</p>
+                            </div>
+                        `;
+                        historyContainer.appendChild(card);
+                    });
+                }
+
+                checkInSection.classList.add('hidden');
+                historySection.classList.remove('hidden');
             });
 
             backToMainBtn.addEventListener('click', () => {
@@ -836,9 +883,8 @@
             });
 
             // --- INITIALIZATION ---
-            loadState(); // Load state on start
             setInterval(updateDateTime, 1000);
-            renderUI();
+            // Don't load state until user is logged in
         });
     </script>
 </body>
