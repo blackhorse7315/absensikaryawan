@@ -236,7 +236,13 @@
                 <!-- History Section -->
                 <div id="history-section" class="hidden space-y-4">
                     <h2 class="text-2xl font-bold text-center">Riwayat Absensi</h2>
-                    <div id="history-container" class="space-y-3 max-h-96 overflow-y-auto">
+                    <div class="flex justify-center">
+                        <button id="download-history-btn" class="w-full md:w-auto btn-secondary font-bold py-2 px-4 rounded-lg text-md shadow-lg flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Download Riwayat (CSV)
+                        </button>
+                    </div>
+                    <div id="history-container" class="space-y-3 max-h-80 overflow-y-auto">
                         <!-- History cards will be injected here -->
                     </div>
                     <button id="back-to-main-btn" class="w-full btn-secondary font-bold py-3 px-4 rounded-lg">Kembali</button>
@@ -266,13 +272,30 @@
             <button id="modal-close-btn" class="btn-primary font-bold py-2 px-6 rounded-lg">OK</button>
         </div>
     </div>
+    
+    <!-- Download Modal -->
+    <div id="download-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 rounded-2xl p-8 shadow-lg text-center max-w-sm w-full space-y-4">
+            <h3 class="text-xl font-bold">Download Riwayat</h3>
+            <p class="text-slate-300">Pilih nama karyawan untuk mengunduh data absensi mereka.</p>
+            <div>
+                <label for="download-user-select" class="block text-sm font-medium text-slate-300 mb-2">Nama Karyawan</label>
+                <select id="download-user-select" class="w-full p-3 rounded-lg custom-select"></select>
+            </div>
+            <div class="flex gap-4">
+                 <button id="cancel-download-btn" class="w-full btn-secondary font-bold py-2 px-6 rounded-lg">Batal</button>
+                 <button id="confirm-download-btn" class="w-full btn-primary font-bold py-2 px-6 rounded-lg">Download</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- LeafletJS JS for Maps -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- GANTI URL DI BAWAH INI DENGAN URL WEB APP BARU ANDA ---
-            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfRSqq-1P8zeycUSYZc_RcKRfCP7zvuiX6S7APCPgMG-REi6BJfzClH2yq2rHXoFI3iQ/exec';
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtVoLz48gbpttMRtMzQb2AhX4EC0OmlPS5EQYacd7yb_97AkcSmKfu4pvMX4IXcgE7og/exec';
 
             // --- DOM ELEMENTS ---
             const loginScreen = document.getElementById('login-screen');
@@ -319,6 +342,13 @@
             const captureBtn = document.getElementById('capture-btn');
             const cancelCameraBtn = document.getElementById('cancel-camera-btn');
             
+            // Download Modal Elements
+            const downloadModal = document.getElementById('download-modal');
+            const downloadHistoryBtn = document.getElementById('download-history-btn');
+            const downloadUserSelect = document.getElementById('download-user-select');
+            const confirmDownloadBtn = document.getElementById('confirm-download-btn');
+            const cancelDownloadBtn = document.getElementById('cancel-download-btn');
+
             // Summary Elements
             const summaryElements = {
                 photoMasuk: document.getElementById('summary-photo-masuk'),
@@ -837,6 +867,8 @@
                 }
 
                 checkInSection.classList.add('hidden');
+                onWorkingSection.classList.add('hidden');
+                summarySection.classList.add('hidden');
                 historySection.classList.remove('hidden');
             });
 
@@ -879,6 +911,15 @@
                     const photoDataUrl = await fileToDataUrl(event.target.files[0]);
                     await processCheckOut(photoDataUrl);
                 }
+            });
+            
+            checkOutBtn.addEventListener('click', () => {
+                const workRemark = document.getElementById('work-remark').value;
+                if (!workRemark.trim()) {
+                    showModal('Harap isi Remark Pekerjaan Hari Ini sebelum absen pulang.');
+                    return;
+                }
+                workPhotoInput.click();
             });
 
 
