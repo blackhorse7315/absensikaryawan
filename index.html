@@ -232,7 +232,7 @@
             "bobby.feisal22@gmail.com": { name: "Bobby Feisal Mahardhika", division: "Staf", position: "Engineering", role: "USER" },
             "tri3wiwid@gmail.com": { name: "Tri Widayat", division: "Operation", position: "Flight Support", role: "USER" },
             "is.darminto35@gmail.com": { name: "Isdarminto", division: "Staf", position: "Logistic", role: "USER" },
-            "sulaichann @gmail.com": { name: "Sulaichan Noor Ali", division: "Staf", position: "Logistic", role: "USER" },
+            "sulaichann@gmail.com": { name: "Sulaichan Noor Ali", division: "Staf", position: "Logistic", role: "USER" },
             "sbayuputro@gmail.com": { name: "Sri Muljono Bayu Putro", division: "Operation", position: "Flight Support", role: "USER" },
             "Asrigatot.67@gmail.com": { name: "Asri Gatot Yulianto", division: "Safety", position: "Aviation Security", role: "USER" },
             "nanangchabibi3@gmail.com": { name: "Nanang Chabibi", division: "Safety", position: "Aviation Security", role: "USER" },
@@ -259,18 +259,25 @@
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             loginError.classList.add('hidden');
-            const email = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
+            
             const userData = employeeDatabase[email];
             if (userData) {
                 const firstName = userData.name.split(' ')[0].toLowerCase();
                 if (password === firstName) {
                     loggedInUser = { email, ...userData };
-                    await loadUserHistory();
-                    const todayDateString = new Date().toLocaleDateString('en-CA');
-                    todayAttendance = userHistory.find(rec => rec.date === todayDateString) || null;
-                    setupDashboard();
-                    showPage('dashboard-page');
+                    try {
+                        await loadUserHistory();
+                        const todayDateString = new Date().toLocaleDateString('en-CA');
+                        todayAttendance = userHistory.find(rec => rec.date === todayDateString) || null;
+                        setupDashboard();
+                        showPage('dashboard-page');
+                    } catch (err) {
+                        console.error("Firebase Error:", err);
+                        loginError.textContent = 'Gagal terhubung ke database. Coba lagi.';
+                        loginError.classList.remove('hidden');
+                    }
                 } else {
                     loginError.textContent = 'Password salah.';
                     loginError.classList.remove('hidden');
@@ -376,7 +383,7 @@
             const newsFeed = document.getElementById('news-feed');
             if(!newsFeed) return;
             newsFeed.innerHTML = '';
-            if (newsData.length === 0) { newsFeed.innerHTML = `<p class="text-gray-500 text-center">Belum ada berita terbaru.</p>`; return; }
+            if (!newsData || newsData.length === 0) { newsFeed.innerHTML = `<p class="text-gray-500 text-center">Belum ada berita terbaru.</p>`; return; }
             newsData.slice().reverse().forEach(news => { newsFeed.innerHTML += `<div class="bg-white rounded-lg shadow overflow-hidden"><img src="${news.image}" alt="${news.title}" class="w-full h-40 object-cover"><div class="p-4"><p class="font-bold text-lg text-gray-800">${news.title}</p><p class="text-sm text-gray-500 mb-2">${news.date}</p><p class="text-gray-600">${news.description}</p></div></div>`; });
         }
 
@@ -690,16 +697,15 @@
             const now = new Date();
             let q;
             const attendanceCol = collection(db, "attendance");
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
             if (filterType === 'daily') {
-                const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                q = query(attendanceCol, where("date", "==", startOfDay.toLocaleDateString('en-CA')));
+                q = query(attendanceCol, where("date", "==", today.toLocaleDateString('en-CA')));
             } else if (filterType === 'weekly') {
-                const firstDay = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)));
-                firstDay.setHours(0,0,0,0);
+                const firstDay = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
                 q = query(attendanceCol, where("date", ">=", firstDay.toLocaleDateString('en-CA')));
             } else if (filterType === 'monthly') {
-                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
                 q = query(attendanceCol, where("date", ">=", firstDay.toLocaleDateString('en-CA')));
             }
 
@@ -827,7 +833,7 @@
         function renderAdminNewsList(newsData) {
             const container = document.getElementById('admin-news-list');
             container.innerHTML = '';
-            if (newsData.length === 0) {
+            if (!newsData || newsData.length === 0) {
                 container.innerHTML = `<p class="text-center text-gray-500">Belum ada berita.</p>`;
                 return;
             }
