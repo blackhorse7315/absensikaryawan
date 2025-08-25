@@ -241,9 +241,23 @@
             const container = document.getElementById('attendance-card-container');
             container.innerHTML = ''; 
 
-            if (!todayAttendance || !todayAttendance.clockInTime) {
+            if (!todayAttendance) {
                 container.innerHTML = `<div class="text-center"><h3 class="text-xl font-bold text-gray-800 mb-2">Selamat Bekerja!</h3><p class="text-gray-500 mb-6">Silakan lakukan absensi masuk untuk memulai hari Anda.</p><button id="start-clock-in-btn" class="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-3 px-8 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300"><i data-lucide="fingerprint" class="inline-block mr-2"></i>Absen Masuk</button></div>`;
                 document.getElementById('start-clock-in-btn').addEventListener('click', showWorkTypeModal);
+            }
+            else if (todayAttendance && !todayAttendance.clockInTime) {
+                container.innerHTML = `
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Konfirmasi Absen Masuk</h3>
+                    <dl class="detail-grid mb-6">
+                        <dt>Tipe Pekerjaan</dt><dd>${todayAttendance.workType}</dd>
+                        <dt>Duty As</dt><dd>${todayAttendance.dutyAs}</dd>
+                    </dl>
+                    <p class="text-gray-500 text-center mb-6">Pastikan data di atas sudah benar sebelum melanjutkan.</p>
+                    <button id="check-in-btn" class="w-full bg-green-500 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-green-600 transition-colors">
+                        <i data-lucide="camera" class="inline-block mr-2"></i>Check In Sekarang
+                    </button>
+                `;
+                document.getElementById('check-in-btn').addEventListener('click', handleAbsenMasuk);
             }
             else if (todayAttendance.clockInTime && !todayAttendance.clockOutTime) {
                 container.innerHTML = `<div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-gray-800">Detail Absensi Hari Ini</h3><span class="px-3 py-1 rounded-full font-semibold text-sm bg-green-100 text-green-700">On Working</span></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><h4 class="font-bold text-lg mb-3 border-b pb-2">Informasi Karyawan</h4><dl class="detail-grid"><dt>Nama</dt><dd>${loggedInUser.name}</dd><dt>Email</dt><dd>${loggedInUser.email}</dd><dt>Divisi</dt><dd>${loggedInUser.division}</dd><dt>Posisi</dt><dd>${loggedInUser.position}</dd><dt>Tugas</dt><dd>${todayAttendance.dutyAs}</dd><dt>Tipe Kerja</dt><dd>${todayAttendance.workType}</dd></dl></div><div><h4 class="font-bold text-lg mb-3 border-b pb-2">Informasi Absen Masuk</h4><dl class="detail-grid"><dt>Tanggal</dt><dd>${todayAttendance.clockInTime.toLocaleDateString('id-ID', { dateStyle: 'full' })}</dd><dt>Waktu</dt><dd>${todayAttendance.clockInTime.toLocaleTimeString('id-ID')}</dd><dt>Status</dt><dd class="${todayAttendance.statusMasuk.includes('Terlambat') ? 'text-red-600' : 'text-green-600'} font-semibold">${todayAttendance.statusMasuk}</dd>${todayAttendance.alasanTerlambat ? `<dt>Alasan</dt><dd>${todayAttendance.alasanTerlambat}</dd>` : ''}<dt>Lokasi</dt><dd>${todayAttendance.locationMasuk}</dd></dl><img src="${todayAttendance.fotoMasuk}" class="mt-4 rounded-lg w-full h-40 object-cover border"/></div></div><div class="mt-8 border-t pt-6"><h4 class="font-bold text-lg mb-3">Formulir Absen Pulang</h4><div class="space-y-4"><div><label for="remark" class="block text-sm font-medium text-gray-700">Remark Pekerjaan Hari Ini</label><textarea id="remark" rows="3" class="mt-1 w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-cyan-500 focus:border-cyan-500"></textarea></div><div><label for="work-photo" class="block text-sm font-medium text-gray-700">Foto Pekerjaan Hari Ini</label><input type="file" id="work-photo" accept="image/*" class="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100"></div><button id="start-clock-out-btn" class="w-full sm:w-auto bg-red-500 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-red-600 transition-colors"><i data-lucide="log-out" class="inline-block mr-2"></i>Absen Pulang</button></div></div>`;
@@ -291,12 +305,17 @@
             document.getElementById('continue-to-capture').addEventListener('click', () => {
                 const selectedWorkType = document.getElementById('work-type-select').value;
                 const selectedDutyAs = document.getElementById('duty-as-select').value;
+                todayAttendance = {
+                    workType: selectedWorkType,
+                    dutyAs: selectedDutyAs,
+                    clockInTime: null
+                };
                 hideModal();
-                handleAbsenMasuk({ workType: selectedWorkType, dutyAs: selectedDutyAs });
+                renderAttendanceCard();
             });
         }
 
-        async function handleAbsenMasuk(workDetails) {
+        async function handleAbsenMasuk() {
             const data = await capturePhotoAndLocation('Absen Masuk');
             if (!data) return;
             const clockInTime = new Date();
@@ -307,7 +326,7 @@
                 if (lateReason === null) return;
             }
             todayAttendance = { 
-                ...workDetails,
+                ...todayAttendance,
                 clockInTime, 
                 fotoMasuk: data.photo, 
                 locationMasuk: data.location, 
@@ -368,29 +387,15 @@
                     </div>
                     <div id="map" class="w-full h-48 bg-gray-200 rounded-lg mb-2 z-0"></div>
                     <div id="location-status" class="text-sm text-gray-500 mb-4"><i data-lucide="map-pin" class="inline-block w-4 h-4 mr-1"></i> Mengambil data lokasi...</div>
-                    <div class="flex space-x-2">
-                        <button id="capture-btn" class="flex-1 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors disabled:bg-gray-400" disabled>Ambil Foto</button>
-                        <button id="check-in-btn" class="flex-1 bg-cyan-500 text-white py-3 rounded-lg font-semibold hover:bg-cyan-600 transition-colors disabled:bg-gray-400" disabled>Check In</button>
-                    </div>
+                    <button id="capture-btn" class="w-full bg-cyan-500 text-white py-3 rounded-lg font-semibold hover:bg-cyan-600 transition-colors disabled:bg-gray-400" disabled>Ambil Foto & Lanjutkan</button>
                 </div>`;
                 showModal(title, content);
                 lucide.createIcons();
                 
                 const videoEl = document.getElementById('camera-feed');
                 const canvasEl = document.getElementById('photo-canvas');
-                const captureBtn = document.getElementById('capture-btn');
-                const checkInBtn = document.getElementById('check-in-btn');
-
                 let locationData = null;
-                let isPhotoTaken = false;
-                let isLocationFound = false;
-                let photoDataUrl = null;
-
-                function checkIfReadyForCheckIn() {
-                    if (isPhotoTaken && isLocationFound) {
-                        checkInBtn.disabled = false;
-                    }
-                }
+                let map = null;
 
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -400,10 +405,13 @@
                         document.getElementById('location-status').innerHTML = `<i data-lucide="check-circle" class="inline-block w-4 h-4 mr-1 text-green-500"></i> Lokasi berhasil dideteksi.`;
                         lucide.createIcons();
                         
-                        L.map('map').setView([lat, lon], 16).addLayer(L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')).addLayer(L.marker([lat, lon]));
+                        map = L.map('map').setView([lat, lon], 16);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        }).addTo(map);
+                        L.marker([lat, lon]).addTo(map);
 
-                        isLocationFound = true;
-                        checkIfReadyForCheckIn();
+                        checkIfReady();
                     },
                     () => { 
                         document.getElementById('location-status').innerHTML = `<i data-lucide="x-circle" class="inline-block w-4 h-4 mr-1 text-red-500"></i> Gagal mendapatkan lokasi.`; 
@@ -417,28 +425,20 @@
                         videoEl.srcObject = stream;
                         videoEl.onloadedmetadata = () => {
                             document.getElementById('camera-status').classList.add('hidden');
-                            captureBtn.disabled = false;
+                            checkIfReady();
                         };
                     }).catch(() => { document.getElementById('camera-status').textContent = 'Kamera tidak diizinkan.'; });
 
-                captureBtn.addEventListener('click', () => {
+                function checkIfReady() { if (cameraStream && locationData) document.getElementById('capture-btn').disabled = false; }
+
+                document.getElementById('capture-btn').addEventListener('click', () => {
                     const context = canvasEl.getContext('2d');
                     canvasEl.width = videoEl.videoWidth;
                     canvasEl.height = videoEl.videoHeight;
                     context.translate(canvasEl.width, 0);
                     context.scale(-1, 1);
                     context.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
-                    photoDataUrl = canvasEl.toDataURL('image/jpeg');
-                    
-                    videoEl.classList.add('hidden');
-                    canvasEl.style.display = 'block';
-                    captureBtn.disabled = true;
-                    captureBtn.textContent = "Foto Diambil";
-                    isPhotoTaken = true;
-                    checkIfReadyForCheckIn();
-                });
-
-                checkInBtn.addEventListener('click', () => {
+                    const photoDataUrl = canvasEl.toDataURL('image/jpeg');
                     stopCamera();
                     hideModal();
                     resolve({ photo: photoDataUrl, location: locationData });
@@ -446,7 +446,7 @@
             });
         }
         function showPage(pageId) { document.querySelectorAll('.page').forEach(p => p.classList.add('page-hidden')); setTimeout(() => { document.querySelectorAll('.page').forEach(p => { if(p.id !== pageId) p.style.display = 'none'; }); const tp = document.getElementById(pageId); tp.style.display = 'block'; setTimeout(() => tp.classList.remove('page-hidden'), 50); }, 500); }
-        function showModal(title, content) { const mc = document.getElementById('modal-container'); mc.innerHTML = `<div class="bg-white rounded-2xl shadow-xl w-full max-w-lg transform transition-all opacity-0 translate-y-4" id="modal-content"><div class="flex justify-between items-center p-4 border-b"><h3 class="text-lg font-bold text-gray-800">${title}</h3><button id="close-modal-btn" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="p-6">${content}</div></div>`; lucide.createIcons(); mc.classList.remove('hidden'); const m_content = document.getElementById('modal-content'); setTimeout(() => m_content.classList.remove('opacity-0', 'translate-y-4'), 10); document.getElementById('close-modal-btn').addEventListener('click', () => { hideModal(); }); }
+        function showModal(title, content) { const mc = document.getElementById('modal-container'); mc.innerHTML = `<div class="bg-white rounded-2xl shadow-xl w-full max-w-md transform transition-all opacity-0 translate-y-4" id="modal-content"><div class="flex justify-between items-center p-4 border-b"><h3 class="text-lg font-bold text-gray-800">${title}</h3><button id="close-modal-btn" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="p-6">${content}</div></div>`; lucide.createIcons(); mc.classList.remove('hidden'); const m_content = document.getElementById('modal-content'); setTimeout(() => m_content.classList.remove('opacity-0', 'translate-y-4'), 10); document.getElementById('close-modal-btn').addEventListener('click', () => { hideModal(); }); }
         function hideModal() { stopCamera(); const mc = document.getElementById('modal-content'); if (mc) { mc.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => { document.getElementById('modal-container').classList.add('hidden'); document.getElementById('modal-container').innerHTML = ''; }, 300); } }
         function stopCamera() { if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; } }
         
