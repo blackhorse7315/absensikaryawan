@@ -161,8 +161,8 @@
                     </div>
 
                     <button id="check-out-btn" class="w-full btn-secondary font-bold py-4 px-4 rounded-lg text-xl shadow-lg flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                        Ambil Foto & Absen Pulang
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z"></path><line x1="10" x2="10" y1="14" y2="3"></line><line x1="10" x2="10" y1="18" y2="21"></line><line x1="14" x2="14" y1="14" y2="3"></line><line x1="14" x2="14" y1="18" y2="21"></line><line x1="3" x2="21" y1="14" y2="14"></line></svg>
+                        Upload Foto & Absen Pulang
                     </button>
                 </div>
 
@@ -245,6 +245,9 @@
             </div>
         </div>
     </div>
+    
+    <!-- Hidden file input for check-out photo -->
+    <input type="file" id="work-photo-input" class="hidden" accept="image/*">
 
     <!-- Camera Modal -->
     <div id="camera-modal" class="hidden fixed inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center p-4 z-50">
@@ -269,7 +272,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- GANTI URL DI BAWAH INI DENGAN URL WEB APP BARU ANDA ---
-            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIJPlKicd9bpu5BmhEVzfolRHZknQbKoX9QkKH61tdgsoNH6mierBjPhOQXlSiySEfLA/exec';
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzkqYzHCUojvjqExwueZwlu0rzyhn3rNuYXeBdJx7YQuv8WaHuNJJyiZqb5NJ2Ox2SdxQ/exec';
 
             // --- DOM ELEMENTS ---
             const loginScreen = document.getElementById('login-screen');
@@ -307,6 +310,7 @@
             const modal = document.getElementById('modal');
             const modalMessage = document.getElementById('modal-message');
             const modalCloseBtn = document.getElementById('modal-close-btn');
+            const workPhotoInput = document.getElementById('work-photo-input');
             
             // Camera Modal Elements
             const cameraModal = document.getElementById('camera-modal');
@@ -340,7 +344,7 @@
                 loggedInUser: null,
                 currentLocation: null,
                 attendanceData: null,
-                captureMode: 'checkin', // 'checkin' or 'checkout'
+                tempPhoto: {}, // For storing photo data URLs temporarily
             };
             let mapInstances = {};
             let currentStream;
@@ -418,9 +422,7 @@
                 const payload = { ...data };
                 if (payload.absenMasuk instanceof Date) payload.absenMasuk = payload.absenMasuk.toISOString();
                 if (payload.absenPulang instanceof Date) payload.absenPulang = payload.absenPulang.toISOString();
-                delete payload.fotoMasuk;
-                delete payload.fotoPekerjaan;
-
+                
                 try {
                     await fetch(APPS_SCRIPT_URL, {
                         method: 'POST',
@@ -582,9 +584,8 @@
             }
             
             function populateSummary(data) {
-                // This function now relies on data fetched from spreadsheet which doesn't include photos
-                summaryElements.photoMasuk.src = "https://placehold.co/200x200/334155/e2e8f0?text=No+Img";
-                summaryElements.photoPekerjaan.src = "https://placehold.co/200x200/334155/e2e8f0?text=No+Img";
+                summaryElements.photoMasuk.src = appState.tempPhoto.checkin || "https://placehold.co/200x200/334155/e2e8f0?text=No+Img";
+                summaryElements.photoPekerjaan.src = appState.tempPhoto.checkout || "https://placehold.co/200x200/334155/e2e8f0?text=No+Img";
                 summaryElements.name.textContent = data.Nama;
                 summaryElements.dutyWork.textContent = `${data['Duty As']} / ${data['Tipe Pekerjaan']}`;
                 summaryElements.absenMasuk.textContent = new Date(data['Absen Masuk']).toLocaleString('id-ID');
@@ -646,6 +647,7 @@
 
                 if (user) {
                     appState.loggedInUser = user;
+                    appState.tempPhoto = {};
                     showModal("Mengecek status terakhir...");
                     const result = await fetchFromSpreadsheet('getTodaysStatus', user.email);
                     
@@ -681,22 +683,11 @@
                     showModal('Anda terlambat. Harap isi alasan keterlambatan sebelum absen.');
                     return;
                 }
-                appState.captureMode = 'checkin';
+                
                 cameraModal.classList.remove('hidden');
                 startCamera();
             });
             
-            checkOutBtn.addEventListener('click', () => {
-                const workRemark = document.getElementById('work-remark').value;
-                if (!workRemark.trim()) {
-                    showModal('Harap isi Remark Pekerjaan Hari Ini sebelum absen pulang.');
-                    return;
-                }
-                appState.captureMode = 'checkout';
-                cameraModal.classList.remove('hidden');
-                startCamera();
-            });
-
             async function processCheckIn(photoDataUrl) {
                 checkInBtn.disabled = true;
                 checkInBtn.textContent = 'Memproses...';
@@ -730,12 +721,12 @@
                     
                     await sendDataToSpreadsheet(dataForSheet);
                     
-                    // Update local state for immediate UI feedback
                     appState.attendanceData = {
                         'Nama': dataForSheet.name,
                         'Absen Masuk': now,
                         'Status Masuk': statusMasuk,
                     };
+                    appState.tempPhoto.checkin = photoDataUrl;
 
                     renderUI();
                     showModal("Absen masuk berhasil!");
@@ -797,9 +788,7 @@
                     appState.attendanceData['Total Jam Kerja'] = totalWorktime;
                     appState.attendanceData['Total Overtime'] = totalOvertime;
                     appState.attendanceData['Remark Pekerjaan'] = dataForSheet.remarkPekerjaan;
-                    // We don't have photo URLs, so we'll just use placeholders
-                    appState.attendanceData.fotoMasuk = "https://placehold.co/200x200/334155/e2e8f0?text=Masuk";
-                    appState.attendanceData.fotoPekerjaan = photoDataUrl;
+                    appState.tempPhoto.checkout = photoDataUrl;
 
                     renderUI();
                     showModal("Absen pulang berhasil!");
@@ -808,13 +797,14 @@
                     showModal(error.message || 'Terjadi kesalahan tidak diketahui.');
                 } finally {
                     checkOutBtn.disabled = false;
-                    checkOutBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Absen Pulang';
+                    checkOutBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z"></path><line x1="10" x2="10" y1="14" y2="3"></line><line x1="10" x2="10" y1="18" y2="21"></line><line x1="14" x2="14" y1="14" y2="3"></line><line x1="14" x2="14" y1="18" y2="21"></line><line x1="3" x2="21" y1="14" y2="14"></line></svg> Upload Foto & Absen Pulang';
                 }
             }
 
 
             resetBtn.addEventListener('click', () => {
                 appState.attendanceData = null;
+                appState.tempPhoto = {};
                 renderUI();
             });
             
@@ -881,11 +871,13 @@
                 canvas.getContext('2d').drawImage(videoStream, 0, 0);
                 const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
                 stopCamera();
-                
-                if (appState.captureMode === 'checkout') {
+                await processCheckIn(photoDataUrl);
+            });
+            
+            workPhotoInput.addEventListener('change', async (event) => {
+                if (event.target.files && event.target.files[0]) {
+                    const photoDataUrl = await fileToDataUrl(event.target.files[0]);
                     await processCheckOut(photoDataUrl);
-                } else {
-                    await processCheckIn(photoDataUrl);
                 }
             });
 
