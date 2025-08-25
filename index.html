@@ -34,6 +34,10 @@
         .detail-grid dd { color: #2D3748; }
         .leaflet-tile-pane { z-index: 1; }
         .leaflet-marker-pane, .leaflet-shadow-pane { z-index: 2; }
+        .filter-btn-active {
+            background-color: #06b6d4; /* cyan-500 */
+            color: white;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -90,7 +94,29 @@
             <!-- KONTEN ADMIN -->
             <main id="admin-view" class="p-4 sm:p-6 lg:p-8 hidden">
                  <div class="mb-8"><h2 class="text-2xl sm:text-3xl font-bold text-gray-800">Panel Admin</h2><p class="text-gray-500 mt-1">Monitor Kehadiran & Kelola Berita</p></div>
-                <div class="bg-white rounded-2xl shadow-lg p-6 mb-8"><h3 class="text-xl font-bold text-gray-800 mb-4">Riwayat Absensi Karyawan Hari Ini</h3><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-gray-50 border-b-2 border-gray-200"><tr><th class="p-3 text-sm font-semibold tracking-wide">Nama</th><th class="p-3 text-sm font-semibold tracking-wide">Email</th><th class="p-3 text-sm font-semibold tracking-wide">Jam Masuk</th><th class="p-3 text-sm font-semibold tracking-wide">Status</th></tr></thead><tbody id="admin-history-table"></tbody></table></div></div>
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800 mb-3 sm:mb-0">Riwayat Absensi Karyawan</h3>
+                        <div id="history-filter-buttons" class="flex space-x-2 bg-gray-200 p-1 rounded-lg">
+                            <button data-filter="daily" class="filter-btn px-4 py-1 rounded-md text-sm font-semibold transition-colors filter-btn-active">Harian</button>
+                            <button data-filter="weekly" class="filter-btn px-4 py-1 rounded-md text-sm font-semibold transition-colors">Mingguan</button>
+                            <button data-filter="monthly" class="filter-btn px-4 py-1 rounded-md text-sm font-semibold transition-colors">Bulanan</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 border-b-2 border-gray-200">
+                                <tr>
+                                    <th class="p-3 text-sm font-semibold tracking-wide">Nama</th>
+                                    <th class="p-3 text-sm font-semibold tracking-wide">Tanggal</th>
+                                    <th class="p-3 text-sm font-semibold tracking-wide">Jam Masuk</th>
+                                    <th class="p-3 text-sm font-semibold tracking-wide">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-history-table"></tbody>
+                        </table>
+                    </div>
+                </div>
                 <div class="bg-white rounded-2xl shadow-lg p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-bold text-gray-800">Manajemen Berita</h3>
@@ -250,6 +276,14 @@
         function setupAdminDashboard() {
             renderAdminNewsList();
             document.getElementById('add-news-btn').addEventListener('click', () => showNewsModal());
+            renderAdminHistoryTable('daily');
+            document.querySelectorAll('#history-filter-buttons .filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('#history-filter-buttons .filter-btn').forEach(b => b.classList.remove('filter-btn-active'));
+                    e.currentTarget.classList.add('filter-btn-active');
+                    renderAdminHistoryTable(e.currentTarget.dataset.filter);
+                });
+            });
         }
 
         // --- RENDER KARTU ABSENSI DINAMIS ---
@@ -601,6 +635,51 @@
         function stopCamera() { if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; } }
         
         // --- ADMIN FUNCTIONS ---
+        function renderAdminHistoryTable(filterType) {
+            const tableBody = document.getElementById('admin-history-table');
+            tableBody.innerHTML = '';
+            const allHistory = JSON.parse(localStorage.getItem('ecrew_attendance_history')) || [];
+            
+            const now = new Date();
+            const today = now.setHours(0, 0, 0, 0);
+            const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).setHours(0,0,0,0);
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).setHours(0,0,0,0);
+
+            const filteredHistory = allHistory.filter(record => {
+                const recordDate = new Date(record.date).setHours(0,0,0,0);
+                if (filterType === 'daily') {
+                    return recordDate === today;
+                }
+                if (filterType === 'weekly') {
+                    return recordDate >= firstDayOfWeek;
+                }
+                if (filterType === 'monthly') {
+                    return recordDate >= firstDayOfMonth;
+                }
+                return false;
+            });
+
+            if (filteredHistory.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-gray-500">Tidak ada data absensi untuk periode ini.</td></tr>`;
+                return;
+            }
+
+            filteredHistory.forEach(record => {
+                const user = employeeDatabase[record.email];
+                const clockInDate = new Date(record.clockInTime);
+                const isLate = record.statusMasuk.includes('Terlambat');
+                const statusClass = isLate ? 'text-red-600 bg-red-100' : 'text-green-600 bg-green-100';
+                tableBody.innerHTML += `
+                    <tr class="border-b border-gray-200 hover:bg-gray-50">
+                        <td class="p-3 text-sm text-gray-700 font-medium">${user.name}</td>
+                        <td class="p-3 text-sm text-gray-500">${clockInDate.toLocaleDateString('id-ID')}</td>
+                        <td class="p-3 text-sm text-gray-700">${clockInDate.toLocaleTimeString('id-ID')}</td>
+                        <td class="p-3 text-sm"><span class="px-2 py-1 rounded-full font-semibold ${statusClass}">${isLate ? 'Terlambat' : 'Tepat Waktu'}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
         function renderAdminNewsList() {
             const container = document.getElementById('admin-news-list');
             container.innerHTML = '';
