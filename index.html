@@ -91,7 +91,15 @@
             <main id="admin-view" class="p-4 sm:p-6 lg:p-8 hidden">
                  <div class="mb-8"><h2 class="text-2xl sm:text-3xl font-bold text-gray-800">Panel Admin</h2><p class="text-gray-500 mt-1">Monitor Kehadiran & Kelola Berita</p></div>
                 <div class="bg-white rounded-2xl shadow-lg p-6 mb-8"><h3 class="text-xl font-bold text-gray-800 mb-4">Riwayat Absensi Karyawan Hari Ini</h3><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-gray-50 border-b-2 border-gray-200"><tr><th class="p-3 text-sm font-semibold tracking-wide">Nama</th><th class="p-3 text-sm font-semibold tracking-wide">Email</th><th class="p-3 text-sm font-semibold tracking-wide">Jam Masuk</th><th class="p-3 text-sm font-semibold tracking-wide">Status</th></tr></thead><tbody id="admin-history-table"></tbody></table></div></div>
-                <div class="bg-white rounded-2xl shadow-lg p-6"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-gray-800">Manajemen Berita</h3><button id="add-news-btn" class="bg-cyan-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center space-x-2"><i data-lucide="plus-circle" class="w-5 h-5"></i><span>Tambah Berita</span></button></div><p class="text-gray-500">Berita yang ditambahkan di sini akan muncul di dashboard semua user.</p></div>
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Manajemen Berita</h3>
+                        <button id="add-news-btn" class="bg-cyan-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-cyan-600 flex items-center space-x-2">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i><span>Tambah Berita</span>
+                        </button>
+                    </div>
+                    <div id="admin-news-list" class="space-y-4"></div>
+                </div>
             </main>
         </div>
     </div>
@@ -168,7 +176,7 @@
             "alexanderdevata@yahoo.co.id": { name: "Alexander Anggarda Yunan Devata", division: "Operation", position: "Flight Support", role: "USER" },
             "sskkyy020@gmail.com": { name: "Sukyono", division: "Operation", position: "Flight Support", role: "USER" }
         };
-        const mockNewsData = [
+        let mockNewsData = JSON.parse(localStorage.getItem('ecrew_news')) || [
             { title: 'Jadwal Libur Nasional Terbaru', description: 'Pemerintah telah menetapkan jadwal libur nasional...', image: 'https://placehold.co/600x400/3498db/ffffff?text=Info+Libur', date: '24 Agu 2025' },
             { title: 'Program Karyawan Terbaik Bulan Ini', description: 'Selamat kepada Budi Santoso dari Divisi Marketing...', image: 'https://placehold.co/600x400/2ecc71/ffffff?text=Selamat!', date: '22 Agu 2025' }
         ];
@@ -221,6 +229,7 @@
             if (loggedInUser.role === 'ADMIN') {
                 document.getElementById('user-view').classList.add('hidden');
                 document.getElementById('admin-view').classList.remove('hidden');
+                setupAdminDashboard();
             } else {
                 document.getElementById('admin-view').classList.add('hidden');
                 document.getElementById('user-view').classList.remove('hidden');
@@ -236,6 +245,11 @@
             renderAttendanceCard();
             renderHistorySummary();
             renderNewsForUser();
+        }
+
+        function setupAdminDashboard() {
+            renderAdminNewsList();
+            document.getElementById('add-news-btn').addEventListener('click', () => showNewsModal());
         }
 
         // --- RENDER KARTU ABSENSI DINAMIS ---
@@ -295,7 +309,6 @@
                 content += `<p class="text-gray-500 text-center bg-white p-4 rounded-lg shadow">Belum ada riwayat absensi.</p>`;
             } else {
                 content += `<div id="history-summary-content" class="bg-white rounded-2xl p-4 shadow-lg cursor-pointer hover:bg-gray-50 transition-colors">`;
-                // Tampilkan 2 riwayat terakhir
                 userHistory.slice(-2).reverse().forEach(record => {
                     const recordDate = new Date(record.date);
                     const isLate = record.statusMasuk.includes('Terlambat');
@@ -436,7 +449,6 @@
         // --- FUNGSI DATA & HELPER ---
         function saveAttendanceRecord() {
             const allHistory = JSON.parse(localStorage.getItem('ecrew_attendance_history')) || [];
-            // Hapus record lama untuk user dan tanggal ini jika ada, lalu tambahkan yang baru
             const otherUsersHistory = allHistory.filter(rec => rec.email !== loggedInUser.email || rec.date !== todayAttendance.date);
             const updatedHistory = [...otherUsersHistory, {email: loggedInUser.email, ...todayAttendance}];
             localStorage.setItem('ecrew_attendance_history', JSON.stringify(updatedHistory));
@@ -562,7 +574,7 @@
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapPulang);
                     L.marker([todayAttendance.locationCoordsPulang.lat, todayAttendance.locationCoordsPulang.lon]).addTo(mapPulang);
                 }
-            }, 100); // Delay to ensure DOM is ready
+            }, 100);
         }
         function showPage(pageId) { document.querySelectorAll('.page').forEach(p => p.classList.add('page-hidden')); setTimeout(() => { document.querySelectorAll('.page').forEach(p => { if(p.id !== pageId) p.style.display = 'none'; }); const tp = document.getElementById(pageId); tp.style.display = 'block'; setTimeout(() => tp.classList.remove('page-hidden'), 50); }, 500); }
         function showModal(title, content) { const mc = document.getElementById('modal-container'); mc.innerHTML = `<div class="bg-white rounded-2xl shadow-xl w-full max-w-md transform transition-all opacity-0 translate-y-4" id="modal-content"><div class="flex justify-between items-center p-4 border-b"><h3 class="text-lg font-bold text-gray-800">${title}</h3><button id="close-modal-btn" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="p-6">${content}</div></div>`; lucide.createIcons(); mc.classList.remove('hidden'); const m_content = document.getElementById('modal-content'); setTimeout(() => m_content.classList.remove('opacity-0', 'translate-y-4'), 10); document.getElementById('close-modal-btn').addEventListener('click', () => { hideModal(); }); }
@@ -570,7 +582,105 @@
         function stopCamera() { if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; } }
         
         // --- ADMIN FUNCTIONS ---
-        function showAddNewsModal() { /* ... (Fungsi tidak berubah) ... */ }
+        function renderAdminNewsList() {
+            const container = document.getElementById('admin-news-list');
+            container.innerHTML = '';
+            if (mockNewsData.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500">Belum ada berita.</p>`;
+                return;
+            }
+            mockNewsData.forEach((news, index) => {
+                container.innerHTML += `
+                    <div class="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <img src="${news.image}" class="w-16 h-16 object-cover rounded-md">
+                            <div>
+                                <p class="font-semibold">${news.title}</p>
+                                <p class="text-sm text-gray-500">${news.date}</p>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="edit-news-btn p-2 text-gray-500 hover:text-blue-600" data-index="${index}"><i data-lucide="edit" class="w-5 h-5"></i></button>
+                            <button class="delete-news-btn p-2 text-gray-500 hover:text-red-600" data-index="${index}"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            document.querySelectorAll('.edit-news-btn').forEach(btn => btn.addEventListener('click', (e) => showNewsModal(mockNewsData[e.currentTarget.dataset.index], e.currentTarget.dataset.index)));
+            document.querySelectorAll('.delete-news-btn').forEach(btn => btn.addEventListener('click', (e) => deleteNews(e.currentTarget.dataset.index)));
+            lucide.createIcons();
+        }
+        
+        function showNewsModal(newsItem = null, index = -1) {
+            const isEditing = newsItem !== null;
+            const modalTitle = isEditing ? 'Edit Berita' : 'Tambah Berita Baru';
+            const buttonText = isEditing ? 'Simpan Perubahan' : 'Simpan Berita';
+
+            const content = `
+                <form id="news-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="news-title" class="block text-sm font-medium text-gray-700">Judul Berita</label>
+                            <input type="text" id="news-title" class="mt-1 w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-cyan-500 focus:border-cyan-500" value="${isEditing ? newsItem.title : ''}" required>
+                        </div>
+                        <div>
+                            <label for="news-description" class="block text-sm font-medium text-gray-700">Deskripsi Singkat</label>
+                            <textarea id="news-description" rows="3" class="mt-1 w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-cyan-500 focus:border-cyan-500" required>${isEditing ? newsItem.description : ''}</textarea>
+                        </div>
+                        <div>
+                            <label for="news-image" class="block text-sm font-medium text-gray-700">Foto Berita</label>
+                            <input type="file" id="news-image" accept="image/*" class="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100">
+                            <img id="image-preview" src="${isEditing ? newsItem.image : ''}" alt="Image Preview" class="mt-4 rounded-lg ${isEditing ? '' : 'hidden'} w-full h-48 object-cover"/>
+                        </div>
+                        <div class="pt-4">
+                            <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-cyan-700">${buttonText}</button>
+                        </div>
+                    </div>
+                </form>
+            `;
+            showModal(modalTitle, content);
+
+            const imageInput = document.getElementById('news-image');
+            const imagePreview = document.getElementById('image-preview');
+            imageInput.addEventListener('change', () => {
+                const file = imageInput.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imagePreview.src = e.target.result;
+                        imagePreview.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            document.getElementById('news-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const updatedNews = {
+                    title: document.getElementById('news-title').value,
+                    description: document.getElementById('news-description').value,
+                    image: imagePreview.src,
+                    date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                };
+
+                if (isEditing) {
+                    mockNewsData[index] = updatedNews;
+                } else {
+                    mockNewsData.push(updatedNews);
+                }
+                localStorage.setItem('ecrew_news', JSON.stringify(mockNewsData));
+                hideModal();
+                renderAdminNewsList();
+            });
+        }
+
+        function deleteNews(index) {
+            if (confirm('Apakah Anda yakin ingin menghapus berita ini?')) {
+                mockNewsData.splice(index, 1);
+                localStorage.setItem('ecrew_news', JSON.stringify(mockNewsData));
+                renderAdminNewsList();
+            }
+        }
 
         lucide.createIcons();
     });
