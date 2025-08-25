@@ -104,6 +104,7 @@
         let loggedInUser = null;
         let cameraStream = null;
         let todayAttendance = null;
+        let userHistory = [];
         let timeInterval = null;
 
         // --- DATABASE KARYAWAN ---
@@ -190,7 +191,9 @@
                 const firstName = userData.name.split(' ')[0].toLowerCase();
                 if (password === firstName) {
                     loggedInUser = { email, ...userData };
-                    todayAttendance = null;
+                    loadUserHistory();
+                    const todayDateString = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+                    todayAttendance = userHistory.find(rec => rec.date === todayDateString) || null;
                     setupDashboard();
                     showPage('dashboard-page');
                 } else {
@@ -259,15 +262,18 @@
                 document.getElementById('check-in-btn').addEventListener('click', handleAbsenMasuk);
             }
             else if (todayAttendance.clockInTime && !todayAttendance.clockOutTime) {
-                container.innerHTML = `<div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-gray-800">Detail Absensi Hari Ini</h3><span class="px-3 py-1 rounded-full font-semibold text-sm bg-green-100 text-green-700">On Working</span></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><h4 class="font-bold text-lg mb-3 border-b pb-2">Informasi Karyawan</h4><dl class="detail-grid"><dt>Nama</dt><dd>${loggedInUser.name}</dd><dt>Email</dt><dd>${loggedInUser.email}</dd><dt>Divisi</dt><dd>${loggedInUser.division}</dd><dt>Posisi</dt><dd>${loggedInUser.position}</dd><dt>Tugas</dt><dd>${todayAttendance.dutyAs}</dd><dt>Tipe Kerja</dt><dd>${todayAttendance.workType}</dd></dl></div><div><h4 class="font-bold text-lg mb-3 border-b pb-2">Informasi Absen Masuk</h4><dl class="detail-grid"><dt>Tanggal</dt><dd>${todayAttendance.clockInTime.toLocaleDateString('id-ID', { dateStyle: 'full' })}</dd><dt>Waktu</dt><dd>${todayAttendance.clockInTime.toLocaleTimeString('id-ID')}</dd><dt>Status</dt><dd class="${todayAttendance.statusMasuk.includes('Terlambat') ? 'text-red-600' : 'text-green-600'} font-semibold">${todayAttendance.statusMasuk}</dd>${todayAttendance.alasanTerlambat ? `<dt>Alasan</dt><dd>${todayAttendance.alasanTerlambat}</dd>` : ''}<dt>Lokasi</dt><dd>${todayAttendance.locationMasuk}</dd></dl><img src="${todayAttendance.fotoMasuk}" class="mt-4 rounded-lg w-full h-40 object-cover border"/></div></div><div class="mt-8 border-t pt-6"><h4 class="font-bold text-lg mb-3">Formulir Absen Pulang</h4><div class="space-y-4"><div><label for="remark" class="block text-sm font-medium text-gray-700">Remark Pekerjaan Hari Ini</label><textarea id="remark" rows="3" class="mt-1 w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-cyan-500 focus:border-cyan-500"></textarea></div><div><label for="work-photo" class="block text-sm font-medium text-gray-700">Foto Pekerjaan Hari Ini (dari Galeri)</label><input type="file" id="work-photo" accept="image/*" class="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100"></div><button id="start-clock-out-btn" class="w-full sm:w-auto bg-red-500 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-red-600 transition-colors"><i data-lucide="log-out" class="inline-block mr-2"></i>Absen Pulang</button></div></div>`;
+                const clockInDate = new Date(todayAttendance.clockInTime);
+                container.innerHTML = `<div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-gray-800">Detail Absensi Hari Ini</h3><span class="px-3 py-1 rounded-full font-semibold text-sm bg-green-100 text-green-700">On Working</span></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><h4 class="font-bold text-lg mb-3 border-b pb-2">Informasi Karyawan</h4><dl class="detail-grid"><dt>Nama</dt><dd>${loggedInUser.name}</dd><dt>Email</dt><dd>${loggedInUser.email}</dd><dt>Divisi</dt><dd>${loggedInUser.division}</dd><dt>Posisi</dt><dd>${loggedInUser.position}</dd><dt>Tugas</dt><dd>${todayAttendance.dutyAs}</dd><dt>Tipe Kerja</dt><dd>${todayAttendance.workType}</dd></dl></div><div><h4 class="font-bold text-lg mb-3 border-b pb-2">Informasi Absen Masuk</h4><dl class="detail-grid"><dt>Tanggal</dt><dd>${clockInDate.toLocaleDateString('id-ID', { dateStyle: 'full' })}</dd><dt>Waktu</dt><dd>${clockInDate.toLocaleTimeString('id-ID')}</dd><dt>Status</dt><dd class="${todayAttendance.statusMasuk.includes('Terlambat') ? 'text-red-600' : 'text-green-600'} font-semibold">${todayAttendance.statusMasuk}</dd>${todayAttendance.alasanTerlambat ? `<dt>Alasan</dt><dd>${todayAttendance.alasanTerlambat}</dd>` : ''}<dt>Lokasi</dt><dd>${todayAttendance.locationMasuk}</dd></dl><img src="${todayAttendance.fotoMasuk}" class="mt-4 rounded-lg w-full h-40 object-cover border"/></div></div><div class="mt-8 border-t pt-6"><h4 class="font-bold text-lg mb-3">Formulir Absen Pulang</h4><div class="space-y-4"><div><label for="remark" class="block text-sm font-medium text-gray-700">Remark Pekerjaan Hari Ini</label><textarea id="remark" rows="3" class="mt-1 w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-cyan-500 focus:border-cyan-500"></textarea></div><div><label for="work-photo" class="block text-sm font-medium text-gray-700">Foto Pekerjaan Hari Ini (dari Galeri)</label><input type="file" id="work-photo" accept="image/*" class="mt-1 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100"></div><button id="start-clock-out-btn" class="w-full sm:w-auto bg-red-500 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-red-600 transition-colors"><i data-lucide="log-out" class="inline-block mr-2"></i>Absen Pulang</button></div></div>`;
                 document.getElementById('start-clock-out-btn').addEventListener('click', handleAbsenPulang);
             }
             else {
+                 const clockInDate = new Date(todayAttendance.clockInTime);
+                 const clockOutDate = new Date(todayAttendance.clockOutTime);
                  container.innerHTML = `
                     <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-gray-800">Rekap Absensi Hari Ini</h3><span class="px-3 py-1 rounded-full font-semibold text-sm bg-gray-200 text-gray-800">Selesai Bekerja</span></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
-                        <div><h4 class="font-bold text-lg mb-3 border-b pb-2">Absen Masuk</h4><dl class="detail-grid"><dt>Waktu</dt><dd>${todayAttendance.clockInTime.toLocaleTimeString('id-ID')}</dd><dt>Status</dt><dd class="${todayAttendance.statusMasuk.includes('Terlambat') ? 'text-red-600' : 'text-green-600'} font-semibold">${todayAttendance.statusMasuk}</dd><dt>Lokasi</dt><dd>${todayAttendance.locationMasuk}</dd></dl><div id="map-masuk" class="mt-4 w-full h-40 bg-gray-200 rounded-lg z-0 border"></div></div>
-                        <div><h4 class="font-bold text-lg mb-3 border-b pb-2">Absen Pulang</h4><dl class="detail-grid"><dt>Waktu</dt><dd>${todayAttendance.clockOutTime.toLocaleTimeString('id-ID')}</dd><dt>Status</dt><dd class="font-semibold ${todayAttendance.statusPulang.includes('Sebelum') ? 'text-yellow-600' : todayAttendance.statusPulang.includes('Melebihi') ? 'text-blue-600' : 'text-green-600'}">${todayAttendance.statusPulang}</dd><dt>Lokasi</dt><dd>${todayAttendance.locationPulang}</dd></dl><div id="map-pulang" class="mt-4 w-full h-40 bg-gray-200 rounded-lg z-0 border"></div></div>
+                        <div><h4 class="font-bold text-lg mb-3 border-b pb-2">Absen Masuk</h4><dl class="detail-grid"><dt>Waktu</dt><dd>${clockInDate.toLocaleTimeString('id-ID')}</dd><dt>Status</dt><dd class="${todayAttendance.statusMasuk.includes('Terlambat') ? 'text-red-600' : 'text-green-600'} font-semibold">${todayAttendance.statusMasuk}</dd><dt>Lokasi</dt><dd>${todayAttendance.locationMasuk}</dd></dl><div id="map-masuk" class="mt-4 w-full h-40 bg-gray-200 rounded-lg z-0 border"></div></div>
+                        <div><h4 class="font-bold text-lg mb-3 border-b pb-2">Absen Pulang</h4><dl class="detail-grid"><dt>Waktu</dt><dd>${clockOutDate.toLocaleTimeString('id-ID')}</dd><dt>Status</dt><dd class="font-semibold ${todayAttendance.statusPulang.includes('Sebelum') ? 'text-yellow-600' : todayAttendance.statusPulang.includes('Melebihi') ? 'text-blue-600' : 'text-green-600'}">${todayAttendance.statusPulang}</dd><dt>Lokasi</dt><dd>${todayAttendance.locationPulang}</dd></dl><div id="map-pulang" class="mt-4 w-full h-40 bg-gray-200 rounded-lg z-0 border"></div></div>
                     </div>
                     <div class="mt-8 border-t pt-6"><h4 class="font-bold text-lg mb-3">Ringkasan Kerja</h4><dl class="detail-grid"><dt>Total Waktu Kerja</dt><dd class="font-bold text-lg">${todayAttendance.totalWorkTime}</dd><dt>Total Lembur</dt><dd class="font-bold text-lg">${todayAttendance.totalOvertime}</dd><dt>Remark</dt><dd>${todayAttendance.remark}</dd></dl></div>`;
                  renderRecapMaps();
@@ -284,26 +290,49 @@
 
         function renderHistorySummary() {
             const container = document.getElementById('history-summary-container');
-            container.innerHTML = `
-                <h3 class="text-xl font-bold text-gray-800 mb-4">Ringkasan Absensi</h3>
-                <div id="history-summary-content" class="bg-white rounded-2xl p-4 shadow-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div class="flex justify-between items-center text-sm">
-                        <span>Kemarin</span>
-                        <span class="font-semibold text-green-600">Hadir</span>
-                    </div>
-                    <hr class="my-2">
-                    <div class="flex justify-between items-center text-sm text-gray-500">
-                        <span>2 Hari Lalu</span>
-                        <span class="font-semibold text-red-600">Alpa</span>
-                    </div>
-                    <p class="text-center text-xs text-cyan-600 mt-3">Klik untuk lihat detail</p>
-                </div>
-            `;
-            document.getElementById('history-summary-content').addEventListener('click', showUserHistoryDetail);
+            let content = `<h3 class="text-xl font-bold text-gray-800 mb-4">Ringkasan Absensi</h3>`;
+            if (userHistory.length === 0) {
+                content += `<p class="text-gray-500 text-center bg-white p-4 rounded-lg shadow">Belum ada riwayat absensi.</p>`;
+            } else {
+                content += `<div id="history-summary-content" class="bg-white rounded-2xl p-4 shadow-lg cursor-pointer hover:bg-gray-50 transition-colors">`;
+                // Tampilkan 2 riwayat terakhir
+                userHistory.slice(-2).reverse().forEach(record => {
+                    const recordDate = new Date(record.date);
+                    const isLate = record.statusMasuk.includes('Terlambat');
+                    content += `<div class="flex justify-between items-center text-sm py-1"><span class="text-gray-600">${recordDate.toLocaleDateString('id-ID', {weekday: 'long', day: 'numeric', month: 'short'})}</span><span class="font-semibold ${isLate ? 'text-red-600' : 'text-green-600'}">${isLate ? 'Terlambat' : 'Tepat Waktu'}</span></div>`;
+                });
+                content += `<p class="text-center text-xs text-cyan-600 mt-3">Klik untuk lihat detail lengkap</p></div>`;
+            }
+            container.innerHTML = content;
+            const summaryContent = document.getElementById('history-summary-content');
+            if (summaryContent) {
+                summaryContent.addEventListener('click', showUserHistoryDetail);
+            }
         }
 
         function showUserHistoryDetail() {
-            const content = `<div class="space-y-3 max-h-80 overflow-y-auto pr-2"><div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"><div><p class="font-semibold">Jumat, 22 Agustus 2025</p><p class="text-sm text-green-600 font-medium">Hadir</p></div><div class="text-right"><p class="text-sm">Masuk: 08:01</p><p class="text-sm">Pulang: 17:03</p></div></div><div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"><div><p class="font-semibold">Kamis, 21 Agustus 2025</p><p class="text-sm text-red-600 font-medium">Alpa</p></div></div></div>`;
+            let content = `<div class="space-y-3 max-h-96 overflow-y-auto pr-2">`;
+            if (userHistory.length === 0) {
+                content += `<p class="text-gray-500 text-center">Tidak ada data.</p>`;
+            } else {
+                [...userHistory].reverse().forEach(record => {
+                    const recordDate = new Date(record.date);
+                    const clockInDate = new Date(record.clockInTime);
+                    const clockOutDate = new Date(record.clockOutTime);
+                    const isLate = record.statusMasuk.includes('Terlambat');
+                    content += `
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="font-bold">${recordDate.toLocaleDateString('id-ID', { dateStyle: 'full' })}</p>
+                            <div class="text-sm mt-2 detail-grid">
+                                <dt>Status</dt><dd class="font-semibold ${isLate ? 'text-red-600' : 'text-green-600'}">${isLate ? 'Terlambat' : 'Tepat Waktu'}</dd>
+                                <dt>Masuk</dt><dd>${clockInDate.toLocaleTimeString('id-ID')}</dd>
+                                <dt>Pulang</dt><dd>${clockOutDate.toLocaleTimeString('id-ID')}</dd>
+                                <dt>Total Kerja</dt><dd>${record.totalWorkTime}</dd>
+                            </div>
+                        </div>`;
+                });
+            }
+            content += `</div>`;
             showModal('Riwayat Absensi Lengkap', content);
         }
 
@@ -353,7 +382,8 @@
             }
             todayAttendance = { 
                 ...todayAttendance,
-                clockInTime, 
+                date: clockInTime.toLocaleDateString('en-CA'),
+                clockInTime: clockInTime.toISOString(), 
                 fotoMasuk: data.photo, 
                 locationMasuk: data.locationString,
                 locationCoordsMasuk: data.locationCoords,
@@ -374,7 +404,7 @@
             if (!locationData) return;
 
             const clockOutTime = new Date();
-            const workDurationMs = clockOutTime - todayAttendance.clockInTime;
+            const workDurationMs = clockOutTime - new Date(todayAttendance.clockInTime);
             const totalWorkTime = formatDuration(workDurationMs);
             let statusPulang = '';
             const clockOutHour = clockOutTime.getHours(), clockOutMinute = clockOutTime.getMinutes();
@@ -389,7 +419,7 @@
             }
             todayAttendance = { 
                 ...todayAttendance, 
-                clockOutTime, 
+                clockOutTime: clockOutTime.toISOString(), 
                 locationPulang: locationData.locationString,
                 locationCoordsPulang: locationData.locationCoords,
                 remark, 
@@ -398,10 +428,26 @@
                 totalWorkTime, 
                 totalOvertime 
             };
+            saveAttendanceRecord();
             renderAttendanceCard();
+            renderHistorySummary();
         }
 
-        // --- FUNGSI HELPER ---
+        // --- FUNGSI DATA & HELPER ---
+        function saveAttendanceRecord() {
+            const allHistory = JSON.parse(localStorage.getItem('ecrew_attendance_history')) || [];
+            // Hapus record lama untuk user dan tanggal ini jika ada, lalu tambahkan yang baru
+            const otherUsersHistory = allHistory.filter(rec => rec.email !== loggedInUser.email || rec.date !== todayAttendance.date);
+            const updatedHistory = [...otherUsersHistory, {email: loggedInUser.email, ...todayAttendance}];
+            localStorage.setItem('ecrew_attendance_history', JSON.stringify(updatedHistory));
+            loadUserHistory();
+        }
+
+        function loadUserHistory() {
+            const allHistory = JSON.parse(localStorage.getItem('ecrew_attendance_history')) || [];
+            userHistory = allHistory.filter(rec => rec.email === loggedInUser.email);
+        }
+
         function updateTime() {
             const now = new Date(), greetingEl = document.getElementById('greeting'), timeEl = document.getElementById('current-time');
             if (!greetingEl || !timeEl) return;
