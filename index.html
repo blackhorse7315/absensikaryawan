@@ -270,6 +270,9 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- URL SUDAH DIMASUKKAN ---
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtVoLz48gbpttMRtMzQb2AhX4EC0OmlPS5EQYacd7yb_97AkcSmKfu4pvMX4IXcgE7og/exec';
+
             // --- DOM ELEMENTS ---
             const loginScreen = document.getElementById('login-screen');
             const appScreen = document.getElementById('app-screen');
@@ -401,6 +404,32 @@
 
             // --- FUNCTIONS ---
 
+            async function sendDataToSpreadsheet(data) {
+                if (!APPS_SCRIPT_URL) {
+                    console.warn("APPS_SCRIPT_URL is not set. Skipping spreadsheet submission.");
+                    return;
+                }
+
+                const payload = { ...data };
+                if (payload.absenMasuk instanceof Date) payload.absenMasuk = payload.absenMasuk.toISOString();
+                if (payload.absenPulang instanceof Date) payload.absenPulang = payload.absenPulang.toISOString();
+                delete payload.fotoMasuk;
+                delete payload.fotoPekerjaan;
+
+                try {
+                    await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    });
+                    console.log("Data sent to spreadsheet.");
+                } catch (error) {
+                    console.error("Error sending data to spreadsheet:", error);
+                    showModal("Gagal mengirim data ke spreadsheet. Data tersimpan lokal.");
+                }
+            }
+
             function showModal(message) {
                 modalMessage.textContent = message;
                 modal.classList.remove('hidden');
@@ -471,7 +500,6 @@
                     .bindPopup(message)
                     .openPopup();
                 mapInstances[containerId] = map;
-                 // Invalidate size after a short delay to ensure proper rendering
                 setTimeout(() => map.invalidateSize(), 100);
             }
 
@@ -516,7 +544,6 @@
             function saveAttendanceHistory(data) {
                 const historyKey = `attendanceHistory_${appState.loggedInUser.email}`;
                 let history = JSON.parse(localStorage.getItem(historyKey)) || [];
-                // Remove today's record if it already exists to prevent duplicates
                 history = history.filter(rec => rec.dateMasuk !== data.dateMasuk);
                 history.push(data);
                 localStorage.setItem(historyKey, JSON.stringify(history));
@@ -528,7 +555,6 @@
                 const today = new Date().toLocaleDateString('id-ID');
                 const todayRecord = history.find(rec => rec.dateMasuk === today);
                 if (todayRecord) {
-                    // Re-parse date strings into Date objects
                     todayRecord.absenMasuk = new Date(todayRecord.absenMasuk);
                     if(todayRecord.absenPulang) {
                        todayRecord.absenPulang = new Date(todayRecord.absenPulang);
@@ -691,9 +717,9 @@
                             statusAbsen: 'On Working',
                             absenPulang: null,
                         };
-
+                        
+                        sendDataToSpreadsheet(appState.attendanceData);
                         renderUI();
-                        console.log("--- DATA ABSEN MASUK (to be sent to spreadsheet) ---", appState.attendanceData);
                         showModal("Absen masuk berhasil!");
 
                     } catch (error) {
@@ -756,8 +782,8 @@
                     };
                     
                     saveAttendanceHistory(appState.attendanceData);
+                    sendDataToSpreadsheet(appState.attendanceData);
                     renderUI();
-                    console.log("--- DATA ABSEN PULANG (to be sent to spreadsheet) ---", appState.attendanceData);
                     showModal("Absen pulang berhasil!");
 
                 } catch (error) {
