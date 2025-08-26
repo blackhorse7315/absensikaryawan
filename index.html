@@ -903,13 +903,35 @@
         
         // Event listeners untuk preview foto
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('fotoMasuk').addEventListener('change', function() {
-                previewImage(this, 'previewFotoMasuk');
-            });
+            // Add event listeners with error handling
+            const fotoMasukInput = document.getElementById('fotoMasuk');
+            const fotoPekerjaanInput = document.getElementById('fotoPekerjaan');
             
-            document.getElementById('fotoPekerjaan').addEventListener('change', function() {
-                previewImage(this, 'previewFotoPekerjaan');
-            });
+            if (fotoMasukInput) {
+                fotoMasukInput.addEventListener('change', function() {
+                    console.log('Foto masuk changed');
+                    previewImage(this, 'previewFotoMasuk');
+                });
+            }
+            
+            if (fotoPekerjaanInput) {
+                fotoPekerjaanInput.addEventListener('change', function() {
+                    console.log('Foto pekerjaan changed');
+                    previewImage(this, 'previewFotoPekerjaan');
+                });
+            }
+            
+            // Clear error when user starts typing
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            
+            if (emailInput) {
+                emailInput.addEventListener('input', clearError);
+            }
+            
+            if (passwordInput) {
+                passwordInput.addEventListener('input', clearError);
+            }
         });
         
         // Check status masuk berdasarkan waktu
@@ -1105,17 +1127,28 @@
             document.getElementById('latitude').value = '';
             document.getElementById('longitude').value = '';
             
-            // Check if user already has absen masuk today
+            // Check attendance status for today
             const today = new Date().toDateString();
-            const todayAbsen = absensiData.find(record => 
+            const todayMasuk = absensiData.find(record => 
                 record.date === today && 
                 record.type === 'masuk' && 
                 record.email === currentUser.email
             );
+            const todayPulang = absensiData.find(record => 
+                record.date === today && 
+                record.type === 'pulang' && 
+                record.email === currentUser.email
+            );
             
-            if (todayAbsen) {
+            // If both check-in and check-out are completed for today
+            if (todayMasuk && todayPulang) {
+                alert('Anda sudah menyelesaikan absensi untuk hari ini (masuk dan pulang). Absensi berikutnya dapat dilakukan besok.');
+                return;
+            }
+            
+            if (todayMasuk && !todayPulang) {
                 // Show existing check-in data and prepare for check-out
-                fillExistingAbsenData(todayAbsen);
+                fillExistingAbsenData(todayMasuk);
                 document.getElementById('btnAbsenMasuk').classList.add('hidden');
                 document.getElementById('btnAbsenPulang').classList.remove('hidden');
                 document.getElementById('remarkSection').classList.remove('hidden');
@@ -1123,12 +1156,12 @@
                 
                 // Show existing status
                 const statusDiv = document.getElementById('statusMasuk');
-                statusDiv.textContent = todayAbsen.statusMasuk;
-                statusDiv.className = todayAbsen.statusMasuk.includes('Terlambat') ? 
+                statusDiv.textContent = todayMasuk.statusMasuk;
+                statusDiv.className = todayMasuk.statusMasuk.includes('Terlambat') ? 
                     'p-3 rounded-lg font-medium bg-red-100 text-red-800' : 
                     'p-3 rounded-lg font-medium bg-green-100 text-green-800';
                 
-                currentAbsenMasuk = todayAbsen;
+                currentAbsenMasuk = todayMasuk;
             } else {
                 // Show absen masuk form
                 resetAbsenForm();
@@ -1191,6 +1224,8 @@
         
         // Submit absen masuk
         function submitAbsenMasuk() {
+            console.log('Submit absen masuk dipanggil');
+            
             const dutyAs = document.getElementById('dutyAs').value;
             const typeOfWork = document.getElementById('typeOfWork').value;
             const fotoMasuk = document.getElementById('fotoMasuk').files[0];
@@ -1198,6 +1233,9 @@
             const latitude = document.getElementById('latitude').value;
             const longitude = document.getElementById('longitude').value;
             
+            console.log('Data form:', { dutyAs, typeOfWork, fotoMasuk, lokasi, latitude, longitude });
+            
+            // Validasi input
             if (!dutyAs || !typeOfWork) {
                 alert('Mohon lengkapi Duty As dan Type of Work!');
                 return;
@@ -1208,7 +1246,7 @@
                 return;
             }
             
-            if (!isLocationDetected || !lokasi || !latitude || !longitude) {
+            if (!lokasi || !latitude || !longitude) {
                 alert('Mohon deteksi lokasi terlebih dahulu! Klik tombol "Deteksi Lokasi Saya" atau klik pada peta untuk memilih lokasi.');
                 return;
             }
@@ -1226,56 +1264,86 @@
                 statusMasuk = 'Terima Kasih Anda Telah Absen Tepat Waktu';
             } else {
                 statusMasuk = 'Anda Terlambat Absen';
-                alasanTerlambat = document.getElementById('alasanTerlambat').value;
+                alasanTerlambat = document.getElementById('alasanTerlambat').value || '';
                 if (!alasanTerlambat) {
                     alert('Mohon isi alasan keterlambatan!');
                     return;
                 }
             }
             
+            // Disable button to prevent double submission
+            const btnAbsenMasuk = document.getElementById('btnAbsenMasuk');
+            btnAbsenMasuk.disabled = true;
+            btnAbsenMasuk.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+            
             // Convert photo to base64 for storage
             const reader = new FileReader();
             reader.onload = function(e) {
-                const absenRecord = {
-                    id: Date.now(), // Add unique ID
-                    type: 'masuk',
-                    name: currentUser.name,
-                    email: currentUser.email,
-                    division: currentUser.division,
-                    position: currentUser.position,
-                    dutyAs: dutyAs,
-                    typeOfWork: typeOfWork,
-                    statusAbsen: 'on working',
-                    time: now.toLocaleString('id-ID'),
-                    timestamp: now.getTime(), // Add timestamp for calculations
-                    date: now.toDateString(),
-                    statusMasuk: statusMasuk,
-                    alasanTerlambat: alasanTerlambat,
-                    lokasi: lokasi,
-                    latitude: latitude,
-                    longitude: longitude,
-                    fotoMasuk: fotoMasuk.name,
-                    fotoMasukData: e.target.result // Store base64 data
-                };
-                
-                absensiData.push(absenRecord);
-                localStorage.setItem('absensiData', JSON.stringify(absensiData));
-                
-                alert('Absen masuk berhasil dicatat!');
-                closeModal('absenModal');
-                loadRiwayat();
+                try {
+                    const absenRecord = {
+                        id: Date.now(),
+                        type: 'masuk',
+                        name: currentUser.name,
+                        email: currentUser.email,
+                        division: currentUser.division,
+                        position: currentUser.position,
+                        dutyAs: dutyAs,
+                        typeOfWork: typeOfWork,
+                        statusAbsen: 'on working',
+                        time: now.toLocaleString('id-ID'),
+                        timestamp: now.getTime(),
+                        date: now.toDateString(),
+                        statusMasuk: statusMasuk,
+                        alasanTerlambat: alasanTerlambat,
+                        lokasi: lokasi,
+                        latitude: latitude,
+                        longitude: longitude,
+                        fotoMasuk: fotoMasuk.name,
+                        fotoMasukData: e.target.result
+                    };
+                    
+                    console.log('Menyimpan record:', absenRecord);
+                    
+                    absensiData.push(absenRecord);
+                    localStorage.setItem('absensiData', JSON.stringify(absensiData));
+                    
+                    alert('Absen masuk berhasil dicatat!');
+                    closeModal('absenModal');
+                    loadRiwayat();
+                } catch (error) {
+                    console.error('Error saving absen masuk:', error);
+                    alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+                } finally {
+                    // Re-enable button
+                    btnAbsenMasuk.disabled = false;
+                    btnAbsenMasuk.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Absen Masuk';
+                }
             };
+            
+            reader.onerror = function() {
+                console.error('Error reading file');
+                alert('Gagal membaca file foto. Silakan coba lagi.');
+                btnAbsenMasuk.disabled = false;
+                btnAbsenMasuk.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Absen Masuk';
+            };
+            
             reader.readAsDataURL(fotoMasuk);
         }
         
         // Submit absen pulang
         function submitAbsenPulang() {
+            console.log('Submit absen pulang dipanggil');
+            
             const remarkPekerjaan = document.getElementById('remarkPekerjaan').value;
             const fotoPekerjaan = document.getElementById('fotoPekerjaan').files[0];
             const lokasi = document.getElementById('lokasiMasuk').value;
             const latitude = document.getElementById('latitude').value;
             const longitude = document.getElementById('longitude').value;
             
+            console.log('Data form pulang:', { remarkPekerjaan, fotoPekerjaan, lokasi, latitude, longitude });
+            console.log('Current absen masuk:', currentAbsenMasuk);
+            
+            // Validasi input
             if (!remarkPekerjaan) {
                 alert('Mohon isi remark pekerjaan hari ini!');
                 return;
@@ -1286,51 +1354,80 @@
                 return;
             }
             
-            if (!isLocationDetected || !lokasi || !latitude || !longitude) {
+            if (!lokasi || !latitude || !longitude) {
                 alert('Mohon deteksi lokasi terlebih dahulu! Klik tombol "Deteksi Lokasi Saya" atau klik pada peta untuk memilih lokasi.');
+                return;
+            }
+            
+            if (!currentAbsenMasuk) {
+                alert('Data absen masuk tidak ditemukan!');
                 return;
             }
             
             const now = new Date();
             const pulangInfo = checkStatusPulang(currentAbsenMasuk.timestamp);
             
+            // Disable button to prevent double submission
+            const btnAbsenPulang = document.getElementById('btnAbsenPulang');
+            btnAbsenPulang.disabled = true;
+            btnAbsenPulang.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+            
             // Convert photo to base64 for storage
             const reader = new FileReader();
             reader.onload = function(e) {
-                const absenRecord = {
-                    id: Date.now(), // Add unique ID
-                    type: 'pulang',
-                    name: currentUser.name,
-                    email: currentUser.email,
-                    division: currentUser.division,
-                    position: currentUser.position,
-                    dutyAs: currentAbsenMasuk.dutyAs,
-                    typeOfWork: currentAbsenMasuk.typeOfWork,
-                    statusAbsen: 'pulang',
-                    time: now.toLocaleString('id-ID'),
-                    timestamp: now.getTime(), // Add timestamp
-                    date: now.toDateString(),
-                    statusPulang: pulangInfo.status,
-                    totalOvertime: pulangInfo.overtime,
-                    totalWorkTime: pulangInfo.totalWorkTime,
-                    remarkPekerjaan: remarkPekerjaan,
-                    fotoPekerjaan: fotoPekerjaan.name,
-                    fotoPekerjaanData: e.target.result, // Store base64 data
-                    absenMasukTime: currentAbsenMasuk.time,
-                    absenMasukTimestamp: currentAbsenMasuk.timestamp,
-                    absenMasukId: currentAbsenMasuk.id, // Link to check-in record
-                    lokasi: lokasi,
-                    latitude: latitude,
-                    longitude: longitude
-                };
-                
-                absensiData.push(absenRecord);
-                localStorage.setItem('absensiData', JSON.stringify(absensiData));
-                
-                alert('Absen pulang berhasil dicatat!');
-                closeModal('absenModal');
-                loadRiwayat();
+                try {
+                    const absenRecord = {
+                        id: Date.now(),
+                        type: 'pulang',
+                        name: currentUser.name,
+                        email: currentUser.email,
+                        division: currentUser.division,
+                        position: currentUser.position,
+                        dutyAs: currentAbsenMasuk.dutyAs,
+                        typeOfWork: currentAbsenMasuk.typeOfWork,
+                        statusAbsen: 'pulang',
+                        time: now.toLocaleString('id-ID'),
+                        timestamp: now.getTime(),
+                        date: now.toDateString(),
+                        statusPulang: pulangInfo.status,
+                        totalOvertime: pulangInfo.overtime,
+                        totalWorkTime: pulangInfo.totalWorkTime,
+                        remarkPekerjaan: remarkPekerjaan,
+                        fotoPekerjaan: fotoPekerjaan.name,
+                        fotoPekerjaanData: e.target.result,
+                        absenMasukTime: currentAbsenMasuk.time,
+                        absenMasukTimestamp: currentAbsenMasuk.timestamp,
+                        absenMasukId: currentAbsenMasuk.id,
+                        lokasi: lokasi,
+                        latitude: latitude,
+                        longitude: longitude
+                    };
+                    
+                    console.log('Menyimpan record pulang:', absenRecord);
+                    
+                    absensiData.push(absenRecord);
+                    localStorage.setItem('absensiData', JSON.stringify(absensiData));
+                    
+                    alert('Absen pulang berhasil dicatat!');
+                    closeModal('absenModal');
+                    loadRiwayat();
+                } catch (error) {
+                    console.error('Error saving absen pulang:', error);
+                    alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+                } finally {
+                    // Re-enable button
+                    btnAbsenPulang.disabled = false;
+                    btnAbsenPulang.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i>Absen Pulang';
+                }
             };
+            
+            reader.onerror = function() {
+                console.error('Error reading file');
+                alert('Gagal membaca file foto. Silakan coba lagi.');
+                btnAbsenPulang.disabled = false;
+                btnAbsenPulang.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i>Absen Pulang';
+            };
+            
             reader.readAsDataURL(fotoPekerjaan);
         }
         
@@ -1752,15 +1849,11 @@
             }
         });
         
-        // Initialize functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            // Clear error when user starts typing
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            
-            emailInput.addEventListener('input', clearError);
-            passwordInput.addEventListener('input', clearError);
+        // Initialize functionality when page loads
+        window.addEventListener('load', function() {
+            console.log('Page loaded, initializing...');
+            loadNewsPreview();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97501bc000ddce5e',t:'MTc1NjE3NzUzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'975031d1d4d85fc7',t:'MTc1NjE3ODQ0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
