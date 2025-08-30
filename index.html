@@ -3,559 +3,2095 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ECrew - Absensi</title>
+    <title>ECrew Absensi Karyawan Transwisata</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            background-color: #f8fafc; /* slate-50 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .pulse-animation { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
-        .bg-hero-pattern {
-            background-color: #ffffff;
-            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-        .fade-in { animation: fadeIn 0.6s ease-in-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
+        .slide-in { animation: slideIn 0.5s ease-out; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .card-hover { 
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-        }
-        .card-hover:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-        }
-        input[type="file"] { display: none; }
-        .custom-file-upload {
-            border: 1px solid #cbd5e1;
-            display: inline-block;
-            padding: 8px 12px;
-            cursor: pointer;
-            background-color: #fff;
-            border-radius: 0.5rem;
-            transition: background-color 0.2s ease;
-        }
-        .custom-file-upload:hover {
-            background-color: #f1f5f9;
-        }
-        .btn-primary {
-            @apply w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:scale-105;
-        }
-        .btn-secondary {
-             @apply w-full bg-slate-200 text-slate-800 font-semibold p-2 rounded-md hover:bg-slate-300 transition-colors duration-200;
-        }
-        .input-field {
-            @apply w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition;
-        }
-        .select-field {
-            @apply w-full p-2.5 border border-slate-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white;
+        .animate-marquee { animation: marquee 30s linear infinite; }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
         }
     </style>
 </head>
-<body class="text-slate-800">
-
-    <div id="app" class="min-h-screen flex items-center justify-center bg-hero-pattern p-4">
-
-        <!-- Login Page -->
-        <div id="login-page" class="w-full max-w-md fade-in">
-            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-slate-200">
-                <div class="text-center mb-8">
-                    <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">ECrew</h1>
-                    <p class="text-slate-500 mt-2">Portal Absensi Karyawan Transwisata</p>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen gradient-bg flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl card-shadow p-8 w-full max-w-md slide-in">
+            <div class="text-center mb-8">
+                <div class="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-users text-white text-2xl"></i>
                 </div>
-                <form id="login-form">
-                    <div class="space-y-6">
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                            <div class="relative"><span class="absolute inset-y-0 left-0 flex items-center pl-3"><i data-lucide="mail" class="h-5 w-5 text-slate-400"></i></span><input type="email" id="email" name="email" placeholder="Email Anda" class="input-field" required></div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">ECrew Absensi</h1>
+                <p class="text-gray-600">Transwisata Employee System</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="loginEmail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="nama@transwisata.com" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" id="loginPassword" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="••••••••" required>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <span class="ml-2 text-sm text-gray-600">Ingat saya</span>
+                    </label>
+                    <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Lupa password?</a>
+                </div>
+                
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-200 font-medium">
+                    Masuk
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">Demo Login:</p>
+                <p class="text-xs text-gray-500">Admin: admin@transwisata.com (password: password)</p>
+                <p class="text-xs text-gray-500">Employee: managementtranswisata@gmail.com (password: rustam)</p>
+                <p class="text-xs text-gray-500">Employee: fly5103@gmail.com (password: sulaksono)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Dashboard -->
+    <div id="userDashboard" class="hidden min-h-screen bg-gray-50">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <div class="bg-blue-600 w-8 h-8 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-users text-white text-sm"></i>
                         </div>
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                             <div class="relative"><span class="absolute inset-y-0 left-0 flex items-center pl-3"><i data-lucide="lock" class="h-5 w-5 text-slate-400"></i></span><input type="password" id="password" name="password" placeholder="Password (Nama Depan Anda)" class="input-field" required></div>
+                        <h1 class="text-xl font-semibold text-gray-800">ECrew Absensi</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-600">Selamat datang, <span id="userName" class="font-medium">John Doe</span></span>
+                        <div class="relative">
+                            <button onclick="toggleProfileMenu()" class="flex items-center space-x-2 focus:outline-none">
+                                <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-300 hover:border-blue-500 transition duration-200">
+                                    <img id="userProfilePhoto" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" alt="Profile" class="w-full h-full object-cover">
+                                </div>
+                                <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                            </button>
+                            
+                            <!-- Profile Dropdown -->
+                            <div id="profileMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                                <div class="py-2">
+                                    <button onclick="showProfileModal()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                        <i class="fas fa-user mr-2"></i>Edit Profile
+                                    </button>
+                                    <button onclick="logout()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div id="error-message" class="text-red-500 text-sm mt-4 text-center hidden"></div>
-                    <button type="submit" class="btn-primary mt-8">Log In</button>
-                </form>
-                 <p class="text-center text-xs text-slate-400 mt-8">&copy; 2024 Transwisata. All rights reserved.</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- News Ticker -->
+        <div class="bg-blue-600 text-white py-2 overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center">
+                    <span class="bg-white text-blue-600 px-3 py-1 rounded-full text-sm font-medium mr-4 flex-shrink-0">
+                        <i class="fas fa-bullhorn mr-1"></i>BERITA
+                    </span>
+                    <div class="overflow-hidden flex-1">
+                        <div id="newsTickerContent" class="whitespace-nowrap animate-marquee">
+                            🎉 Program Bonus Kinerja telah diluncurkan untuk karyawan berprestasi • 📚 Pendaftaran pelatihan Digital Marketing dibuka hingga 20 Januari • 🏖️ Libur nasional 17 Februari - mohon perhatikan jadwal kerja • 🎊 Selamat kepada Tim IT yang meraih penghargaan Best Innovation Team
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Dashboard Page -->
-        <div id="dashboard-page" class="w-full max-w-6xl hidden fade-in">
-            <div class="bg-white rounded-2xl shadow-2xl border border-slate-200">
-                <header class="p-6 md:p-8 border-b border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center">
-                    <div>
-                        <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
-                        <p id="welcome-message" class="text-slate-500 mt-1">Memuat data...</p>
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Latest News Section -->
+            <div class="bg-white rounded-2xl card-shadow p-6 mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800 flex items-center">
+                        <i class="fas fa-newspaper text-blue-600 mr-2"></i>
+                        Berita Terkini
+                    </h2>
+                    <button onclick="showTab('news')" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        Lihat Semua <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200 cursor-pointer">
+                        <div class="flex items-start">
+                            <div class="bg-green-100 p-2 rounded-lg mr-3 flex-shrink-0">
+                                <i class="fas fa-gift text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium text-gray-800 mb-1">Program Bonus Kinerja</h3>
+                                <p class="text-sm text-gray-600 mb-2">Peluncuran program bonus kinerja untuk karyawan berprestasi dengan total hadiah hingga 50 juta rupiah.</p>
+                                <span class="text-xs text-blue-600 font-medium">12 Januari 2024</span>
+                            </div>
+                        </div>
                     </div>
-                    <button id="logout-button" class="mt-4 md:mt-0 flex items-center gap-2 bg-slate-100 text-slate-600 font-semibold py-2 px-4 rounded-lg hover:bg-slate-200 transition"><i data-lucide="log-out" class="h-4 w-4"></i><span>Logout</span></button>
-                </header>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200 cursor-pointer">
+                        <div class="flex items-start">
+                            <div class="bg-purple-100 p-2 rounded-lg mr-3 flex-shrink-0">
+                                <i class="fas fa-graduation-cap text-purple-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium text-gray-800 mb-1">Pelatihan Digital Marketing</h3>
+                                <p class="text-sm text-gray-600 mb-2">Pendaftaran pelatihan digital marketing gratis untuk semua karyawan. Daftar sekarang!</p>
+                                <span class="text-xs text-blue-600 font-medium">10 Januari 2024</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                <div class="p-6 md:p-8">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                        <div id="absen-card" class="card-hover bg-gradient-to-br from-indigo-500 to-blue-500 text-white p-6 rounded-xl cursor-pointer flex flex-col justify-between"><div class="flex items-center gap-4"><div class="bg-white/20 p-3 rounded-lg"><i data-lucide="fingerprint" class="h-6 w-6"></i></div><h2 class="text-xl font-bold">Absensi Hari Ini</h2></div><p class="mt-2 text-indigo-100 text-sm">Catat kehadiran, laporkan pekerjaan, dan lihat ringkasan hari Anda.</p></div>
-                        <div id="riwayat-card" class="card-hover bg-white border border-slate-200 p-6 rounded-xl cursor-pointer flex flex-col justify-between"><div class="flex items-center gap-4"><div class="bg-slate-100 text-slate-600 p-3 rounded-lg"><i data-lucide="history" class="h-6 w-6"></i></div><h2 class="text-xl font-bold text-slate-800">Riwayat Absen</h2></div><p class="mt-2 text-slate-500 text-sm">Lihat kembali catatan kehadiran dan laporan kerja Anda sebelumnya.</p></div>
-                        <div id="news-card" class="card-hover bg-white border border-slate-200 p-6 rounded-xl cursor-pointer flex flex-col justify-between"><div class="flex items-center gap-4"><div class="bg-slate-100 text-slate-600 p-3 rounded-lg"><i data-lucide="newspaper" class="h-6 w-6"></i></div><h2 class="text-xl font-bold text-slate-800">Update News</h2></div><p class="mt-2 text-slate-500 text-sm">Informasi dan pengumuman terbaru dari perusahaan.</p></div>
+            <!-- Clock In/Out Section -->
+            <div class="bg-white rounded-2xl card-shadow p-8 mb-8">
+                <div class="text-center mb-6">
+                    <div class="mb-6">
+                        <div id="currentTime" class="text-4xl font-bold text-gray-800 mb-2"></div>
+                        <div id="currentDate" class="text-lg text-gray-600"></div>
                     </div>
+                    
+                    <div class="flex justify-center space-x-6">
+                        <button id="clockInBtn" onclick="showClockInForm()" class="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl font-medium transition duration-200 pulse-animation">
+                            <i class="fas fa-clock mr-2"></i>Clock In
+                        </button>
+                        <button id="clockOutBtn" onclick="showClockOutForm()" class="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-xl font-medium transition duration-200 disabled:opacity-50" disabled>
+                            <i class="fas fa-clock mr-2"></i>Clock Out
+                        </button>
+                    </div>
+                </div>
 
-                    <div id="content-area" class="bg-slate-50 p-6 rounded-lg min-h-[300px] border border-slate-200">
-                        <!-- Dynamic content will be loaded here -->
+                <!-- Clock In Form -->
+                <div id="clockInForm" class="hidden mt-8 border-t pt-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6 text-center">Form Absen Masuk</h3>
+                    <form id="attendanceInForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Personal Info -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap *</label>
+                                <input type="text" id="employeeName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                                <input type="email" id="employeeEmail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Divisi *</label>
+                                <input type="text" id="employeeDivision" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Posisi *</label>
+                                <input type="text" id="employeePosition" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Bertugas Sebagai *</label>
+                                <select id="dutyAs" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                                    <option value="">Pilih Tugas</option>
+                                    <option value="Director">Director</option>
+                                    <option value="Safety, Quality & Security Manager">Safety, Quality & Security Manager</option>
+                                    <option value="Operation Manager">Operation Manager</option>
+                                    <option value="Maintenance Manager">Maintenance Manager</option>
+                                    <option value="Chief Pilot Fixed Wing">Chief Pilot Fixed Wing</option>
+                                    <option value="Chief Pilot Rotary Wing">Chief Pilot Rotary Wing</option>
+                                    <option value="Chief Flight Support">Chief Flight Support</option>
+                                    <option value="Chief Inspector">Chief Inspector</option>
+                                    <option value="Chief Engineer">Chief Engineer</option>
+                                    <option value="Chief Finance, Accounting & Staf">Chief Finance, Accounting & Staf</option>
+                                    <option value="Chief Engineering">Chief Engineering</option>
+                                    <option value="Pilot in Command">Pilot in Command</option>
+                                    <option value="Second in Command">Second in Command</option>
+                                    <option value="Ground Instructor">Ground Instructor</option>
+                                    <option value="Flight Instructor">Flight Instructor</option>
+                                    <option value="Company Check Pilot">Company Check Pilot</option>
+                                    <option value="Engineer">Engineer</option>
+                                    <option value="Line Pilot">Line Pilot</option>
+                                    <option value="Cabin Service">Cabin Service</option>
+                                    <option value="Student">Student</option>
+                                    <option value="Flight Support">Flight Support</option>
+                                    <option value="Ground Support">Ground Support</option>
+                                    <option value="Technical Representative">Technical Representative</option>
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Staff">Staff</option>
+                                    <option value="Logistic">Logistic</option>
+                                    <option value="Aviation Security">Aviation Security</option>
+                                    <option value="Driver">Driver</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Pekerjaan *</label>
+                                <select id="workType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                                    <option value="">Pilih Jenis Pekerjaan</option>
+                                    <option value="Office Hour">Office Hour</option>
+                                    <option value="Standby Flight">Standby Flight</option>
+                                    <option value="Standby on Call">Standby on Call</option>
+                                    <option value="Pos One Gate">Pos One Gate</option>
+                                    <option value="Day Off">Day Off</option>
+                                    <option value="Day Off 7 Consecutive Days for Pilot">Day Off 7 Consecutive Days for Pilot</option>
+                                    <option value="Flight Duty VIP">Flight Duty VIP</option>
+                                    <option value="Ferry Flight">Ferry Flight</option>
+                                    <option value="PPC Simulator">PPC Simulator</option>
+                                    <option value="PPC Aircraft">PPC Aircraft</option>
+                                    <option value="Test Flight">Test Flight</option>
+                                    <option value="Ground Run">Ground Run</option>
+                                    <option value="Recurrent Training">Recurrent Training</option>
+                                    <option value="Recency Flight">Recency Flight</option>
+                                    <option value="Meeting Out of Office">Meeting Out of Office</option>
+                                    <option value="Medical Examination">Medical Examination</option>
+                                    <option value="Annual Leave">Annual Leave</option>
+                                    <option value="Sick">Sick</option>
+                                    <option value="Technical Representative">Technical Representative</option>
+                                    <option value="Aviation Security">Aviation Security</option>
+                                    <option value="Over Time">Over Time</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Photo Section -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Foto Masuk *</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                <video id="cameraPreview" class="hidden w-full max-w-sm mx-auto rounded-lg mb-4"></video>
+                                <canvas id="photoCanvas" class="hidden"></canvas>
+                                <img id="capturedPhoto" class="hidden w-full max-w-sm mx-auto rounded-lg mb-4">
+                                <div id="cameraControls">
+                                    <button type="button" onclick="startCamera()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 mr-2">
+                                        <i class="fas fa-camera mr-2"></i>Buka Kamera
+                                    </button>
+                                    <button type="button" id="captureBtn" onclick="capturePhoto()" class="hidden bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 mr-2">
+                                        <i class="fas fa-camera mr-2"></i>Ambil Foto
+                                    </button>
+                                    <button type="button" id="retakeBtn" onclick="retakePhoto()" class="hidden bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
+                                        <i class="fas fa-redo mr-2"></i>Foto Ulang
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location Section -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi Masuk *</label>
+                            <div class="space-y-4">
+                                <button type="button" onclick="getCurrentLocation('in')" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>Dapatkan Lokasi Saat Ini
+                                </button>
+                                <div id="locationInInfo" class="hidden p-4 bg-gray-50 rounded-lg">
+                                    <p class="text-sm text-gray-600 mb-2">Koordinat: <span id="coordsIn" class="font-mono"></span></p>
+                                    <p class="text-sm text-gray-600 mb-2">Alamat: <span id="addressIn"></span></p>
+                                    <div id="radiusStatusIn" class="p-3 rounded-lg text-sm font-medium"></div>
+                                </div>
+                                <div id="mapIn" class="hidden h-64 rounded-lg border"></div>
+                            </div>
+                        </div>
+
+                        <!-- Reason for Outside Radius -->
+                        <div id="outsideReasonIn" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Berada di Luar Radius Kantor *</label>
+                            <textarea id="outsideReasonTextIn" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Jelaskan alasan Anda berada di luar radius kantor..."></textarea>
+                        </div>
+
+                        <!-- Late Reason -->
+                        <div id="lateReasonSection" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Terlambat *</label>
+                            <textarea id="lateReasonText" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Jelaskan alasan keterlambatan Anda..."></textarea>
+                        </div>
+
+                        <div class="flex justify-center space-x-4">
+                            <button type="button" onclick="hideClockInForm()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                <i class="fas fa-check mr-2"></i>Submit Absen Masuk
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Clock Out Form -->
+                <div id="clockOutForm" class="hidden mt-8 border-t pt-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6 text-center">Form Absen Pulang</h3>
+                    <form id="attendanceOutForm" class="space-y-6">
+                        <!-- Location Section -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi Pulang *</label>
+                            <div class="space-y-4">
+                                <button type="button" onclick="getCurrentLocation('out')" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>Dapatkan Lokasi Saat Ini
+                                </button>
+                                <div id="locationOutInfo" class="hidden p-4 bg-gray-50 rounded-lg">
+                                    <p class="text-sm text-gray-600 mb-2">Koordinat: <span id="coordsOut" class="font-mono"></span></p>
+                                    <p class="text-sm text-gray-600 mb-2">Alamat: <span id="addressOut"></span></p>
+                                    <div id="radiusStatusOut" class="p-3 rounded-lg text-sm font-medium"></div>
+                                </div>
+                                <div id="mapOut" class="hidden h-64 rounded-lg border"></div>
+                            </div>
+                        </div>
+
+                        <!-- Reason for Outside Radius -->
+                        <div id="outsideReasonOut" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Berada di Luar Radius Kantor *</label>
+                            <textarea id="outsideReasonTextOut" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Jelaskan alasan Anda berada di luar radius kantor..."></textarea>
+                        </div>
+
+                        <!-- Work Report -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Laporan Pekerjaan Hari Ini *</label>
+                            <textarea id="workReport" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows="4" placeholder="Jelaskan pekerjaan yang telah Anda selesaikan hari ini..." required></textarea>
+                        </div>
+
+                        <!-- Work Photo -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Foto Pekerjaan Hari Ini</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                <input type="file" id="workPhotoInput" accept="image/*" class="hidden" onchange="previewWorkPhoto(event)">
+                                <img id="workPhotoPreview" class="hidden w-full max-w-sm mx-auto rounded-lg mb-4">
+                                <div id="workPhotoControls">
+                                    <button type="button" onclick="document.getElementById('workPhotoInput').click()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                                        <i class="fas fa-image mr-2"></i>Pilih Foto dari Gallery
+                                    </button>
+                                    <p class="text-sm text-gray-500 mt-2">Format: JPG, PNG (Max 5MB)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center space-x-4">
+                            <button type="button" onclick="hideClockOutForm()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                <i class="fas fa-check mr-2"></i>Submit Absen Pulang
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Attendance Summary -->
+                <div id="attendanceSummary" class="hidden mt-8 border-t pt-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6 text-center">Ringkasan Absensi Hari Ini</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600">Status Absen</p>
+                                <p id="attendanceStatusText" class="font-medium text-lg"></p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600">Absen Masuk</p>
+                                <p id="clockInTime" class="font-medium"></p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600">Status Masuk</p>
+                                <p id="clockInStatus" class="font-medium"></p>
+                            </div>
+                            <div id="clockOutTimeDiv" class="hidden p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600">Absen Pulang</p>
+                                <p id="clockOutTime" class="font-medium"></p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div id="clockOutStatusDiv" class="hidden p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600">Status Pulang</p>
+                                <p id="clockOutStatus" class="font-medium"></p>
+                            </div>
+                            <div id="overtimeDiv" class="hidden p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600">Total Overtime</p>
+                                <p id="overtimeHours" class="font-medium"></p>
+                            </div>
+                            <div id="worktimeDiv" class="hidden p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600">Total Waktu Kerja</p>
+                                <p id="totalWorktime" class="font-medium"></p>
+                            </div>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">Hadir Bulan Ini</p>
+                            <p id="monthlyAttendance" class="text-2xl font-bold text-gray-800">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center">
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-clock text-green-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">Jam Kerja</p>
+                            <p id="monthlyWorkHours" class="text-2xl font-bold text-gray-800">0h</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center">
+                        <div class="bg-yellow-100 p-3 rounded-lg">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">Terlambat</p>
+                            <p id="monthlyLate" class="text-2xl font-bold text-gray-800">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Tabs -->
+            <div class="bg-white rounded-2xl card-shadow">
+                <div class="border-b border-gray-200">
+                    <nav class="flex space-x-8 px-6">
+                        <button onclick="showTab('history')" class="tab-btn py-4 px-2 border-b-2 border-blue-500 text-blue-600 font-medium" data-tab="history">
+                            Riwayat Absen
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- History Tab -->
+                <div id="historyTab" class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Riwayat Absensi</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Tanggal</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Clock In</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Clock Out</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceHistory">
+                                <tr id="noDataRow">
+                                    <td colspan="4" class="py-8 px-4 text-center text-gray-500">
+                                        <i class="fas fa-calendar-times text-4xl mb-2"></i>
+                                        <p>Belum ada data absensi</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Attendance Detail Modal -->
+    <div id="attendanceDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl card-shadow w-full max-w-4xl mx-4 slide-in max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-gray-800">Detail Absensi</h2>
+                    <button onclick="hideAttendanceDetail()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="attendanceDetailContent" class="space-y-6">
+                    <!-- Content will be populated by JavaScript -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Custom Modal -->
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm"><div id="modal-content" class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center fade-in"><div id="modal-icon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4"><i data-lucide="check" class="h-6 w-6 text-green-600"></i></div><h3 id="modal-title" class="text-lg font-medium text-gray-900">Berhasil!</h3><p id="modal-message" class="text-sm text-gray-500 mt-2">Aksi Anda telah berhasil diproses.</p><button id="modal-close" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700">Tutup</button></div></div>
+    <!-- Profile Modal -->
+    <div id="profileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl card-shadow p-8 w-full max-w-md mx-4 slide-in">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Edit Profile</h2>
+                <p class="text-gray-600">Update your profile information</p>
+            </div>
+            
+            <form id="profileForm" class="space-y-6">
+                <!-- Profile Photo Section -->
+                <div class="text-center">
+                    <div class="relative inline-block">
+                        <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-300 mx-auto mb-4">
+                            <img id="profilePhotoPreview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" alt="Profile" class="w-full h-full object-cover">
+                        </div>
+                        <button type="button" onclick="document.getElementById('profilePhotoInput').click()" class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition duration-200">
+                            <i class="fas fa-camera text-sm"></i>
+                        </button>
+                    </div>
+                    <input type="file" id="profilePhotoInput" accept="image/*" class="hidden" onchange="previewProfilePhoto(event)">
+                    <p class="text-sm text-gray-500">Click camera icon to change photo</p>
+                </div>
+                
+                <!-- Profile Info -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
+                    <input type="text" id="profileName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="John Doe">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="profileEmail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="user@transwisata.com" readonly>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Telepon</label>
+                    <input type="tel" id="profilePhone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="08xxxxxxxxxx">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Departemen</label>
+                    <select id="profileDepartment" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Pilih Departemen</option>
+                        <option value="IT">IT</option>
+                        <option value="HR">HR</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Operations">Operations</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-center space-x-4 pt-4">
+                    <button type="button" onclick="hideProfileModal()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
+                        <i class="fas fa-save mr-2"></i>Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="hidden min-h-screen bg-gray-50">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <div class="bg-purple-600 w-8 h-8 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-cog text-white text-sm"></i>
+                        </div>
+                        <h1 class="text-xl font-semibold text-gray-800">Admin Panel - ECrew</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-600">Admin: <span class="font-medium">Administrator</span></span>
+                        <button onclick="logout()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Admin Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Admin Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">Total Karyawan</p>
+                            <p class="text-2xl font-bold text-gray-800">156</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center">
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">Hadir Hari Ini</p>
+                            <p class="text-2xl font-bold text-gray-800">142</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center">
+                        <div class="bg-yellow-100 p-3 rounded-lg">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">Terlambat</p>
+                            <p class="text-2xl font-bold text-gray-800">8</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center">
+                        <div class="bg-red-100 p-3 rounded-lg">
+                            <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-600">Tidak Hadir</p>
+                            <p class="text-2xl font-bold text-gray-800">6</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Tabs -->
+            <div class="bg-white rounded-2xl card-shadow">
+                <div class="border-b border-gray-200">
+                    <nav class="flex space-x-8 px-6">
+                        <button onclick="showAdminTab('employees')" class="admin-tab-btn py-4 px-2 border-b-2 border-purple-500 text-purple-600 font-medium" data-tab="employees">
+                            Daftar Karyawan
+                        </button>
+                        <button onclick="showAdminTab('reports')" class="admin-tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="reports">
+                            Laporan Absensi
+                        </button>
+                        <button onclick="showAdminTab('settings')" class="admin-tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="settings">
+                            Pengaturan
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Employees Tab -->
+                <div id="employeesTab" class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Daftar Karyawan</h3>
+                        <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition duration-200">
+                            <i class="fas fa-plus mr-2"></i>Tambah Karyawan
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Nama</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Email</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Departemen</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Status</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4">John Doe</td>
+                                    <td class="py-3 px-4">john@transwisata.com</td>
+                                    <td class="py-3 px-4">IT</td>
+                                    <td class="py-3 px-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Aktif</span></td>
+                                    <td class="py-3 px-4">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2"><i class="fas fa-edit"></i></button>
+                                        <button class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-3 px-4">Jane Smith</td>
+                                    <td class="py-3 px-4">jane@transwisata.com</td>
+                                    <td class="py-3 px-4">HR</td>
+                                    <td class="py-3 px-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Aktif</span></td>
+                                    <td class="py-3 px-4">
+                                        <button class="text-blue-600 hover:text-blue-800 mr-2"><i class="fas fa-edit"></i></button>
+                                        <button class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="reportsTab" class="p-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Laporan Absensi</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-medium text-gray-800 mb-2">Laporan Harian</h4>
+                            <p class="text-sm text-gray-600 mb-4">Lihat absensi karyawan hari ini</p>
+                            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+                                <i class="fas fa-download mr-2"></i>Download
+                            </button>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-medium text-gray-800 mb-2">Laporan Bulanan</h4>
+                            <p class="text-sm text-gray-600 mb-4">Rekap absensi bulan ini</p>
+                            <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+                                <i class="fas fa-download mr-2"></i>Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settingsTab" class="p-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Pengaturan Sistem</h3>
+                    <div class="space-y-6">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-medium text-gray-800 mb-2">Jam Kerja</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Jam Masuk</label>
+                                    <input type="time" value="08:00" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Jam Pulang</label>
+                                    <input type="time" value="17:00" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-medium text-gray-800 mb-2">Toleransi Keterlambatan</h4>
+                            <input type="number" value="15" class="w-32 px-3 py-2 border border-gray-300 rounded-lg">
+                            <span class="text-sm text-gray-600 ml-2">menit</span>
+                        </div>
+                        <button class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition duration-200">
+                            Simpan Pengaturan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        lucide.createIcons();
-
-        // --- Elements ---
-        const loginPage = document.getElementById('login-page');
-        const dashboardPage = document.getElementById('dashboard-page');
-        const loginForm = document.getElementById('login-form');
-        const errorMessage = document.getElementById('error-message');
-        const welcomeMessage = document.getElementById('welcome-message');
-        const logoutButton = document.getElementById('logout-button');
-        const contentArea = document.getElementById('content-area');
-
-        // --- New User Database ---
-        const users = {
-            'managementtranswisata@gmail.com': { password: 'rustam', name: 'Rustam Suhanda', division: 'Staf', position: 'President Director', role: 'ADMIN' },
-            'warauw_1@yahoo.com': { password: 'selfy', name: 'Selfy Warauw', division: 'Staf', position: 'Director', role: 'ADMIN' },
-            'crunkbolcow@gmail.com': { password: 'muhamad', name: 'Muhamad Ramdani Masri', division: 'Operation', position: 'Chief Pilot Rotary Wing', role: 'ADMIN' },
-            'fly5103@gmail.com': { password: 'sulaksono', name: 'Sulaksono Teddy Prabowo', division: 'Operation', position: 'Line Pilot', role: 'USER' },
-            'marcelino412ep@gmail.com': { password: 'marcelino', name: 'Marcelino Bhaharoenawanto', division: 'Operation', position: 'Line Pilot', role: 'USER' },
-            'sofwanm819@gmail.com': { password: 'muhamad', name: 'Muhamad Sofwan', division: 'Operation', position: 'Chief Pilot Fixed Wing', role: 'ADMIN' },
-            'sofiantobing692@gmail.com': { password: 'sofian', name: 'Sofian M. L. Tobing', division: 'Operation', position: 'General Manager', role: 'USER' },
-            'ricofebdi@gmail.com': { password: 'rico', name: 'Rico Febdiandana', division: 'Operation', position: 'Chief Flight Support', role: 'USER' },
-            'alfajri_koto@yahoo.com': { password: 'alfajri', name: 'Alfajri', division: 'Operation', position: 'Line Pilot', role: 'USER' },
-            'tioxpilot@gmail.com': { password: 'eli', name: 'Eli Setya', division: 'Operation', position: 'Line Pilot', role: 'USER' },
-            'harijantosusetyo@gmail.com': { password: 'susetyo', name: 'Susetyo Harijanto', division: 'Operation', position: 'Operation Manager', role: 'ADMIN' },
-            'purwoko.mulyono@yahoo.com': { password: 'purwoko', name: 'Purwoko', division: 'Operation', position: 'Line Pilot', role: 'USER' },
-            'icul2122@gmail.com': { password: 'riza', name: 'Riza Hanindita', division: 'Operation', position: 'Line Pilot', role: 'USER' },
-            'henaldy.ts204@gmail.com': { password: 'henaldy', name: 'Henaldy Arifia Sudrajat', division: 'Operation', position: 'Line Pilot', role: 'USER' },
-            'amelberliana@yahoo.co.id': { password: 'kadek', name: 'Kadek Amelia Nadya Berliana', division: 'Operation', position: 'Line Pilot', role: 'USER' },
-            'qnatawijaya@gmail.com': { password: 'qorry', name: 'Qorry Maulidya Natawijaya', division: 'Operation', position: 'Cabin Service', role: 'USER' },
-            'anggiashentira@gmail.com': { password: 'shentira', name: 'Shentira Anggia Putri', division: 'Operation', position: 'Cabin Service', role: 'USER' },
-            'tiffanipriciliaaaa@gmail.com': { password: 'tiffani', name: 'Tiffani Pricilia Hasan', division: 'Operation', position: 'Cabin Service', role: 'USER' },
-            'agustinzulfani74@gmail.com': { password: 'agustin', name: 'Agustin Zulfani Prihatini', division: 'Operation', position: 'Cabin Service', role: 'USER' },
-            'ivankacasey99@gmail.com': { password: 'nadya', name: 'Nadya Casey Ivanka', division: 'Operation', position: 'Cabin Service', role: 'USER' },
-            'prihatnoyanu@gmail.com': { password: 'yanu', name: 'Yanu Prihatno', division: 'Maintenance', position: 'Engineer', role: 'USER' },
-            'bayu.avicena@gmail.com': { password: 'bayu', name: 'Bayu Nugroho', division: 'Maintenance', position: 'Engineer', role: 'USER' },
-            'nawawahyudisuseno090@gmail.com': { password: 'wahyudi', name: 'Wahyudi Suseno', division: 'Maintenance', position: 'Avionic', role: 'USER' },
-            'sigithardadi88@yahoo.com': { password: 'sigit', name: 'Sigit Hardadi', division: 'Maintenance', position: 'Engineer', role: 'USER' },
-            'hadikamilatun@gmail.com': { password: 'hadi', name: 'Hadi Sutrisno', division: 'Maintenance', position: 'Maintenance Manager', role: 'USER' },
-            'suhairitwa@gmail.com': { password: 'suhairi', name: 'Suhairi', division: 'Maintenance', position: 'Engineer', role: 'USER' },
-            'yanto.umardin@gmail.com': { password: 'suyanto', name: 'Suyanto', division: 'Maintenance', position: 'Avionic', role: 'USER' },
-            'rioraymond89@gmail.com': { password: 'lazarus', name: 'Lazarus Rio Raymond', division: 'Maintenance', position: 'Engineer', role: 'USER' },
-            'mpiipie@gmail.com': { password: 'febie', name: 'Febie Aguti Effendi', division: 'Maintenance', position: 'Engineer', role: 'USER' },
-            'dikiatnu7@gmail.com': { password: 'diki', name: 'Diki Hariyanto', division: 'Maintenance', position: 'Chief Engineer', role: 'USER' },
-            'prayitsusonggo@yahoo.com': { password: 'prayit', name: 'Prayit Susonggo', division: 'Maintenance', position: 'Avionic', role: 'USER' },
-            'iskandarakbarhakim@gmail.com': { password: 'iskandar', name: 'Iskandar Akbar Hakim', division: 'Maintenance', position: 'Chief Inspector', role: 'USER' },
-            'glexxrsvpcgo@outlook.com': { password: 'arif', name: 'Arif Vrybadi Halim', division: 'Maintenance', position: 'Engineer', role: 'USER' },
-            'alfizaekap@gmail.com': { password: 'alfiza', name: 'Alfiza Eka Putra', division: 'Maintenance', position: 'Engineer', role: 'USER' },
-            'deditren99@gmail.com': { password: 'dedi', name: 'Dedi Prasetyo', division: 'Safety', position: 'Aviation Security', role: 'USER' },
-            'mediamarbun@gmail.com': { password: 'media', name: 'Media H Marbun', division: 'Staf', position: 'Human Resource Development', role: 'ADMIN' },
-            'ulieumeda@gmail.com': { password: 'fatmawati', name: 'Fatmawati', division: 'Staf', position: 'Finance', role: 'USER' },
-            'd2rahman@yahoo.co.id': { password: 'dede', name: 'Dede Rahman Arafiq', division: 'Staf', position: 'Finance', role: 'USER' },
-            'leosinay@gmail.com': { password: 'leo', name: 'Leo Fitzgerald Sinay', division: 'Maintenance', position: 'Chief Engineering', role: 'USER' },
-            'pohan16zaman@gmail.com': { password: 'khairul', name: 'Khairul Zaman Pohan', division: 'Operation', position: 'Flight Support', role: 'USER' },
-            'sentotbasuki@gmail.com': { password: 'sentot', name: 'Sentot Basuki', division: 'Operation', position: 'Flight Support', role: 'USER' },
-            'bobby.feisal22@gmail.com': { password: 'bobby', name: 'Bobby Feisal Mahardhika', division: 'Staf', position: 'Engineering', role: 'USER' },
-            'tri3wiwid@gmail.com': { password: 'tri', name: 'Tri Widayat', division: 'Operation', position: 'Flight Support', role: 'USER' },
-            'is.darminto35@gmail.com': { password: 'isdarminto', name: 'Isdarminto', division: 'Staf', position: 'Logistic', role: 'USER' },
-            'sulaichann@gmail.com': { password: 'sulaichan', name: 'Sulaichan Noor Ali', division: 'Staf', position: 'Logistic', role: 'USER' },
-            'sbayuputro@gmail.com': { password: 'sri', name: 'Sri Muljono Bayu Putro', division: 'Operation', position: 'Flight Support', role: 'USER' },
-            'asrigatot.67@gmail.com': { password: 'asri', name: 'Asri Gatot Yulianto', division: 'Safety', position: 'Aviation Security', role: 'USER' },
-            'nanangchabibi3@gmail.com': { password: 'nanang', name: 'Nanang Chabibi', division: 'Safety', position: 'Aviation Security', role: 'USER' },
-            'katellisna423@gmail.com': { password: 'hariyanto', name: 'Hariyanto', division: 'Safety', position: 'Aviation Security', role: 'USER' },
-            'fardhan0509@gmail.com': { password: 'supriyono', name: 'Supriyono', division: 'Staf', position: 'Kurir', role: 'USER' },
-            'kasna.pjln799@gmail.com': { password: 'kasna', name: 'Kasna', division: 'Staf', position: 'Driver', role: 'USER' },
-            'rizalsetiawan020812@gmail.com': { password: 'rizal', name: 'Rizal Setiawan', division: 'Staf', position: 'Driver', role: 'USER' },
-            'ardi.rizk91@gmail.com': { password: 'ardi', name: 'Ardi Rizki', division: 'Maintenance', position: 'Engineer', role: 'USER' },
-            'setiawanwawan7312@gmail.com': { password: 'wawan', name: 'Wawan Setiawan', division: 'Operation', position: 'Line Pilot', role: 'USER' },
-            'tommysaputra473@gmail.com': { password: 'tommy', name: 'Tommy Saputra', division: 'Staf', position: 'Chief Finance, Accounting & Tax', role: 'USER' },
-            'mch_riza@yahoo.com': { password: 'mochamad', name: 'Mochamad Riza', division: 'Safety', position: 'Quality, Safety, Security Manager', role: 'USER' },
-            'alexanderdevata@yahoo.co.id': { password: 'alexander', name: 'Alexander Anggarda Yunan Devata', division: 'Operation', position: 'Flight Support', role: 'USER' },
-            'sskkyy020@gmail.com': { password: 'sukyono', name: 'Sukyono', division: 'Operation', position: 'Flight Support', role: 'USER' }
-        };
-        
-        // --- Dropdown Options ---
-        const workTypeOptions = [ "Office Hour", "Standby Flight", "Standby on Call", "Pos One Gate", "Day Off", "Day Off 7 Consecutive Days for Pilot", "Flight Duty VIP", "Ferry Flight", "PPC Simulator", "PPC Aircraft", "Test Flight", "Ground Run", "Recurrent Training", "Recency Flight", "Meeting Out of Office", "Medical Examination", "Annual Leave", "Sick", "Technical Representative", "Aviation Security", "Over Time" ];
-        const dutyAsOptions = [ "Director", "Safety, Quality & Security Manager", "Operation Manager", "Maintenance Manager", "Chief Pilot Fixed Wing", "Chief Pilot Rotary Wing", "Chief Flight Support", "Chief Inspector", "Chief Engineer", "Chief Finance, Accounting & Staf", "Chief Engineering", "Pilot in Command", "Second in Command", "Ground Instructor", "Flight Instructor", "Company Check Pilot", "Engineer", "Line Pilot", "Cabin Service", "Student", "Flight Support", "Ground Support", "Technical Representative", "Engineering", "Staff", "Logistic", "Aviation Security", "Driver" ];
-
+        // Global variables
         let currentUser = null;
-        // --- State for Attendance ---
-        let attendanceState = {
-            clockInTime: null,
-            clockOutTime: null,
-            photoIn: null,
+        let isLoggedIn = false;
+        let clockedIn = false;
+        let clockInTime = null;
+        let clockOutTime = null;
+        let currentStream = null;
+        let attendanceData = {
+            clockIn: null,
+            clockOut: null,
             locationIn: null,
             locationOut: null,
-            workReportPhoto: null
-        };
-        let cameraStream = null;
-
-        // --- Functions ---
-        const showPage = (page) => {
-            loginPage.classList.add('hidden');
-            dashboardPage.classList.add('hidden');
-            page.classList.remove('hidden');
+            photo: null,
+            workPhoto: null
         };
 
-        const showModal = (title, message, isSuccess = true) => {
-            const modal = document.getElementById('modal');
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-message').textContent = message;
-            const iconContainer = document.getElementById('modal-icon');
-            iconContainer.innerHTML = isSuccess ? '<i data-lucide="check" class="h-6 w-6 text-green-600"></i>' : '<i data-lucide="x-circle" class="h-6 w-6 text-red-600"></i>';
-            iconContainer.className = `mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 ${isSuccess ? 'bg-green-100' : 'bg-red-100'}`;
-            lucide.createIcons();
-            modal.classList.remove('hidden');
-        };
-        const hideModal = () => document.getElementById('modal').classList.add('hidden');
-
-        const handleLogin = (e) => {
-            e.preventDefault();
-            const email = loginForm.email.value.trim().toLowerCase();
-            const password = loginForm.password.value;
-            errorMessage.classList.add('hidden');
-            
-            const user = users[email];
-            
-            if (user && user.password === password.toLowerCase()) {
-                currentUser = user;
-                welcomeMessage.textContent = `Selamat datang kembali, ${user.name}!`;
-                showPage(dashboardPage);
-                updateContent('welcome');
-            } else {
-                errorMessage.textContent = 'Email atau password salah.';
-                errorMessage.classList.remove('hidden');
+        // Employee database
+        const employeeDatabase = {
+            "Rustam Suhanda": {
+                email: "managementtranswisata@gmail.com",
+                division: "Staf",
+                position: "President Director",
+                role: "USER",
+                password: "rustam"
+            },
+            "Selfy Warauw": {
+                email: "warauw_1@yahoo.com",
+                division: "Staf",
+                position: "Director",
+                role: "USER",
+                password: "selfy"
+            },
+            "Muhamad Ramdani Masri": {
+                email: "crunkbolcow@gmail.com",
+                division: "Operation",
+                position: "Chief Pilot Rotary Wing",
+                role: "USER",
+                password: "muhamad"
+            },
+            "Sulaksono Teddy Prabowo": {
+                email: "fly5103@gmail.com",
+                division: "Operation",
+                position: "Line Pilot",
+                role: "USER",
+                password: "sulaksono"
+            },
+            "Marcelino Bhaharoenawanto": {
+                email: "marcelino412ep@gmail.com",
+                division: "Operation",
+                position: "Line Pilot",
+                role: "USER",
+                password: "marcelino"
+            },
+            "Muhamad Sofwan": {
+                email: "sofwanm819@gmail.com",
+                division: "Operation",
+                position: "Chief Pilot Fixed Wing",
+                role: "USER",
+                password: "muhamad"
+            },
+            "Sofian M. L. Tobing": {
+                email: "sofiantobing692@gmail.com",
+                division: "Operation",
+                position: "General Manager",
+                role: "USER",
+                password: "sofian"
+            },
+            "Rico Febdiandana": {
+                email: "ricofebdi@gmail.com",
+                division: "Operation",
+                position: "Chief Flight Support",
+                role: "USER",
+                password: "rico"
+            },
+            "Alfajri": {
+                email: "alfajri_koto@yahoo.com",
+                division: "Operation",
+                position: "Line Pilot",
+                role: "USER",
+                password: "alfajri"
+            },
+            "Eli Setya": {
+                email: "tioxpilot@gmail.com",
+                division: "Operation",
+                position: "Line Pilot",
+                role: "USER",
+                password: "eli"
+            },
+            "Susetyo Harijanto": {
+                email: "harijantosusetyo@gmail.com",
+                division: "Operation",
+                position: "Operation Manager",
+                role: "USER",
+                password: "susetyo"
+            },
+            "Purwoko": {
+                email: "purwoko.mulyono@yahoo.com",
+                division: "Operation",
+                position: "Line Pilot",
+                role: "USER",
+                password: "purwoko"
+            },
+            "Riza Hanindita": {
+                email: "icul2122@gmail.com",
+                division: "Operation",
+                position: "Line Pilot",
+                role: "USER",
+                password: "riza"
+            },
+            "Henaldy Arifia Sudrajat": {
+                email: "henaldy.ts204@gmail.com",
+                division: "Operation",
+                position: "Line Pilot",
+                role: "USER",
+                password: "henaldy"
+            },
+            "Kadek Amelia Nadya Berliana": {
+                email: "amelberliana@yahoo.co.id",
+                division: "Operation",
+                position: "Line Pilot",
+                role: "USER",
+                password: "kadek"
+            },
+            "Qorry Maulidya Natawijaya": {
+                email: "qnatawijaya@gmail.com",
+                division: "Operation",
+                position: "Cabin Service",
+                role: "USER",
+                password: "qorry"
+            },
+            "Shentira Anggia Putri": {
+                email: "anggiashentira@gmail.com",
+                division: "Operation",
+                position: "Cabin Service",
+                role: "USER",
+                password: "shentira"
+            },
+            "Tiffani Pricilia Hasan": {
+                email: "tiffanipriciliaaaa@gmail.com",
+                division: "Operation",
+                position: "Cabin Service",
+                role: "USER",
+                password: "tiffani"
+            },
+            "Agustin Zulfani Prihatini": {
+                email: "agustinzulfani74@gmail.com",
+                division: "Operation",
+                position: "Cabin Service",
+                role: "USER",
+                password: "agustin"
+            },
+            "Nadya Casey Ivanka": {
+                email: "ivankacasey99@gmail.com",
+                division: "Operation",
+                position: "Cabin Service",
+                role: "USER",
+                password: "nadya"
+            },
+            "Yanu Prihatno": {
+                email: "prihatnoyanu@gmail.com",
+                division: "Maintenance",
+                position: "Engineer",
+                role: "USER",
+                password: "yanu"
+            },
+            "Bayu Nugroho": {
+                email: "bayu.avicena@gmail.com",
+                division: "Maintenance",
+                position: "Engineer",
+                role: "USER",
+                password: "bayu"
+            },
+            "Wahyudi Suseno": {
+                email: "nawawahyudisuseno090@gmail.com",
+                division: "Maintenance",
+                position: "Avionic",
+                role: "USER",
+                password: "wahyudi"
+            },
+            "Sigit Hardadi": {
+                email: "sigithardadi88@yahoo.com",
+                division: "Maintenance",
+                position: "Engineer",
+                role: "USER",
+                password: "sigit"
+            },
+            "Hadi Sutrisno": {
+                email: "hadikamilatun@gmail.com",
+                division: "Maintenance",
+                position: "Maintenance Manager",
+                role: "USER",
+                password: "hadi"
+            },
+            "Suhairi": {
+                email: "suhairitwa@gmail.com",
+                division: "Maintenance",
+                position: "Engineer",
+                role: "USER",
+                password: "suhairi"
+            },
+            "Suyanto": {
+                email: "yanto.umardin@gmail.com",
+                division: "Maintenance",
+                position: "Avionic",
+                role: "USER",
+                password: "suyanto"
+            },
+            "Lazarus Rio Raymond": {
+                email: "rioraymond89@gmail.com",
+                division: "Maintenance",
+                position: "Engineer",
+                role: "USER",
+                password: "lazarus"
+            },
+            "Febie Aguti Effendi": {
+                email: "mpiipie@gmail.com",
+                division: "Maintenance",
+                position: "Engineer",
+                role: "USER",
+                password: "febie"
+            },
+            "Diki Hariyanto": {
+                email: "dikiatnu7@gmail.com",
+                division: "Maintenance",
+                position: "Chief Engineer",
+                role: "USER",
+                password: "diki"
+            },
+            "Prayit Susonggo": {
+                email: "prayitsusonggo@yahoo.com",
+                division: "Maintenance",
+                position: "Avionic",
+                role: "USER",
+                password: "prayit"
+            },
+            "Iskandar Akbar Hakim": {
+                email: "iskandarakbarhakim@gmail.com",
+                division: "Maintenance",
+                position: "Chief Inspector",
+                role: "USER",
+                password: "iskandar"
+            },
+            "Arif Vrybadi Halim": {
+                email: "GlexXRSvpcgo@outlook.com",
+                division: "Maintenance",
+                position: "Engineer",
+                role: "USER",
+                password: "arif"
+            },
+            "Alfiza Eka Putra": {
+                email: "alfizaekap@gmail.com",
+                division: "Maintenance",
+                position: "Engineer",
+                role: "USER",
+                password: "alfiza"
+            },
+            "Dedi Prasetyo": {
+                email: "deditren99@gmail.com",
+                division: "Safety",
+                position: "Aviation Security",
+                role: "USER",
+                password: "dedi"
+            },
+            "Media H Marbun": {
+                email: "mediamarbun@gmail.com",
+                division: "Staf",
+                position: "Human Resource Development",
+                role: "USER",
+                password: "media"
+            },
+            "Fatmawati": {
+                email: "ulieumeda@gmail.com",
+                division: "Staf",
+                position: "Finance",
+                role: "USER",
+                password: "fatmawati"
+            },
+            "Dede Rahman Arafiq": {
+                email: "d2rahman@yahoo.co.id",
+                division: "Staf",
+                position: "Finance",
+                role: "USER",
+                password: "dede"
+            },
+            "Leo Fitzgerald Sinay": {
+                email: "leosinay@gmail.com",
+                division: "Maintenance",
+                position: "Chief Engineering",
+                role: "USER",
+                password: "leo"
             }
         };
 
-        const handleLogout = () => {
-            stopCamera();
-            currentUser = null;
-            attendanceState = { clockInTime: null, clockOutTime: null, photoIn: null, locationIn: null, locationOut: null, workReportPhoto: null };
-            loginForm.reset();
-            showPage(loginPage);
-        };
+        // Office coordinates for radius check
+        const officeLocations = [
+            { lat: -6.267716, lng: 106.897317 },
+            { lat: -6.265146, lng: 106.885701 }
+        ];
+        const radiusMeters = 250;
 
-        const formatTime = (date) => date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        const formatDate = (date) => date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            setupFormHandlers();
+            setupAutoFill();
+        });
 
-        const startCamera = async () => {
-            const video = document.getElementById('camera-preview');
-            const startBtn = document.getElementById('start-camera-btn');
-            const captureBtn = document.getElementById('capture-photo-btn');
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                try {
-                    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-                    video.srcObject = cameraStream;
-                    video.classList.remove('hidden');
-                    startBtn.classList.add('hidden');
-                    captureBtn.classList.remove('hidden');
-                } catch (error) {
-                    showModal('Error Kamera', 'Tidak dapat mengakses kamera. Pastikan Anda memberikan izin.', false);
+        // Setup auto-fill functionality (no longer needed as fields are auto-filled on login)
+        function setupAutoFill() {
+            // This function is kept for compatibility but no longer used
+            // Fields are now auto-filled based on logged-in user
+        }
+
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeElement = document.getElementById('currentTime');
+            const dateElement = document.getElementById('currentDate');
+            
+            if (timeElement) {
+                timeElement.textContent = now.toLocaleTimeString('id-ID');
+            }
+            if (dateElement) {
+                dateElement.textContent = now.toLocaleDateString('id-ID', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            }
+        }
+
+        // Setup form handlers
+        function setupFormHandlers() {
+            // Clock In Form Handler
+            document.getElementById('attendanceInForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitClockIn();
+            });
+
+            // Clock Out Form Handler
+            document.getElementById('attendanceOutForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitClockOut();
+            });
+        }
+
+        // Calculate distance between two coordinates
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371e3; // Earth's radius in meters
+            const φ1 = lat1 * Math.PI/180;
+            const φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2-lat1) * Math.PI/180;
+            const Δλ = (lng2-lng1) * Math.PI/180;
+
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+            return R * c;
+        }
+
+        // Check if location is within office radius
+        function isWithinOfficeRadius(lat, lng) {
+            for (let office of officeLocations) {
+                const distance = calculateDistance(lat, lng, office.lat, office.lng);
+                if (distance <= radiusMeters) {
+                    return true;
                 }
             }
-        };
+            return false;
+        }
 
-        const stopCamera = () => {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
+        // Show Clock In Form
+        function showClockInForm() {
+            document.getElementById('clockInForm').classList.remove('hidden');
+            document.getElementById('clockInBtn').disabled = true;
+            
+            // Auto-fill form with current user data
+            if (currentUser) {
+                document.getElementById('employeeName').value = currentUser.name || '';
+                document.getElementById('employeeEmail').value = currentUser.email || '';
+                document.getElementById('employeeDivision').value = currentUser.division || '';
+                document.getElementById('employeePosition').value = currentUser.position || '';
+                
+                // Make these fields readonly since they're auto-filled
+                document.getElementById('employeeName').readOnly = true;
+                document.getElementById('employeeEmail').readOnly = true;
+                document.getElementById('employeeDivision').readOnly = true;
+                document.getElementById('employeePosition').readOnly = true;
+                
+                // Add visual indication that fields are auto-filled
+                document.getElementById('employeeName').classList.add('bg-gray-100');
+                document.getElementById('employeeEmail').classList.add('bg-gray-100');
+                document.getElementById('employeeDivision').classList.add('bg-gray-100');
+                document.getElementById('employeePosition').classList.add('bg-gray-100');
             }
-        };
+        }
 
-        const capturePhoto = () => {
-            const video = document.getElementById('camera-preview');
-            const canvas = document.getElementById('photo-canvas');
-            const capturedImage = document.getElementById('captured-image');
-            const context = canvas.getContext('2d');
+        // Hide Clock In Form
+        function hideClockInForm() {
+            document.getElementById('clockInForm').classList.add('hidden');
+            document.getElementById('clockInBtn').disabled = false;
+            stopCamera();
+            
+            // Reset form fields styling
+            document.getElementById('employeeName').classList.remove('bg-gray-100');
+            document.getElementById('employeeEmail').classList.remove('bg-gray-100');
+            document.getElementById('employeeDivision').classList.remove('bg-gray-100');
+            document.getElementById('employeePosition').classList.remove('bg-gray-100');
+            
+            // Reset readonly status
+            document.getElementById('employeeName').readOnly = false;
+            document.getElementById('employeeEmail').readOnly = false;
+            document.getElementById('employeeDivision').readOnly = false;
+            document.getElementById('employeePosition').readOnly = false;
+        }
+
+        // Show Clock Out Form
+        function showClockOutForm() {
+            document.getElementById('clockOutForm').classList.remove('hidden');
+            document.getElementById('clockOutBtn').disabled = true;
+        }
+
+        // Hide Clock Out Form
+        function hideClockOutForm() {
+            document.getElementById('clockOutForm').classList.add('hidden');
+            document.getElementById('clockOutBtn').disabled = false;
+        }
+
+        // Start Camera
+        async function startCamera() {
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user' } 
+                });
+                const video = document.getElementById('cameraPreview');
+                video.srcObject = currentStream;
+                video.classList.remove('hidden');
+                video.play();
+                
+                document.getElementById('captureBtn').classList.remove('hidden');
+            } catch (error) {
+                alert('Tidak dapat mengakses kamera. Pastikan Anda memberikan izin kamera.');
+            }
+        }
+
+        // Capture Photo
+        function capturePhoto() {
+            const video = document.getElementById('cameraPreview');
+            const canvas = document.getElementById('photoCanvas');
+            const img = document.getElementById('capturedPhoto');
+            
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            attendanceState.photoIn = canvas.toDataURL('image/png');
-            capturedImage.src = attendanceState.photoIn;
-            capturedImage.classList.remove('hidden');
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            const dataURL = canvas.toDataURL('image/jpeg');
+            img.src = dataURL;
+            img.classList.remove('hidden');
+            
             video.classList.add('hidden');
-            document.getElementById('capture-photo-btn').classList.add('hidden');
+            document.getElementById('captureBtn').classList.add('hidden');
+            document.getElementById('retakeBtn').classList.remove('hidden');
+            
+            attendanceData.photo = dataURL;
             stopCamera();
-        };
+        }
 
-        const getLocation = (elementId) => {
-            const el = document.getElementById(elementId);
-            if (navigator.geolocation) {
-                el.innerHTML = '<div class="flex items-center gap-2"><div class="animate-spin h-4 w-4 border-2 border-slate-400 border-t-transparent rounded-full"></div><span>Mencari lokasi...</span></div>';
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const { latitude, longitude } = position.coords;
-                        const location = { lat: latitude, lon: longitude };
-                        if (elementId.includes('in')) attendanceState.locationIn = location;
-                        else attendanceState.locationOut = location;
-                        el.innerHTML = `Lat: ${latitude.toFixed(5)}, Lon: ${longitude.toFixed(5)} <i data-lucide="check-circle" class="inline-block h-4 w-4 text-green-500"></i>`;
-                        lucide.createIcons();
-                    },
-                    () => {
-                        el.innerHTML = 'Gagal mendapatkan lokasi. <i data-lucide="alert-triangle" class="inline-block h-4 w-4 text-red-500"></i>';
-                        lucide.createIcons();
-                        showModal('Error Lokasi', 'Tidak dapat mengakses lokasi. Pastikan GPS dan izin lokasi aktif.', false);
+        // Retake Photo
+        function retakePhoto() {
+            document.getElementById('capturedPhoto').classList.add('hidden');
+            document.getElementById('retakeBtn').classList.add('hidden');
+            attendanceData.photo = null;
+            startCamera();
+        }
+
+        // Stop Camera
+        function stopCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+        }
+
+        // Get Current Location
+        function getCurrentLocation(type) {
+            if (!navigator.geolocation) {
+                alert('Geolocation tidak didukung oleh browser ini.');
+                return;
+            }
+
+            const button = document.querySelector(`button[onclick="getCurrentLocation('${type}')"]`);
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mendapatkan Lokasi...';
+            button.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    // Store location data
+                    if (type === 'in') {
+                        attendanceData.locationIn = { lat, lng };
+                    } else {
+                        attendanceData.locationOut = { lat, lng };
                     }
-                );
+                    
+                    // Display location info
+                    displayLocationInfo(lat, lng, type);
+                    
+                    // Reset button
+                    button.innerHTML = '<i class="fas fa-map-marker-alt mr-2"></i>Lokasi Berhasil Didapat';
+                    button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    button.classList.add('bg-green-600', 'hover:bg-green-700');
+                },
+                (error) => {
+                    alert('Tidak dapat mendapatkan lokasi. Pastikan GPS aktif dan berikan izin lokasi.');
+                    button.innerHTML = '<i class="fas fa-map-marker-alt mr-2"></i>Dapatkan Lokasi Saat Ini';
+                    button.disabled = false;
+                }
+            );
+        }
+
+        // Display Location Info
+        async function displayLocationInfo(lat, lng, type) {
+            const coordsElement = document.getElementById(`coords${type === 'in' ? 'In' : 'Out'}`);
+            const addressElement = document.getElementById(`address${type === 'in' ? 'In' : 'Out'}`);
+            const radiusElement = document.getElementById(`radiusStatus${type === 'in' ? 'In' : 'Out'}`);
+            const infoElement = document.getElementById(`location${type === 'in' ? 'In' : 'Out'}Info`);
+            const reasonElement = document.getElementById(`outsideReason${type === 'in' ? 'In' : 'Out'}`);
+            
+            // Display coordinates
+            coordsElement.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            
+            // Get address using reverse geocoding (simplified)
+            addressElement.textContent = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
+            
+            // Check radius
+            const withinRadius = isWithinOfficeRadius(lat, lng);
+            
+            if (withinRadius) {
+                radiusElement.textContent = 'Anda berada dalam radius kantor';
+                radiusElement.className = 'p-3 rounded-lg text-sm font-medium bg-green-100 text-green-800';
+                reasonElement.classList.add('hidden');
             } else {
-                el.textContent = 'Geolocation tidak didukung.';
+                radiusElement.textContent = 'Anda berada di luar radius kantor';
+                radiusElement.className = 'p-3 rounded-lg text-sm font-medium bg-red-100 text-red-800';
+                reasonElement.classList.remove('hidden');
             }
-        };
+            
+            infoElement.classList.remove('hidden');
+        }
 
-        const handleClockIn = () => {
-            if (!attendanceState.photoIn) {
-                showModal('Validasi Gagal', 'Harap ambil foto selfie terlebih dahulu.', false);
+        // Preview Work Photo
+        function previewWorkPhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Ukuran file terlalu besar. Maksimal 5MB.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('workPhotoPreview');
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                    attendanceData.workPhoto = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Submit Clock In
+        function submitClockIn() {
+            const now = new Date();
+            
+            // Validate required fields
+            if (!attendanceData.photo) {
+                alert('Foto masuk wajib diambil!');
                 return;
             }
-            if (!attendanceState.locationIn) {
-                showModal('Validasi Gagal', 'Harap dapatkan lokasi Anda terlebih dahulu.', false);
+            
+            if (!attendanceData.locationIn) {
+                alert('Lokasi masuk wajib diisi!');
                 return;
             }
+            
+            // Check if outside radius and reason is required
+            const withinRadius = isWithinOfficeRadius(attendanceData.locationIn.lat, attendanceData.locationIn.lng);
+            if (!withinRadius) {
+                const reason = document.getElementById('outsideReasonTextIn').value.trim();
+                if (!reason) {
+                    alert('Alasan berada di luar radius kantor wajib diisi!');
+                    return;
+                }
+            }
+            
+            // Check if late and reason is required
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const isLate = currentHour > 9 || (currentHour === 9 && currentMinute > 0);
+            
+            if (isLate) {
+                const lateReason = document.getElementById('lateReasonText').value.trim();
+                if (!lateReason) {
+                    document.getElementById('lateReasonSection').classList.remove('hidden');
+                    alert('Alasan terlambat wajib diisi!');
+                    return;
+                }
+            }
+            
+            // Store clock in data
+            clockInTime = now;
+            attendanceData.clockIn = {
+                time: now,
+                name: document.getElementById('employeeName').value,
+                email: document.getElementById('employeeEmail').value,
+                division: document.getElementById('employeeDivision').value,
+                position: document.getElementById('employeePosition').value,
+                dutyAs: document.getElementById('dutyAs').value,
+                workType: document.getElementById('workType').value,
+                location: attendanceData.locationIn,
+                photo: attendanceData.photo,
+                withinRadius: withinRadius,
+                outsideReason: withinRadius ? null : document.getElementById('outsideReasonTextIn').value,
+                isLate: isLate,
+                lateReason: isLate ? document.getElementById('lateReasonText').value : null
+            };
+            
+            // Update UI
+            clockedIn = true;
+            document.getElementById('clockInBtn').disabled = true;
+            document.getElementById('clockOutBtn').disabled = false;
+            document.getElementById('clockOutBtn').classList.remove('opacity-50');
+            
+            // Hide form and show summary
+            hideClockInForm();
+            showAttendanceSummary();
+            
+            // Add to history
+            addAttendanceRecord();
+            
+            alert('Absen masuk berhasil!');
+        }
 
-            attendanceState.clockInTime = new Date();
-            showModal('Absen Masuk Berhasil', `Terima kasih, ${currentUser.name}. Kehadiran Anda telah dicatat.`);
-            updateContent('absen');
-        };
-
-        const handleClockOut = () => {
-            const remark = document.getElementById('remark').value;
-            if (!remark.trim()) {
-                 showModal('Validasi Gagal', 'Harap isi remark pekerjaan hari ini.', false);
+        // Submit Clock Out
+        function submitClockOut() {
+            const now = new Date();
+            
+            // Validate required fields
+            if (!attendanceData.locationOut) {
+                alert('Lokasi pulang wajib diisi!');
                 return;
             }
-             if (!attendanceState.workReportPhoto) {
-                showModal('Validasi Gagal', 'Harap unggah foto pekerjaan hari ini.', false);
+            
+            const workReport = document.getElementById('workReport').value.trim();
+            if (!workReport) {
+                alert('Laporan pekerjaan hari ini wajib diisi!');
                 return;
             }
-            if (!attendanceState.locationOut) {
-                showModal('Validasi Gagal', 'Harap dapatkan lokasi pulang Anda terlebih dahulu.', false);
-                return;
+            
+            // Check if outside radius and reason is required
+            const withinRadius = isWithinOfficeRadius(attendanceData.locationOut.lat, attendanceData.locationOut.lng);
+            if (!withinRadius) {
+                const reason = document.getElementById('outsideReasonTextOut').value.trim();
+                if (!reason) {
+                    alert('Alasan berada di luar radius kantor wajib diisi!');
+                    return;
+                }
             }
+            
+            // Store clock out data
+            clockOutTime = now;
+            attendanceData.clockOut = {
+                time: now,
+                location: attendanceData.locationOut,
+                withinRadius: withinRadius,
+                outsideReason: withinRadius ? null : document.getElementById('outsideReasonTextOut').value,
+                workReport: workReport,
+                workPhoto: attendanceData.workPhoto
+            };
+            
+            // Update UI
+            clockedIn = false;
+            document.getElementById('clockOutBtn').disabled = true;
+            document.getElementById('clockOutBtn').classList.add('opacity-50');
+            
+            // Hide form and update summary
+            hideClockOutForm();
+            updateAttendanceSummary();
+            
+            // Update history
+            updateLastAttendanceRecord();
+            
+            alert('Absen pulang berhasil!');
+        }
 
-            attendanceState.clockOutTime = new Date();
-            showModal('Absen Pulang Berhasil', 'Absen pulang Anda telah berhasil dicatat. Selamat beristirahat!');
-            updateContent('absen');
-        };
-        
-        const updateContent = (menu) => {
-            stopCamera(); // Stop camera whenever content changes
-            let contentHTML = '';
-            switch (menu) {
-                case 'absen':
-                    const now = new Date();
-                    const clockInTime = attendanceState.clockInTime;
-                    const clockOutTime = attendanceState.clockOutTime;
+        // Show Attendance Summary
+        function showAttendanceSummary() {
+            const summary = document.getElementById('attendanceSummary');
+            const now = clockInTime;
+            
+            // Status Absen
+            document.getElementById('attendanceStatusText').textContent = 'On Working';
+            document.getElementById('attendanceStatusText').className = 'font-medium text-lg text-green-600';
+            
+            // Clock In Time
+            document.getElementById('clockInTime').textContent = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID');
+            
+            // Clock In Status
+            const isLate = now.getHours() > 9 || (now.getHours() === 9 && now.getMinutes() > 0);
+            const statusText = isLate ? 'Anda Terlambat Absen' : 'Terima Kasih Anda Telah Absen Tepat Waktu';
+            const statusClass = isLate ? 'font-medium text-red-600' : 'font-medium text-green-600';
+            
+            document.getElementById('clockInStatus').textContent = statusText;
+            document.getElementById('clockInStatus').className = statusClass;
+            
+            summary.classList.remove('hidden');
+        }
 
-                    let clockInStatus = '', clockInStatusColor = '', lateReasonHTML = '';
-                    if (clockInTime) {
-                        const clockInHour = clockInTime.getHours();
-                        const clockInMinute = clockInTime.getMinutes();
-                        if (clockInHour < 9 || (clockInHour === 9 && clockInMinute === 0)) {
-                            clockInStatus = 'Tepat Waktu';
-                            clockInStatusColor = 'text-green-600';
-                        } else {
-                            clockInStatus = 'Terlambat';
-                            clockInStatusColor = 'text-red-600';
-                            lateReasonHTML = `<div class="mt-4"><label for="late_reason" class="block text-sm font-medium text-slate-700">Alasan Terlambat</label><textarea id="late_reason" rows="2" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Jelaskan alasan keterlambatan Anda"></textarea></div>`;
-                        }
+        // Update Attendance Summary
+        function updateAttendanceSummary() {
+            const now = clockOutTime;
+            const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+            
+            // Status Absen
+            document.getElementById('attendanceStatusText').textContent = 'Pulang';
+            document.getElementById('attendanceStatusText').className = 'font-medium text-lg text-blue-600';
+            
+            // Clock Out Time
+            document.getElementById('clockOutTime').textContent = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID');
+            document.getElementById('clockOutTimeDiv').classList.remove('hidden');
+            
+            // Clock Out Status based on day of week
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            let outStatus, outClass;
+            
+            if (dayOfWeek === 0) { // Sunday - no time restrictions
+                outStatus = 'Anda Pulang Tepat Waktu (Hari Minggu)';
+                outClass = 'font-medium text-green-600';
+            } else if (dayOfWeek === 6) { // Saturday - different schedule
+                if (hour < 14 || (hour === 14 && minute < 30)) {
+                    outStatus = 'Anda Pulang Sebelum Waktunya';
+                    outClass = 'font-medium text-yellow-600';
+                } else if (hour === 14 && minute >= 30 && minute <= 45) {
+                    outStatus = 'Anda Pulang Tepat Waktu';
+                    outClass = 'font-medium text-green-600';
+                } else {
+                    outStatus = 'Waktu Kerja Melebihi';
+                    outClass = 'font-medium text-blue-600';
+                    
+                    // Calculate overtime for Saturday (after 14:46)
+                    const overtimeStart = new Date(now);
+                    overtimeStart.setHours(14, 46, 0, 0);
+                    const overtimeMs = now.getTime() - overtimeStart.getTime();
+                    const overtimeHours = Math.floor(overtimeMs / (1000 * 60 * 60));
+                    const overtimeMinutes = Math.floor((overtimeMs % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    document.getElementById('overtimeHours').textContent = `${overtimeHours}h ${overtimeMinutes}m`;
+                    document.getElementById('overtimeDiv').classList.remove('hidden');
+                }
+            } else { // Monday to Friday - regular schedule
+                if (hour < 17) {
+                    outStatus = 'Anda Pulang Sebelum Waktunya';
+                    outClass = 'font-medium text-yellow-600';
+                } else if (hour === 17 && minute <= 30) {
+                    outStatus = 'Anda Pulang Tepat Waktu';
+                    outClass = 'font-medium text-green-600';
+                } else {
+                    outStatus = 'Waktu Kerja Melebihi';
+                    outClass = 'font-medium text-blue-600';
+                    
+                    // Calculate overtime for weekdays (after 17:31)
+                    const overtimeStart = new Date(now);
+                    overtimeStart.setHours(17, 31, 0, 0);
+                    const overtimeMs = now.getTime() - overtimeStart.getTime();
+                    const overtimeHours = Math.floor(overtimeMs / (1000 * 60 * 60));
+                    const overtimeMinutes = Math.floor((overtimeMs % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    document.getElementById('overtimeHours').textContent = `${overtimeHours}h ${overtimeMinutes}m`;
+                    document.getElementById('overtimeDiv').classList.remove('hidden');
+                }
+            }
+            
+            document.getElementById('clockOutStatus').textContent = outStatus;
+            document.getElementById('clockOutStatus').className = outClass;
+            document.getElementById('clockOutStatusDiv').classList.remove('hidden');
+            
+            // Calculate total work time
+            const workTimeMs = clockOutTime.getTime() - clockInTime.getTime();
+            const workHours = Math.floor(workTimeMs / (1000 * 60 * 60));
+            const workMinutes = Math.floor((workTimeMs % (1000 * 60 * 60)) / (1000 * 60));
+            const workSeconds = Math.floor((workTimeMs % (1000 * 60)) / 1000);
+            
+            document.getElementById('totalWorktime').textContent = `${workHours}h ${workMinutes}m ${workSeconds}s`;
+            document.getElementById('worktimeDiv').classList.remove('hidden');
+        }
+
+        // Add attendance record to history
+        function addAttendanceRecord() {
+            const tbody = document.getElementById('attendanceHistory');
+            const noDataRow = document.getElementById('noDataRow');
+            
+            if (noDataRow) {
+                noDataRow.remove();
+            }
+            
+            const row = document.createElement('tr');
+            row.className = 'border-b border-gray-100 hover:bg-gray-50 cursor-pointer';
+            row.id = 'currentAttendanceRow';
+            
+            const date = clockInTime.toLocaleDateString('id-ID');
+            const timeIn = clockInTime.toLocaleTimeString('id-ID');
+            const isLate = clockInTime.getHours() > 9 || (clockInTime.getHours() === 9 && clockInTime.getMinutes() > 0);
+            const statusClass = isLate ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800';
+            const statusText = isLate ? 'Terlambat' : 'Clock In';
+            
+            row.innerHTML = `
+                <td class="py-3 px-4">${date}</td>
+                <td class="py-3 px-4">${timeIn}</td>
+                <td class="py-3 px-4">-</td>
+                <td class="py-3 px-4"><span class="${statusClass} px-2 py-1 rounded-full text-sm">${statusText}</span></td>
+            `;
+            
+            // Add click event to show detail
+            row.addEventListener('click', function() {
+                showAttendanceDetail(attendanceData);
+            });
+            
+            tbody.insertBefore(row, tbody.firstChild);
+            
+            // Update stats
+            updateStats();
+        }
+
+        // Update last attendance record
+        function updateLastAttendanceRecord() {
+            const currentRow = document.getElementById('currentAttendanceRow');
+            if (currentRow) {
+                const cells = currentRow.getElementsByTagName('td');
+                const timeOut = clockOutTime.toLocaleTimeString('id-ID');
+                cells[2].textContent = timeOut;
+                cells[3].innerHTML = '<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Hadir</span>';
+            }
+            
+            // Update stats
+            updateStats();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const tbody = document.getElementById('attendanceHistory');
+            const rows = tbody.getElementsByTagName('tr');
+            let attendance = 0;
+            let late = 0;
+            let totalHours = 0;
+            
+            for (let row of rows) {
+                if (row.id === 'noDataRow') continue;
+                
+                const statusSpan = row.querySelector('span');
+                if (statusSpan) {
+                    const statusText = statusSpan.textContent;
+                    if (statusText === 'Hadir') {
+                        attendance++;
+                        // Calculate work hours (simplified)
+                        totalHours += 8;
+                    } else if (statusText === 'Terlambat') {
+                        attendance++;
+                        late++;
+                        totalHours += 8;
                     }
-                    
-                    let clockOutStatus = '', clockOutStatusColor = '', overtimeHTML = '', totalWorkTimeHTML = '';
-                    if (clockOutTime) {
-                         const clockOutHour = clockOutTime.getHours();
-                         const clockOutMinute = clockOutTime.getMinutes();
-                         if (clockOutHour < 17) {
-                            clockOutStatus = 'Pulang Sebelum Waktunya';
-                            clockOutStatusColor = 'text-yellow-600';
-                         } else if (clockOutHour === 17 && clockOutMinute <= 30) {
-                            clockOutStatus = 'Pulang Tepat Waktu';
-                            clockOutStatusColor = 'text-green-600';
-                         } else {
-                            clockOutStatus = 'Waktu Kerja Melebihi';
-                            clockOutStatusColor = 'text-blue-600';
-                            
-                            const overtimeStart = new Date(clockOutTime);
-                            overtimeStart.setHours(17, 30, 0, 0);
-                            const diffMs = clockOutTime - overtimeStart;
-                            if(diffMs > 0){
-                                const diffHrs = Math.floor(diffMs / 3600000);
-                                const diffMins = Math.floor((diffMs % 3600000) / 60000);
-                                const diffSecs = Math.floor(((diffMs % 3600000) % 60000) / 1000);
-                                overtimeHTML = `<p class="text-sm"><strong>Total Overtime:</strong> ${diffHrs}j ${diffMins}m ${diffSecs}d</p>`;
-                            }
-                         }
+                }
+            }
+            
+            document.getElementById('monthlyAttendance').textContent = attendance;
+            document.getElementById('monthlyLate').textContent = late;
+            document.getElementById('monthlyWorkHours').textContent = totalHours + 'h';
+        }
 
-                         const workDiffMs = clockOutTime - clockInTime;
-                         const workHrs = Math.floor(workDiffMs / 3600000);
-                         const workMins = Math.floor((workDiffMs % 3600000) / 60000);
-                         const workSecs = Math.floor(((workDiffMs % 3600000) % 60000) / 1000);
-                         totalWorkTimeHTML = `<p class="text-sm mt-2"><strong>Total Jam Kerja:</strong> ${workHrs}j ${workMins}m ${workSecs}d</p>`;
-                    }
-                    
-                    const dutyOptionsHTML = dutyAsOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('');
-                    const workTypeOptionsHTML = workTypeOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('');
-
-                    const userInfoHTML = `
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm bg-slate-100 p-4 rounded-lg mb-6 border border-slate-200">
-                            <p><strong>Nama:</strong> <span class="text-slate-600">${currentUser.name}</span></p>
-                            <p><strong>Email:</strong> <span class="text-slate-600">${currentUser.email}</span></p>
-                            <p><strong>Divisi:</strong> <span class="text-slate-600">${currentUser.division}</span></p>
-                            <p><strong>Posisi:</strong> <span class="text-slate-600">${currentUser.position}</span></p>
-                            <div>
-                                <label for="duty-as" class="block font-bold mb-1 text-slate-800">Duty As</label>
-                                <select id="duty-as" class="select-field">${dutyOptionsHTML}</select>
-                            </div>
-                            <div>
-                                <label for="type-of-work" class="block font-bold mb-1 text-slate-800">Type of Work</label>
-                                <select id="type-of-work" class="select-field">${workTypeOptionsHTML}</select>
-                            </div>
-                        </div>`;
-
-                    const clockInHTML = `
-                        <div id="clock-in-section" class="${clockInTime ? 'hidden' : ''}">
-                            <h3 class="font-bold text-lg mb-4 border-b pb-2 flex items-center gap-2"><i data-lucide="log-in" class="h-5 w-5 text-indigo-500"></i>Absen Masuk</h3>
-                            <div class="grid md:grid-cols-2 gap-6">
-                                <div>
-                                    <p class="font-semibold text-slate-700">1. Foto Masuk (Selfie)</p>
-                                    <div class="mt-2 p-2 border-2 border-dashed rounded-lg text-center bg-white">
-                                        <video id="camera-preview" class="w-full rounded-md hidden" autoplay playsinline></video>
-                                        <canvas id="photo-canvas" class="hidden"></canvas>
-                                        <img id="captured-image" class="w-full rounded-md hidden" alt="Captured Photo">
-                                        <button id="start-camera-btn" class="btn-secondary">Buka Kamera</button>
-                                        <button id="capture-photo-btn" class="w-full bg-indigo-500 text-white p-2 rounded-md hover:bg-indigo-600 hidden mt-2">Ambil Foto</button>
-                                    </div>
-                                </div>
-                                <div class="space-y-4">
-                                    <div>
-                                        <p class="font-semibold text-slate-700">2. Lokasi Masuk</p>
-                                        <div id="location-in" class="mt-2 p-3 bg-white rounded-md border text-slate-600">Lokasi belum diambil</div>
-                                        <button id="get-location-in-btn" class="btn-secondary mt-2">Dapatkan Lokasi</button>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-slate-700">3. Tanggal & Waktu</p>
-                                        <p class="mt-2 p-3 bg-white rounded-md border">${formatDate(now)} - ${formatTime(now)}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <button id="clock-in-btn" class="w-full mt-8 bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2"><span>KIRIM ABSEN MASUK</span><i data-lucide="arrow-right"></i></button>
-                        </div>`;
-
-                    const clockOutHTML = `
-                        <div id="clock-out-section" class="${!clockInTime || clockOutTime ? 'hidden' : ''}">
-                             <h3 class="font-bold text-lg mb-4 border-b pb-2 flex items-center gap-2"><i data-lucide="log-out" class="h-5 w-5 text-red-500"></i>Absen Pulang</h3>
-                             <div class="bg-green-50 border-l-4 border-green-500 text-green-800 p-4 rounded-md mb-6" role="alert">
-                                <p class="font-bold flex items-center gap-2"><i data-lucide="check-circle"></i>Absen Masuk Tercatat</p>
-                                <p class="pl-7">Pada ${clockInTime ? formatDate(clockInTime) + ' pukul ' + formatTime(clockInTime) : ''} (<span class="font-semibold ${clockInStatusColor}">${clockInStatus}</span>)</p>
-                             </div>
-                             ${lateReasonHTML}
-                            <div class="grid md:grid-cols-2 gap-6 mt-4">
-                                <div>
-                                    <label class="font-semibold block mb-2 text-slate-700">1. Remark Pekerjaan Hari Ini</label>
-                                    <textarea id="remark" rows="5" class="w-full rounded-md border-slate-300 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Jelaskan pekerjaan yang telah Anda selesaikan hari ini..."></textarea>
-                                </div>
-                                <div>
-                                    <label class="font-semibold block mb-2 text-slate-700">2. Foto Laporan Pekerjaan</label>
-                                    <label for="work-photo-upload" class="custom-file-upload w-full text-center hover:bg-slate-100">
-                                        <i data-lucide="upload" class="inline-block h-4 w-4"></i> Pilih File dari Galeri
-                                    </label>
-                                    <input id="work-photo-upload" type="file" accept="image/*"/>
-                                    <img id="work-photo-preview" class="mt-2 w-full rounded-md hidden max-h-36 object-cover border p-1 bg-white" alt="Work Photo Preview">
-                                </div>
-                            </div>
-                             <div class="mt-4">
-                                <p class="font-semibold text-slate-700">3. Lokasi Pulang</p>
-                                <div id="location-out" class="mt-2 p-3 bg-white rounded-md border text-slate-600">Lokasi belum diambil</div>
-                                <button id="get-location-out-btn" class="btn-secondary mt-2">Dapatkan Lokasi</button>
-                             </div>
-                             <button id="clock-out-btn" class="w-full mt-8 bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2"><span>KIRIM ABSEN PULANG</span><i data-lucide="arrow-right"></i></button>
-                        </div>`;
-                    
-                    const summaryHTML = `
-                        <div id="summary-section" class="${!clockOutTime ? 'hidden' : ''}">
-                             <h3 class="font-bold text-lg mb-4 border-b pb-2 flex items-center gap-2"><i data-lucide="file-check-2" class="h-5 w-5 text-blue-500"></i>Ringkasan Absensi Hari Ini</h3>
-                             <div class="bg-slate-100 border border-slate-200 p-4 rounded-lg space-y-2" role="alert">
-                                <p class="font-bold text-slate-800">Absensi hari ini telah selesai.</p>
-                                <p class="text-sm"><strong>Masuk:</strong> ${clockInTime ? formatTime(clockInTime) : ''} <span class="font-semibold ${clockInStatusColor}">(${clockInStatus})</span></p>
-                                <p class="text-sm"><strong>Pulang:</strong> ${clockOutTime ? formatTime(clockOutTime) : ''} <span class="font-semibold ${clockOutStatusColor}">(${clockOutStatus})</span></p>
-                                ${totalWorkTimeHTML}
-                                ${overtimeHTML}
-                             </div>
-                        </div>`;
-
-                    contentHTML = `
-                        <div class="flex justify-between items-center mb-6">
-                             <h2 class="text-2xl font-bold">Formulir Absensi</h2>
-                             <p class="text-sm text-slate-500">Status: <span class="font-semibold py-1 px-2 rounded-full ${clockInTime && !clockOutTime ? 'bg-green-100 text-green-700': (clockOutTime ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-700')}">${clockInTime && !clockOutTime ? 'On Working' : (clockOutTime ? 'Selesai Bekerja' : 'Belum Absen')}</span></p>
-                        </div>
-                        ${userInfoHTML}
-                        ${clockInHTML}
-                        ${clockOutHTML}
-                        ${summaryHTML}
-                    `;
+        // Login function
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Check admin login
+            if (email === 'admin@transwisata.com' && password === 'password') {
+                currentUser = { name: 'Administrator', role: 'admin', email: email };
+                showDashboard('admin');
+                isLoggedIn = true;
+                return;
+            }
+            
+            // Check employee database
+            let foundEmployee = null;
+            for (const [name, data] of Object.entries(employeeDatabase)) {
+                if (data.email === email && data.password === password) {
+                    foundEmployee = { name: name, role: data.role, email: email, division: data.division, position: data.position };
                     break;
-                case 'riwayat': contentHTML = `<h3 class="font-bold text-lg">Riwayat Absensi</h3><p>Fitur riwayat absensi akan segera tersedia.</p>`; break;
-                case 'news': contentHTML = `<h3 class="font-bold text-lg">Update News</h3><p>Belum ada berita atau pengumuman terbaru.</p>`; break;
-                default: contentHTML = `<div class="text-center py-10"><h3 class="font-bold text-2xl text-slate-700">Selamat Datang di ECrew!</h3><p class="text-slate-500 mt-2">Pilih salah satu menu di atas untuk memulai aktivitas Anda.</p></div>`;
-            }
-            contentArea.innerHTML = contentHTML;
-            lucide.createIcons();
-            // Add event listeners for new dynamic elements
-            if (menu === 'absen') {
-                if (!attendanceState.clockInTime) {
-                    document.getElementById('start-camera-btn')?.addEventListener('click', startCamera);
-                    document.getElementById('capture-photo-btn')?.addEventListener('click', capturePhoto);
-                    document.getElementById('get-location-in-btn')?.addEventListener('click', () => getLocation('location-in'));
-                    document.getElementById('clock-in-btn')?.addEventListener('click', handleClockIn);
-                }
-                if (attendanceState.clockInTime && !attendanceState.clockOutTime) {
-                    document.getElementById('get-location-out-btn')?.addEventListener('click', () => getLocation('location-out'));
-                    document.getElementById('clock-out-btn')?.addEventListener('click', handleClockOut);
-                    document.getElementById('work-photo-upload')?.addEventListener('change', (e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                                attendanceState.workReportPhoto = event.target.result;
-                                const preview = document.getElementById('work-photo-preview');
-                                preview.src = attendanceState.workReportPhoto;
-                                preview.classList.remove('hidden');
-                            };
-                            reader.readAsDataURL(file);
-                        }
-                    });
                 }
             }
-        };
+            
+            if (foundEmployee) {
+                currentUser = foundEmployee;
+                showDashboard('user');
+                isLoggedIn = true;
+            } else {
+                alert('Email atau password salah!');
+            }
+        });
 
-        // --- Event Listeners ---
-        loginForm.addEventListener('submit', handleLogin);
-        logoutButton.addEventListener('click', handleLogout);
-        document.getElementById('absen-card').addEventListener('click', () => updateContent('absen'));
-        document.getElementById('riwayat-card').addEventListener('click', () => updateContent('riwayat'));
-        document.getElementById('news-card').addEventListener('click', () => updateContent('news'));
-        document.getElementById('modal-close').addEventListener('click', hideModal);
-        document.getElementById('modal').addEventListener('click', (e) => { if(e.target.id === 'modal') hideModal(); });
+        // Show dashboard
+        function showDashboard(role) {
+            document.getElementById('loginPage').classList.add('hidden');
+            
+            if (role === 'admin') {
+                document.getElementById('adminDashboard').classList.remove('hidden');
+            } else {
+                document.getElementById('userDashboard').classList.remove('hidden');
+                document.getElementById('userName').textContent = currentUser.name;
+            }
+        }
 
-        showPage(loginPage);
-    });
+        // Show tab function
+        function showTab(tabName) {
+            // Hide all tabs
+            document.getElementById('historyTab').classList.add('hidden');
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.remove('border-transparent', 'text-gray-500');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('border-blue-500', 'text-blue-600');
+        }
+
+        // Profile functions
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function showProfileModal() {
+            document.getElementById('profileMenu').classList.add('hidden');
+            document.getElementById('profileModal').classList.remove('hidden');
+            
+            // Load current user data
+            if (currentUser) {
+                document.getElementById('profileName').value = currentUser.name || '';
+                document.getElementById('profileEmail').value = currentUser.email || '';
+                document.getElementById('profilePhone').value = currentUser.phone || '';
+                document.getElementById('profileDepartment').value = currentUser.department || '';
+                
+                if (currentUser.profilePhoto) {
+                    document.getElementById('profilePhotoPreview').src = currentUser.profilePhoto;
+                }
+            }
+        }
+
+        function hideProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        function previewProfilePhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Ukuran file terlalu besar. Maksimal 5MB.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('profilePhotoPreview');
+                    const headerPhoto = document.getElementById('userProfilePhoto');
+                    
+                    preview.src = e.target.result;
+                    headerPhoto.src = e.target.result;
+                    
+                    // Store in currentUser
+                    if (currentUser) {
+                        currentUser.profilePhoto = e.target.result;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Profile form handler
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (currentUser) {
+                    currentUser.name = document.getElementById('profileName').value;
+                    currentUser.phone = document.getElementById('profilePhone').value;
+                    currentUser.department = document.getElementById('profileDepartment').value;
+                    
+                    // Update display name
+                    document.getElementById('userName').textContent = currentUser.name;
+                    
+                    hideProfileModal();
+                    alert('Profile berhasil diupdate!');
+                }
+            });
+            
+            // Close profile menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const profileMenu = document.getElementById('profileMenu');
+                const profileButton = event.target.closest('button[onclick="toggleProfileMenu()"]');
+                
+                if (!profileButton && !profileMenu.contains(event.target)) {
+                    profileMenu.classList.add('hidden');
+                }
+            });
+        });
+
+        // Show admin tab function
+        function showAdminTab(tabName) {
+            // Hide all admin tabs
+            document.getElementById('employeesTab').classList.add('hidden');
+            document.getElementById('reportsTab').classList.add('hidden');
+            document.getElementById('settingsTab').classList.add('hidden');
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            
+            // Update tab buttons
+            document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+                btn.classList.remove('border-purple-500', 'text-purple-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.remove('border-transparent', 'text-gray-500');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('border-purple-500', 'text-purple-600');
+        }
+
+        // Show attendance detail
+        function showAttendanceDetail(data) {
+            const modal = document.getElementById('attendanceDetailModal');
+            const content = document.getElementById('attendanceDetailContent');
+            
+            let detailHTML = '';
+            
+            // Clock In Card
+            if (data.clockIn) {
+                const clockInData = data.clockIn;
+                detailHTML += `
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-green-500 p-3 rounded-lg mr-4">
+                                <i class="fas fa-clock text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-green-800">Clock In</h3>
+                                <p class="text-green-600">${clockInData.time.toLocaleDateString('id-ID')} - ${clockInData.time.toLocaleTimeString('id-ID')}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Personal Info -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                                    <p class="text-gray-900 bg-white p-3 rounded-lg border">${clockInData.name}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <p class="text-gray-900 bg-white p-3 rounded-lg border">${clockInData.email}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Divisi</label>
+                                    <p class="text-gray-900 bg-white p-3 rounded-lg border">${clockInData.division}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Posisi</label>
+                                    <p class="text-gray-900 bg-white p-3 rounded-lg border">${clockInData.position}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Bertugas Sebagai</label>
+                                    <p class="text-gray-900 bg-white p-3 rounded-lg border">${clockInData.dutyAs}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Pekerjaan</label>
+                                    <p class="text-gray-900 bg-white p-3 rounded-lg border">${clockInData.workType}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Location & Status Info -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
+                                    <p class="text-gray-900 bg-white p-3 rounded-lg border font-mono text-sm">${clockInData.location.lat.toFixed(6)}, ${clockInData.location.lng.toFixed(6)}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Radius</label>
+                                    <p class="p-3 rounded-lg border ${clockInData.withinRadius ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                        ${clockInData.withinRadius ? 'Dalam Radius Kantor' : 'Di Luar Radius Kantor'}
+                                    </p>
+                                </div>
+                                ${!clockInData.withinRadius ? `
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Alasan di Luar Radius</label>
+                                    <p class="text-gray-900 bg-white p-3 rounded-lg border">${clockInData.outsideReason}</p>
+                                </div>
+                                ` : ''}
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Keterlambatan</label>
+                                    <p class="p-3 rounded-lg border ${clockInData.isLate ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}">
+                                        ${clockInData.isLate ? 'Terlambat' : 'Tepat Waktu'}
+                                    </p>
+                                </div>
+                                ${clockInData.isLate ? `
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Alasan Terlambat</label>
+                                    <p class="text-gray-900 bg-white p-3 rounded-lg border">${clockInData.lateReason}</p>
+                                </div>
+                                ` : ''}
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto Masuk</label>
+                                    <div class="bg-white p-3 rounded-lg border">
+                                        <img src="${clockInData.photo}" alt="Foto Masuk" class="w-full max-w-xs rounded-lg">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Clock Out Card
+            if (data.clockOut) {
+                const clockOutData = data.clockOut;
+                detailHTML += `
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-red-500 p-3 rounded-lg mr-4">
+                                <i class="fas fa-clock text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-red-800">Clock Out</h3>
+                                <p class="text-red-600">${clockOutData.time.toLocaleDateString('id-ID')} - ${clockOutData.time.toLocaleTimeString('id-ID')}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Location Info -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi Pulang</label>
+                                    <p class="text-gray-900 bg-white p-3 rounded-lg border font-mono text-sm">${clockOutData.location.lat.toFixed(6)}, ${clockOutData.location.lng.toFixed(6)}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Radius</label>
+                                    <p class="p-3 rounded-lg border ${clockOutData.withinRadius ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                        ${clockOutData.withinRadius ? 'Dalam Radius Kantor' : 'Di Luar Radius Kantor'}
+                                    </p>
+                                </div>
+                                ${!clockOutData.withinRadius ? `
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Alasan di Luar Radius</label>
+                                    <p class="text-gray-900 bg-white p-3 rounded-lg border">${clockOutData.outsideReason}</p>
+                                </div>
+                                ` : ''}
+                            </div>
+                            
+                            <!-- Work Report -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Laporan Pekerjaan</label>
+                                    <p class="text-gray-900 bg-white p-3 rounded-lg border">${clockOutData.workReport}</p>
+                                </div>
+                                ${clockOutData.workPhoto ? `
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto Pekerjaan</label>
+                                    <div class="bg-white p-3 rounded-lg border">
+                                        <img src="${clockOutData.workPhoto}" alt="Foto Pekerjaan" class="w-full max-w-xs rounded-lg">
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Work Summary Card
+            if (data.clockIn && data.clockOut) {
+                const workTimeMs = data.clockOut.time.getTime() - data.clockIn.time.getTime();
+                const workHours = Math.floor(workTimeMs / (1000 * 60 * 60));
+                const workMinutes = Math.floor((workTimeMs % (1000 * 60 * 60)) / (1000 * 60));
+                const workSeconds = Math.floor((workTimeMs % (1000 * 60)) / 1000);
+                
+                detailHTML += `
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-blue-500 p-3 rounded-lg mr-4">
+                                <i class="fas fa-chart-line text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-blue-800">Ringkasan Kerja</h3>
+                                <p class="text-blue-600">Total waktu kerja hari ini</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-white p-4 rounded-lg border text-center">
+                                <p class="text-sm text-gray-600 mb-1">Total Waktu Kerja</p>
+                                <p class="text-2xl font-bold text-blue-600">${workHours}h ${workMinutes}m ${workSeconds}s</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg border text-center">
+                                <p class="text-sm text-gray-600 mb-1">Status Masuk</p>
+                                <p class="text-lg font-semibold ${data.clockIn.isLate ? 'text-yellow-600' : 'text-green-600'}">
+                                    ${data.clockIn.isLate ? 'Terlambat' : 'Tepat Waktu'}
+                                </p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg border text-center">
+                                <p class="text-sm text-gray-600 mb-1">Lokasi</p>
+                                <p class="text-lg font-semibold ${data.clockIn.withinRadius && data.clockOut.withinRadius ? 'text-green-600' : 'text-yellow-600'}">
+                                    ${data.clockIn.withinRadius && data.clockOut.withinRadius ? 'Dalam Radius' : 'Ada di Luar Radius'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = detailHTML;
+            modal.classList.remove('hidden');
+        }
+
+        // Hide attendance detail
+        function hideAttendanceDetail() {
+            document.getElementById('attendanceDetailModal').classList.add('hidden');
+        }
+
+        // Logout function
+        function logout() {
+            currentUser = null;
+            isLoggedIn = false;
+            clockedIn = false;
+            clockInTime = null;
+            clockOutTime = null;
+            
+            // Reset attendance data
+            attendanceData = {
+                clockIn: null,
+                clockOut: null,
+                locationIn: null,
+                locationOut: null,
+                photo: null,
+                workPhoto: null
+            };
+            
+            // Stop camera if running
+            stopCamera();
+            
+            // Reset forms
+            document.getElementById('loginForm').reset();
+            document.getElementById('attendanceInForm').reset();
+            document.getElementById('attendanceOutForm').reset();
+            
+            // Hide dashboards and show login
+            document.getElementById('userDashboard').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('loginPage').classList.remove('hidden');
+            
+            // Hide forms and summary
+            document.getElementById('clockInForm').classList.add('hidden');
+            document.getElementById('clockOutForm').classList.add('hidden');
+            document.getElementById('attendanceSummary').classList.add('hidden');
+            
+            // Reset clock buttons
+            document.getElementById('clockInBtn').disabled = false;
+            document.getElementById('clockInBtn').classList.remove('opacity-50');
+            document.getElementById('clockOutBtn').disabled = true;
+            document.getElementById('clockOutBtn').classList.add('opacity-50');
+            
+            // Reset photo elements
+            document.getElementById('cameraPreview').classList.add('hidden');
+            document.getElementById('capturedPhoto').classList.add('hidden');
+            document.getElementById('captureBtn').classList.add('hidden');
+            document.getElementById('retakeBtn').classList.add('hidden');
+            document.getElementById('workPhotoPreview').classList.add('hidden');
+            
+            // Reset profile elements
+            document.getElementById('profileModal').classList.add('hidden');
+            document.getElementById('profileMenu').classList.add('hidden');
+            document.getElementById('userProfilePhoto').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+            document.getElementById('profilePhotoPreview').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+        }
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9771d321269b40b9',t:'MTc1NjUzMTA3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
