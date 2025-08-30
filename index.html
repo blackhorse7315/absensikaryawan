@@ -121,7 +121,7 @@
                     </span>
                     <div class="overflow-hidden flex-1">
                         <div id="newsTickerContent" class="whitespace-nowrap animate-marquee">
-                            🎉 Program Bonus Kinerja telah diluncurkan untuk karyawan berprestasi • 📚 Pendaftaran pelatihan Digital Marketing dibuka hingga 20 Januari • 🏖️ Libur nasional 17 Februari - mohon perhatikan jadwal kerja • 🎊 Selamat kepada Tim IT yang meraih penghargaan Best Innovation Team
+                            <!-- News ticker will be populated by JavaScript -->
                         </div>
                     </div>
                 </div>
@@ -141,32 +141,8 @@
                         Lihat Semua <i class="fas fa-arrow-right ml-1"></i>
                     </button>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200 cursor-pointer">
-                        <div class="flex items-start">
-                            <div class="bg-green-100 p-2 rounded-lg mr-3 flex-shrink-0">
-                                <i class="fas fa-gift text-green-600"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="font-medium text-gray-800 mb-1">Program Bonus Kinerja</h3>
-                                <p class="text-sm text-gray-600 mb-2">Peluncuran program bonus kinerja untuk karyawan berprestasi dengan total hadiah hingga 50 juta rupiah.</p>
-                                <span class="text-xs text-blue-600 font-medium">12 Januari 2024</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200 cursor-pointer">
-                        <div class="flex items-start">
-                            <div class="bg-purple-100 p-2 rounded-lg mr-3 flex-shrink-0">
-                                <i class="fas fa-graduation-cap text-purple-600"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="font-medium text-gray-800 mb-1">Pelatihan Digital Marketing</h3>
-                                <p class="text-sm text-gray-600 mb-2">Pendaftaran pelatihan digital marketing gratis untuk semua karyawan. Daftar sekarang!</p>
-                                <span class="text-xs text-blue-600 font-medium">10 Januari 2024</span>
-                            </div>
-                        </div>
-                    </div>
+                <div id="newsPreviewContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- News will be populated by JavaScript -->
                 </div>
             </div>
 
@@ -515,6 +491,26 @@
         </main>
     </div>
 
+    <!-- News Detail Modal -->
+    <div id="newsDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl card-shadow w-full max-w-4xl mx-4 slide-in max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h2 id="newsDetailTitle" class="text-2xl font-bold text-gray-800">Detail Berita</h2>
+                    <button onclick="hideNewsDetail()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="newsDetailContent" class="space-y-6">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Attendance Detail Modal -->
     <div id="attendanceDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl card-shadow w-full max-w-4xl mx-4 slide-in max-h-[90vh] overflow-y-auto">
@@ -531,6 +527,94 @@
                 <div id="attendanceDetailContent" class="space-y-6">
                     <!-- Content will be populated by JavaScript -->
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- News Management Modal -->
+    <div id="newsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl card-shadow w-full max-w-2xl mx-4 slide-in max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h2 id="newsModalTitle" class="text-2xl font-bold text-gray-800">Tambah Berita</h2>
+                    <button onclick="hideNewsModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <form id="newsForm" class="space-y-6">
+                    <input type="hidden" id="newsId">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Judul Berita *</label>
+                        <input type="text" id="newsTitle" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kategori *</label>
+                        <select id="newsCategory" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                            <option value="">Pilih Kategori</option>
+                            <option value="HR">HR</option>
+                            <option value="Training">Training</option>
+                            <option value="Announcement">Pengumuman</option>
+                            <option value="Event">Event</option>
+                            <option value="Policy">Kebijakan</option>
+                            <option value="Safety">Keselamatan</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ringkasan *</label>
+                        <textarea id="newsSummary" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" rows="3" placeholder="Ringkasan singkat berita..." required></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Konten Lengkap *</label>
+                        <textarea id="newsContent" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" rows="8" placeholder="Tulis konten berita lengkap di sini..." required></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Foto Berita</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <input type="file" id="newsImageInput" accept="image/*" class="hidden" onchange="previewNewsImage(event)">
+                            <img id="newsImagePreview" class="hidden w-full max-w-sm mx-auto rounded-lg mb-4">
+                            <div id="newsImageControls">
+                                <button type="button" onclick="document.getElementById('newsImageInput').click()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                                    <i class="fas fa-image mr-2"></i>Pilih Foto
+                                </button>
+                                <p class="text-sm text-gray-500 mt-2">Format: JPG, PNG (Max 5MB)</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Penulis</label>
+                        <input type="text" id="newsAuthor" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Nama penulis atau departemen">
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="newsActive" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500" checked>
+                            <span class="ml-2 text-sm text-gray-700">Aktifkan berita</span>
+                        </label>
+                        
+                        <label class="flex items-center">
+                            <input type="checkbox" id="newsNotify" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                            <span class="ml-2 text-sm text-gray-700">Kirim notifikasi</span>
+                        </label>
+                    </div>
+                    
+                    <div class="flex justify-center space-x-4 pt-4">
+                        <button type="button" onclick="hideNewsModal()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200">
+                            <i class="fas fa-save mr-2"></i>Simpan Berita
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -677,8 +761,11 @@
             <div class="bg-white rounded-2xl card-shadow">
                 <div class="border-b border-gray-200">
                     <nav class="flex space-x-8 px-6">
-                        <button onclick="showAdminTab('employees')" class="admin-tab-btn py-4 px-2 border-b-2 border-purple-500 text-purple-600 font-medium" data-tab="employees">
-                            Daftar Karyawan
+                        <button onclick="showAdminTab('news')" class="admin-tab-btn py-4 px-2 border-b-2 border-purple-500 text-purple-600 font-medium" data-tab="news">
+                            Kelola Berita
+                        </button>
+                        <button onclick="showAdminTab('employees')" class="admin-tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="employees">
+                            Data Karyawan
                         </button>
                         <button onclick="showAdminTab('reports')" class="admin-tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="reports">
                             Laporan Absensi
@@ -689,46 +776,59 @@
                     </nav>
                 </div>
 
-                <!-- Employees Tab -->
-                <div id="employeesTab" class="p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">Daftar Karyawan</h3>
-                        <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition duration-200">
-                            <i class="fas fa-plus mr-2"></i>Tambah Karyawan
+                <!-- News Management Tab -->
+                <div id="newsTab" class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800">Kelola Berita</h3>
+                        <button onclick="showAddNewsModal()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition duration-200">
+                            <i class="fas fa-plus mr-2"></i>Tambah Berita
                         </button>
                     </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Judul</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Kategori</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Tanggal</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Status</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Notifikasi</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="newsTableBody">
+                                <!-- News will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Employees Tab -->
+                <div id="employeesTab" class="p-6 hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800">Data Karyawan</h3>
+                        <div class="flex space-x-2">
+                            <input type="text" id="employeeSearch" placeholder="Cari karyawan..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            <button onclick="searchEmployees()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition duration-200">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Nama</th>
                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Email</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Departemen</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Divisi</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Posisi</th>
                                     <th class="text-left py-3 px-4 font-medium text-gray-600">Status</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-600">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr class="border-b border-gray-100">
-                                    <td class="py-3 px-4">John Doe</td>
-                                    <td class="py-3 px-4">john@transwisata.com</td>
-                                    <td class="py-3 px-4">IT</td>
-                                    <td class="py-3 px-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Aktif</span></td>
-                                    <td class="py-3 px-4">
-                                        <button class="text-blue-600 hover:text-blue-800 mr-2"><i class="fas fa-edit"></i></button>
-                                        <button class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                                <tr class="border-b border-gray-100">
-                                    <td class="py-3 px-4">Jane Smith</td>
-                                    <td class="py-3 px-4">jane@transwisata.com</td>
-                                    <td class="py-3 px-4">HR</td>
-                                    <td class="py-3 px-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Aktif</span></td>
-                                    <td class="py-3 px-4">
-                                        <button class="text-blue-600 hover:text-blue-800 mr-2"><i class="fas fa-edit"></i></button>
-                                        <button class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
+                            <tbody id="employeeTableBody">
+                                <!-- Employee data will be populated by JavaScript -->
                             </tbody>
                         </table>
                     </div>
@@ -802,6 +902,36 @@
             photo: null,
             workPhoto: null
         };
+
+        // News database
+        let newsDatabase = [
+            {
+                id: 1,
+                title: "Program Bonus Kinerja",
+                summary: "Peluncuran program bonus kinerja untuk karyawan berprestasi dengan total hadiah hingga 50 juta rupiah.",
+                content: "Transwisata dengan bangga mengumumkan peluncuran Program Bonus Kinerja yang dirancang khusus untuk menghargai dedikasi dan prestasi luar biasa karyawan kami. Program ini menawarkan total hadiah hingga 50 juta rupiah yang akan didistribusikan kepada karyawan berprestasi berdasarkan evaluasi kinerja komprehensif.\n\nKriteria penilaian meliputi:\n• Pencapaian target kerja\n• Inovasi dan kreativitas\n• Kerjasama tim\n• Kepemimpinan\n• Kontribusi terhadap perusahaan\n\nPendaftaran dibuka mulai 15 Januari 2024 dan akan ditutup pada 15 Februari 2024. Penilaian akan dilakukan oleh tim evaluasi independen yang terdiri dari manajemen senior dan HR.\n\nJangan lewatkan kesempatan emas ini untuk mendapatkan pengakuan atas kerja keras Anda!",
+                date: "2024-01-12",
+                author: "HR Department",
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' fill='%23f3f4f6'%3E%3Crect width='400' height='200' fill='%23e5e7eb'/%3E%3Ctext x='200' y='100' text-anchor='middle' dy='.3em' fill='%236b7280' font-family='Arial' font-size='16'%3EBonus Program%3C/text%3E%3C/svg%3E",
+                category: "HR",
+                isActive: true,
+                isNotified: true
+            },
+            {
+                id: 2,
+                title: "Pelatihan Digital Marketing",
+                summary: "Pendaftaran pelatihan digital marketing gratis untuk semua karyawan. Daftar sekarang!",
+                content: "Dalam era digital yang terus berkembang, Transwisata berkomitmen untuk meningkatkan kemampuan digital seluruh karyawan melalui Program Pelatihan Digital Marketing yang komprehensif dan gratis.\n\nMateri pelatihan mencakup:\n• Strategi Digital Marketing Modern\n• Social Media Management\n• Content Creation & Copywriting\n• SEO & SEM Fundamentals\n• Analytics & Performance Measurement\n• Email Marketing Campaigns\n\nPelatihan akan dilaksanakan selama 5 hari (20-24 Januari 2024) dengan instruktur berpengalaman dari industri digital marketing terkemuka. Setiap peserta akan mendapatkan sertifikat resmi yang diakui industri.\n\nKuota terbatas hanya 30 peserta. Pendaftaran ditutup pada 18 Januari 2024 atau sampai kuota penuh. Daftarkan diri Anda segera melalui portal HR atau hubungi bagian HRD.",
+                date: "2024-01-10",
+                author: "Training Department",
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' fill='%23f3f4f6'%3E%3Crect width='400' height='200' fill='%23ddd6fe'/%3E%3Ctext x='200' y='100' text-anchor='middle' dy='.3em' fill='%237c3aed' font-family='Arial' font-size='16'%3EDigital Training%3C/text%3E%3C/svg%3E",
+                category: "Training",
+                isActive: true,
+                isNotified: true
+            }
+        ];
+
+        let nextNewsId = 3;
 
         // Employee database
         const employeeDatabase = {
@@ -1093,6 +1223,8 @@
             setInterval(updateTime, 1000);
             setupFormHandlers();
             setupAutoFill();
+            loadNews();
+            updateNewsTicker();
         });
 
         // Setup auto-fill functionality (no longer needed as fields are auto-filled on login)
@@ -1818,9 +1950,319 @@
             });
         });
 
+        // News Management Functions
+        function loadNews() {
+            loadNewsPreview();
+            loadNewsTable();
+            loadEmployeeTable();
+        }
+
+        function loadNewsPreview() {
+            const container = document.getElementById('newsPreviewContainer');
+            const activeNews = newsDatabase.filter(news => news.isActive).slice(0, 2);
+            
+            container.innerHTML = activeNews.map(news => {
+                const categoryIcons = {
+                    'HR': 'fas fa-gift text-green-600',
+                    'Training': 'fas fa-graduation-cap text-purple-600',
+                    'Announcement': 'fas fa-bullhorn text-blue-600',
+                    'Event': 'fas fa-calendar text-orange-600',
+                    'Policy': 'fas fa-file-alt text-gray-600',
+                    'Safety': 'fas fa-shield-alt text-red-600'
+                };
+                
+                const categoryColors = {
+                    'HR': 'bg-green-100',
+                    'Training': 'bg-purple-100',
+                    'Announcement': 'bg-blue-100',
+                    'Event': 'bg-orange-100',
+                    'Policy': 'bg-gray-100',
+                    'Safety': 'bg-red-100'
+                };
+                
+                return `
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200 cursor-pointer" onclick="showNewsDetail(${news.id})">
+                        <div class="flex items-start">
+                            <div class="${categoryColors[news.category] || 'bg-gray-100'} p-2 rounded-lg mr-3 flex-shrink-0">
+                                <i class="${categoryIcons[news.category] || 'fas fa-newspaper text-gray-600'}"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium text-gray-800 mb-1">${news.title}</h3>
+                                <p class="text-sm text-gray-600 mb-2">${news.summary}</p>
+                                <span class="text-xs text-blue-600 font-medium">${new Date(news.date).toLocaleDateString('id-ID')}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateNewsTicker() {
+            const ticker = document.getElementById('newsTickerContent');
+            const activeNews = newsDatabase.filter(news => news.isActive && news.isNotified);
+            
+            const tickerContent = activeNews.map(news => {
+                const emojis = {
+                    'HR': '🎉',
+                    'Training': '📚',
+                    'Announcement': '📢',
+                    'Event': '🎊',
+                    'Policy': '📋',
+                    'Safety': '⚠️'
+                };
+                
+                return `${emojis[news.category] || '📰'} ${news.title}`;
+            }).join(' • ');
+            
+            ticker.textContent = tickerContent || '📰 Tidak ada berita terbaru saat ini';
+        }
+
+        function loadNewsTable() {
+            const tbody = document.getElementById('newsTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = newsDatabase.map(news => `
+                <tr class="border-b border-gray-100">
+                    <td class="py-3 px-4">
+                        <div class="font-medium text-gray-800">${news.title}</div>
+                        <div class="text-sm text-gray-500">${news.summary.substring(0, 60)}...</div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">${news.category}</span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-600">${new Date(news.date).toLocaleDateString('id-ID')}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${news.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${news.isActive ? 'Aktif' : 'Nonaktif'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${news.isNotified ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}">
+                            ${news.isNotified ? 'Ya' : 'Tidak'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="flex space-x-2">
+                            <button onclick="editNews(${news.id})" class="text-blue-600 hover:text-blue-800" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="toggleNewsStatus(${news.id})" class="text-yellow-600 hover:text-yellow-800" title="Toggle Status">
+                                <i class="fas fa-toggle-${news.isActive ? 'on' : 'off'}"></i>
+                            </button>
+                            <button onclick="toggleNewsNotification(${news.id})" class="text-purple-600 hover:text-purple-800" title="Toggle Notifikasi">
+                                <i class="fas fa-bell${news.isNotified ? '' : '-slash'}"></i>
+                            </button>
+                            <button onclick="deleteNews(${news.id})" class="text-red-600 hover:text-red-800" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function loadEmployeeTable() {
+            const tbody = document.getElementById('employeeTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = Object.entries(employeeDatabase).map(([name, data]) => `
+                <tr class="border-b border-gray-100">
+                    <td class="py-3 px-4 font-medium text-gray-800">${name}</td>
+                    <td class="py-3 px-4 text-gray-600">${data.email}</td>
+                    <td class="py-3 px-4 text-gray-600">${data.division}</td>
+                    <td class="py-3 px-4 text-gray-600">${data.position}</td>
+                    <td class="py-3 px-4">
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Aktif</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function searchEmployees() {
+            const searchTerm = document.getElementById('employeeSearch').value.toLowerCase();
+            const tbody = document.getElementById('employeeTableBody');
+            
+            const filteredEmployees = Object.entries(employeeDatabase).filter(([name, data]) => 
+                name.toLowerCase().includes(searchTerm) || 
+                data.email.toLowerCase().includes(searchTerm) ||
+                data.division.toLowerCase().includes(searchTerm) ||
+                data.position.toLowerCase().includes(searchTerm)
+            );
+            
+            tbody.innerHTML = filteredEmployees.map(([name, data]) => `
+                <tr class="border-b border-gray-100">
+                    <td class="py-3 px-4 font-medium text-gray-800">${name}</td>
+                    <td class="py-3 px-4 text-gray-600">${data.email}</td>
+                    <td class="py-3 px-4 text-gray-600">${data.division}</td>
+                    <td class="py-3 px-4 text-gray-600">${data.position}</td>
+                    <td class="py-3 px-4">
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Aktif</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showNewsDetail(newsId) {
+            const news = newsDatabase.find(n => n.id === newsId);
+            if (!news) return;
+            
+            const modal = document.getElementById('newsDetailModal');
+            const title = document.getElementById('newsDetailTitle');
+            const content = document.getElementById('newsDetailContent');
+            
+            title.textContent = news.title;
+            
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">${news.category}</span>
+                            <span class="text-sm text-gray-600">${new Date(news.date).toLocaleDateString('id-ID')}</span>
+                            <span class="text-sm text-gray-600">oleh ${news.author}</span>
+                        </div>
+                    </div>
+                    
+                    ${news.image ? `
+                    <div class="text-center">
+                        <img src="${news.image}" alt="${news.title}" class="w-full max-w-2xl mx-auto rounded-lg shadow-md">
+                    </div>
+                    ` : ''}
+                    
+                    <div class="prose max-w-none">
+                        <div class="text-lg text-gray-800 leading-relaxed whitespace-pre-line">${news.content}</div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function hideNewsDetail() {
+            document.getElementById('newsDetailModal').classList.add('hidden');
+        }
+
+        function showAddNewsModal() {
+            document.getElementById('newsModalTitle').textContent = 'Tambah Berita';
+            document.getElementById('newsForm').reset();
+            document.getElementById('newsId').value = '';
+            document.getElementById('newsImagePreview').classList.add('hidden');
+            document.getElementById('newsModal').classList.remove('hidden');
+        }
+
+        function editNews(newsId) {
+            const news = newsDatabase.find(n => n.id === newsId);
+            if (!news) return;
+            
+            document.getElementById('newsModalTitle').textContent = 'Edit Berita';
+            document.getElementById('newsId').value = news.id;
+            document.getElementById('newsTitle').value = news.title;
+            document.getElementById('newsCategory').value = news.category;
+            document.getElementById('newsSummary').value = news.summary;
+            document.getElementById('newsContent').value = news.content;
+            document.getElementById('newsAuthor').value = news.author;
+            document.getElementById('newsActive').checked = news.isActive;
+            document.getElementById('newsNotify').checked = news.isNotified;
+            
+            if (news.image) {
+                document.getElementById('newsImagePreview').src = news.image;
+                document.getElementById('newsImagePreview').classList.remove('hidden');
+            }
+            
+            document.getElementById('newsModal').classList.remove('hidden');
+        }
+
+        function hideNewsModal() {
+            document.getElementById('newsModal').classList.add('hidden');
+        }
+
+        function previewNewsImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Ukuran file terlalu besar. Maksimal 5MB.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('newsImagePreview');
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function toggleNewsStatus(newsId) {
+            const news = newsDatabase.find(n => n.id === newsId);
+            if (news) {
+                news.isActive = !news.isActive;
+                loadNews();
+                updateNewsTicker();
+            }
+        }
+
+        function toggleNewsNotification(newsId) {
+            const news = newsDatabase.find(n => n.id === newsId);
+            if (news) {
+                news.isNotified = !news.isNotified;
+                loadNews();
+                updateNewsTicker();
+            }
+        }
+
+        function deleteNews(newsId) {
+            if (confirm('Apakah Anda yakin ingin menghapus berita ini?')) {
+                const index = newsDatabase.findIndex(n => n.id === newsId);
+                if (index > -1) {
+                    newsDatabase.splice(index, 1);
+                    loadNews();
+                    updateNewsTicker();
+                }
+            }
+        }
+
+        // News form handler
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('newsForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const newsId = document.getElementById('newsId').value;
+                const newsData = {
+                    title: document.getElementById('newsTitle').value,
+                    category: document.getElementById('newsCategory').value,
+                    summary: document.getElementById('newsSummary').value,
+                    content: document.getElementById('newsContent').value,
+                    author: document.getElementById('newsAuthor').value || 'Admin',
+                    isActive: document.getElementById('newsActive').checked,
+                    isNotified: document.getElementById('newsNotify').checked,
+                    image: document.getElementById('newsImagePreview').src || null
+                };
+                
+                if (newsId) {
+                    // Edit existing news
+                    const news = newsDatabase.find(n => n.id == newsId);
+                    if (news) {
+                        Object.assign(news, newsData);
+                    }
+                } else {
+                    // Add new news
+                    newsData.id = nextNewsId++;
+                    newsData.date = new Date().toISOString().split('T')[0];
+                    newsDatabase.unshift(newsData);
+                }
+                
+                loadNews();
+                updateNewsTicker();
+                hideNewsModal();
+                alert(newsId ? 'Berita berhasil diupdate!' : 'Berita berhasil ditambahkan!');
+            });
+        });
+
         // Show admin tab function
         function showAdminTab(tabName) {
             // Hide all admin tabs
+            document.getElementById('newsTab').classList.add('hidden');
             document.getElementById('employeesTab').classList.add('hidden');
             document.getElementById('reportsTab').classList.add('hidden');
             document.getElementById('settingsTab').classList.add('hidden');
@@ -2093,5 +2535,5 @@
             document.getElementById('profilePhotoPreview').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9771d321269b40b9',t:'MTc1NjUzMTA3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97722a8ce629f8d2',t:'MTc1NjUzNDY1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
