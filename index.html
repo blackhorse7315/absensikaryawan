@@ -33,11 +33,12 @@
     <div id="loginPage" class="min-h-screen gradient-bg flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl card-shadow p-8 w-full max-w-md slide-in">
             <div class="text-center mb-8">
-                <div class="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-users text-white text-2xl"></i>
+                <div class="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" id="loginLogo">
+                    <img src="" alt="Logo" class="w-10 h-10 object-contain hidden" id="loginLogoImg">
+                    <i class="fas fa-users text-white text-2xl" id="loginLogoIcon"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">ECrew Absensi</h1>
-                <p class="text-gray-600">Transwisata Employee System</p>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2" id="loginTitle">ECrew Absensi</h1>
+                <p class="text-gray-600" id="loginSubtitle">Transwisata Employee System</p>
             </div>
             
             <form id="loginForm" class="space-y-6">
@@ -64,12 +65,7 @@
                 </button>
             </form>
             
-            <div class="mt-6 text-center">
-                <p class="text-sm text-gray-600">Demo Login:</p>
-                <p class="text-xs text-gray-500">Admin: admin@transwisata.com (password: password)</p>
-                <p class="text-xs text-gray-500">Employee: managementtranswisata@gmail.com (password: rustam)</p>
-                <p class="text-xs text-gray-500">Employee: fly5103@gmail.com (password: sulaksono)</p>
-            </div>
+
         </div>
     </div>
 
@@ -767,6 +763,9 @@
                         <button onclick="showAdminTab('employees')" class="admin-tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="employees">
                             Data Karyawan
                         </button>
+                        <button onclick="showAdminTab('branding')" class="admin-tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="branding">
+                            Logo & Branding
+                        </button>
                         <button onclick="showAdminTab('reports')" class="admin-tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="reports">
                             Laporan Absensi
                         </button>
@@ -831,6 +830,98 @@
                                 <!-- Employee data will be populated by JavaScript -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Branding Tab -->
+                <div id="brandingTab" class="p-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-6">Logo & Branding</h3>
+                    
+                    <div class="space-y-8">
+                        <!-- Logo Upload Section -->
+                        <div class="bg-gray-50 rounded-xl p-6">
+                            <h4 class="text-md font-semibold text-gray-800 mb-4">Logo Aplikasi</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Current Logo Preview -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Logo Saat Ini</label>
+                                    <div class="bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                        <div class="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" id="currentLogoPreview">
+                                            <img src="" alt="Current Logo" class="w-10 h-10 object-contain hidden" id="currentLogoImg">
+                                            <i class="fas fa-users text-white text-2xl" id="currentLogoIcon"></i>
+                                        </div>
+                                        <p class="text-sm text-gray-600">Preview logo saat ini</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Logo Upload -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Upload Logo Baru</label>
+                                    <div class="bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                        <input type="file" id="logoUpload" accept="image/*" class="hidden" onchange="previewLogo(event)">
+                                        <img id="logoPreview" class="hidden w-16 h-16 object-contain mx-auto mb-4 rounded">
+                                        <div id="logoUploadControls">
+                                            <button type="button" onclick="document.getElementById('logoUpload').click()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 mb-2">
+                                                <i class="fas fa-upload mr-2"></i>Pilih Logo
+                                            </button>
+                                            <p class="text-sm text-gray-500">Format: PNG, JPG, SVG (Max 2MB)</p>
+                                            <p class="text-xs text-gray-400 mt-1">Rekomendasi: 64x64px atau rasio 1:1</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- App Title Section -->
+                        <div class="bg-gray-50 rounded-xl p-6">
+                            <h4 class="text-md font-semibold text-gray-800 mb-4">Judul Aplikasi</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Judul Utama</label>
+                                    <input type="text" id="appTitle" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="ECrew Absensi">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+                                    <input type="text" id="appSubtitle" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Transwisata Employee System">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Preview Section -->
+                        <div class="bg-gray-50 rounded-xl p-6">
+                            <h4 class="text-md font-semibold text-gray-800 mb-4">Preview Halaman Login</h4>
+                            
+                            <div class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg p-8 flex items-center justify-center">
+                                <div class="bg-white rounded-xl p-6 w-full max-w-sm">
+                                    <div class="text-center mb-6">
+                                        <div class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" id="previewLogo">
+                                            <img src="" alt="Preview Logo" class="w-8 h-8 object-contain hidden" id="previewLogoImg">
+                                            <i class="fas fa-users text-white text-lg" id="previewLogoIcon"></i>
+                                        </div>
+                                        <h1 class="text-lg font-bold text-gray-800 mb-1" id="previewTitle">ECrew Absensi</h1>
+                                        <p class="text-sm text-gray-600" id="previewSubtitle">Transwisata Employee System</p>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <div class="h-8 bg-gray-100 rounded"></div>
+                                        <div class="h-8 bg-gray-100 rounded"></div>
+                                        <div class="h-8 bg-blue-600 rounded"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="flex justify-center space-x-4">
+                            <button onclick="resetBranding()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200">
+                                <i class="fas fa-undo mr-2"></i>Reset ke Default
+                            </button>
+                            <button onclick="saveBranding()" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200">
+                                <i class="fas fa-save mr-2"></i>Simpan Perubahan
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -901,6 +992,13 @@
             locationOut: null,
             photo: null,
             workPhoto: null
+        };
+
+        // App settings
+        let appSettings = {
+            logo: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"%3E%3Cpath d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/%3E%3C/svg%3E',
+            title: 'ECrew Absensi',
+            subtitle: 'Transwisata Employee System'
         };
 
         // News database
@@ -1225,6 +1323,7 @@
             setupAutoFill();
             loadNews();
             updateNewsTicker();
+            loadBrandingSettings();
         });
 
         // Setup auto-fill functionality (no longer needed as fields are auto-filled on login)
@@ -1814,7 +1913,7 @@
             const password = document.getElementById('loginPassword').value;
             
             // Check admin login
-            if (email === 'admin@transwisata.com' && password === 'password') {
+            if (email === 'admin@twa.com' && password === 'admintwa021') {
                 currentUser = { name: 'Administrator', role: 'admin', email: email };
                 showDashboard('admin');
                 isLoggedIn = true;
@@ -2264,6 +2363,7 @@
             // Hide all admin tabs
             document.getElementById('newsTab').classList.add('hidden');
             document.getElementById('employeesTab').classList.add('hidden');
+            document.getElementById('brandingTab').classList.add('hidden');
             document.getElementById('reportsTab').classList.add('hidden');
             document.getElementById('settingsTab').classList.add('hidden');
             
@@ -2479,6 +2579,181 @@
             document.getElementById('attendanceDetailModal').classList.add('hidden');
         }
 
+        // Branding Management Functions
+        function loadBrandingSettings() {
+            // Load current settings into form
+            document.getElementById('appTitle').value = appSettings.title;
+            document.getElementById('appSubtitle').value = appSettings.subtitle;
+            
+            // Update login page
+            updateLoginBranding();
+            
+            // Update preview
+            updateBrandingPreview();
+        }
+
+        function updateLoginBranding() {
+            const loginTitle = document.getElementById('loginTitle');
+            const loginSubtitle = document.getElementById('loginSubtitle');
+            const loginLogoImg = document.getElementById('loginLogoImg');
+            const loginLogoIcon = document.getElementById('loginLogoIcon');
+            
+            if (loginTitle) loginTitle.textContent = appSettings.title;
+            if (loginSubtitle) loginSubtitle.textContent = appSettings.subtitle;
+            
+            if (appSettings.logo && appSettings.logo !== 'default') {
+                if (loginLogoImg) {
+                    loginLogoImg.src = appSettings.logo;
+                    loginLogoImg.classList.remove('hidden');
+                }
+                if (loginLogoIcon) loginLogoIcon.classList.add('hidden');
+            } else {
+                if (loginLogoImg) loginLogoImg.classList.add('hidden');
+                if (loginLogoIcon) loginLogoIcon.classList.remove('hidden');
+            }
+        }
+
+        function updateBrandingPreview() {
+            const previewTitle = document.getElementById('previewTitle');
+            const previewSubtitle = document.getElementById('previewSubtitle');
+            const previewLogoImg = document.getElementById('previewLogoImg');
+            const previewLogoIcon = document.getElementById('previewLogoIcon');
+            const currentLogoImg = document.getElementById('currentLogoImg');
+            const currentLogoIcon = document.getElementById('currentLogoIcon');
+            
+            // Update preview
+            if (previewTitle) previewTitle.textContent = appSettings.title;
+            if (previewSubtitle) previewSubtitle.textContent = appSettings.subtitle;
+            
+            // Update current logo display
+            if (appSettings.logo && appSettings.logo !== 'default') {
+                if (previewLogoImg) {
+                    previewLogoImg.src = appSettings.logo;
+                    previewLogoImg.classList.remove('hidden');
+                }
+                if (previewLogoIcon) previewLogoIcon.classList.add('hidden');
+                
+                if (currentLogoImg) {
+                    currentLogoImg.src = appSettings.logo;
+                    currentLogoImg.classList.remove('hidden');
+                }
+                if (currentLogoIcon) currentLogoIcon.classList.add('hidden');
+            } else {
+                if (previewLogoImg) previewLogoImg.classList.add('hidden');
+                if (previewLogoIcon) previewLogoIcon.classList.remove('hidden');
+                
+                if (currentLogoImg) currentLogoImg.classList.add('hidden');
+                if (currentLogoIcon) currentLogoIcon.classList.remove('hidden');
+            }
+        }
+
+        function previewLogo(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Ukuran file terlalu besar. Maksimal 2MB.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('logoPreview');
+                    const previewLogoImg = document.getElementById('previewLogoImg');
+                    const previewLogoIcon = document.getElementById('previewLogoIcon');
+                    
+                    if (preview) {
+                        preview.src = e.target.result;
+                        preview.classList.remove('hidden');
+                    }
+                    
+                    // Update preview in real-time
+                    if (previewLogoImg) {
+                        previewLogoImg.src = e.target.result;
+                        previewLogoImg.classList.remove('hidden');
+                    }
+                    if (previewLogoIcon) previewLogoIcon.classList.add('hidden');
+                    
+                    // Store temporarily
+                    appSettings.tempLogo = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveBranding() {
+            // Get form values
+            const title = document.getElementById('appTitle').value.trim();
+            const subtitle = document.getElementById('appSubtitle').value.trim();
+            
+            if (!title) {
+                alert('Judul aplikasi tidak boleh kosong!');
+                return;
+            }
+            
+            // Update settings
+            appSettings.title = title;
+            appSettings.subtitle = subtitle;
+            
+            if (appSettings.tempLogo) {
+                appSettings.logo = appSettings.tempLogo;
+                delete appSettings.tempLogo;
+            }
+            
+            // Update all displays
+            updateLoginBranding();
+            updateBrandingPreview();
+            
+            // Update form values to reflect changes
+            document.getElementById('appTitle').value = appSettings.title;
+            document.getElementById('appSubtitle').value = appSettings.subtitle;
+            
+            alert('Pengaturan branding berhasil disimpan!');
+        }
+
+        function resetBranding() {
+            if (confirm('Apakah Anda yakin ingin mereset ke pengaturan default?')) {
+                // Reset to default
+                appSettings.logo = 'default';
+                appSettings.title = 'ECrew Absensi';
+                appSettings.subtitle = 'Transwisata Employee System';
+                
+                // Clear temp logo
+                delete appSettings.tempLogo;
+                
+                // Reset form
+                document.getElementById('appTitle').value = appSettings.title;
+                document.getElementById('appSubtitle').value = appSettings.subtitle;
+                document.getElementById('logoUpload').value = '';
+                document.getElementById('logoPreview').classList.add('hidden');
+                
+                // Update displays
+                updateLoginBranding();
+                updateBrandingPreview();
+                
+                alert('Pengaturan branding berhasil direset ke default!');
+            }
+        }
+
+        // Real-time preview updates
+        document.addEventListener('DOMContentLoaded', function() {
+            const titleInput = document.getElementById('appTitle');
+            const subtitleInput = document.getElementById('appSubtitle');
+            
+            if (titleInput) {
+                titleInput.addEventListener('input', function() {
+                    const previewTitle = document.getElementById('previewTitle');
+                    if (previewTitle) previewTitle.textContent = this.value || 'ECrew Absensi';
+                });
+            }
+            
+            if (subtitleInput) {
+                subtitleInput.addEventListener('input', function() {
+                    const previewSubtitle = document.getElementById('previewSubtitle');
+                    if (previewSubtitle) previewSubtitle.textContent = this.value || 'Transwisata Employee System';
+                });
+            }
+        });
+
         // Logout function
         function logout() {
             currentUser = null;
@@ -2535,5 +2810,5 @@
             document.getElementById('profilePhotoPreview').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97722a8ce629f8d2',t:'MTc1NjUzNDY1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9772325702fff8d2',t:'MTc1NjUzNDk3Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
